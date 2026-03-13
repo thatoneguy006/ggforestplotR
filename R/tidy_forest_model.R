@@ -46,6 +46,7 @@ tidy_forest_model <- function(model,
     estimate = "estimate",
     conf.low = "conf.low",
     conf.high = "conf.high",
+    n = NULL,
     p.value = if ("p.value" %in% names(out)) "p.value" else NULL,
     exponentiate = exponentiate,
     sort_terms = sort_terms

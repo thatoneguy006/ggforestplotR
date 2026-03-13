@@ -1,0 +1,5 @@
+^\\.git$
+^\\.Rcheck$
+^\\.tmp-lib$
+^ggforestplotR\\.Rcheck$
+^ggforestplotR_.*\\.tar\\.gz$

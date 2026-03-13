@@ -5,6 +5,8 @@ as_forest_data <- function(data,
                            conf.high,
                            label = term,
                            group = NULL,
+                           grouping = NULL,
+                           n = NULL,
                            p.value = NULL,
                            exponentiate = FALSE,
                            sort_terms = c("none", "descending", "ascending")) {
@@ -21,6 +23,8 @@ as_forest_data <- function(data,
     conf.high = resolve_column(data, conf.high, "conf.high"),
     label = resolve_column(data, label, "label", required = FALSE),
     group = resolve_column(data, group, "group", required = FALSE),
+    grouping = resolve_column(data, grouping, "grouping", required = FALSE),
+    n = resolve_column(data, n, "n", required = FALSE),
     p.value = resolve_column(data, p.value, "p.value", required = FALSE)
   )
 
@@ -44,6 +48,18 @@ as_forest_data <- function(data,
     as.character(data[[cols$group]])
   }
 
+  out$grouping <- if (is.null(cols$grouping)) {
+    NA_character_
+  } else {
+    as.character(data[[cols$grouping]])
+  }
+
+  out$n <- if (is.null(cols$n)) {
+    NA_character_
+  } else {
+    as.character(data[[cols$n]])
+  }
+
   out$p.value <- if (is.null(cols$p.value)) {
     NA_real_
   } else {
@@ -53,12 +69,19 @@ as_forest_data <- function(data,
   validate_forest_data(out, exponentiate = exponentiate)
 
   if (sort_terms == "descending") {
-    out <- out[order(out$estimate, decreasing = TRUE), , drop = FALSE]
+    if (any(!is.na(out$grouping))) {
+      out <- out[order(out$grouping, out$estimate, decreasing = c(FALSE, TRUE)), , drop = FALSE]
+    } else {
+      out <- out[order(out$estimate, decreasing = TRUE), , drop = FALSE]
+    }
   } else if (sort_terms == "ascending") {
-    out <- out[order(out$estimate, decreasing = FALSE), , drop = FALSE]
+    if (any(!is.na(out$grouping))) {
+      out <- out[order(out$grouping, out$estimate, decreasing = c(FALSE, FALSE)), , drop = FALSE]
+    } else {
+      out <- out[order(out$estimate, decreasing = FALSE), , drop = FALSE]
+    }
   }
 
-  out$label <- factor(out$label, levels = rev(unique(out$label)))
   rownames(out) <- NULL
 
   out
