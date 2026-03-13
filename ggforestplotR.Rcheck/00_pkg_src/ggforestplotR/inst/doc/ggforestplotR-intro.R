@@ -1,45 +1,16 @@
----
-title: "Getting Started with ggforestplotR"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Getting Started with ggforestplotR}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
-```{r, include = FALSE}
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.width = 8,
   fig.height = 5
 )
-```
 
-`ggforestplotR` is built to make forest plots feel like part of a normal
-`ggplot2` workflow. You can start from a simple coefficient table, scale up to
-grouped displays, attach a publication-friendly side table, and then keep
-customizing the output with familiar `ggplot2` layers and themes.
-
-This vignette walks through five increasingly capable patterns:
-
-1. Build a basic forest plot from a coefficient table
-2. Split rows into grouped sections
-3. Attach a left or right summary table
-4. Compare multiple estimates for the same terms
-5. Add custom styling on top of the returned `ggplot` object
-
-```{r setup}
+## ----setup--------------------------------------------------------------------
 library(ggforestplotR)
 library(ggplot2)
-```
 
-## A basic forest plot
-
-The simplest workflow is to start with a data frame that already contains a
-term name, an estimate, and confidence limits.
-
-```{r basic-data}
+## ----basic-data---------------------------------------------------------------
 basic_coefs <- data.frame(
   term = c("Age", "BMI", "Treatment"),
   estimate = c(0.10, -0.08, 0.34),
@@ -48,19 +19,14 @@ basic_coefs <- data.frame(
 )
 
 basic_coefs
-```
 
-```{r basic-plot}
+## ----basic-plot---------------------------------------------------------------
 ggforestplot(
   basic_coefs,
   title = "Basic forest plot"
 )
-```
 
-If your column names are different, map them explicitly with the `term`,
-`estimate`, `conf.low`, and `conf.high` arguments.
-
-```{r basic-remap}
+## ----basic-remap--------------------------------------------------------------
 renamed_coefs <- data.frame(
   variable = c("Age", "BMI", "Treatment"),
   beta = c(0.10, -0.08, 0.34),
@@ -76,14 +42,8 @@ ggforestplot(
   conf.high = "upper",
   title = "Basic forest plot with remapped columns"
 )
-```
 
-## Group rows into sections
-
-Many forest plots read better when related variables are visually grouped
-together. The `grouping` argument splits the plot into labeled sections.
-
-```{r grouped-data}
+## ----grouped-data-------------------------------------------------------------
 sectioned_coefs <- data.frame(
   term = c("Age", "BMI", "Smoking", "Stage II", "Stage III", "Nodes"),
   estimate = c(0.10, -0.08, 0.20, 0.34, 0.52, 0.28),
@@ -96,19 +56,15 @@ sectioned_coefs <- data.frame(
 )
 
 sectioned_coefs
-```
 
-```{r grouped-plot}
+## ----grouped-plot-------------------------------------------------------------
 ggforestplot(
   sectioned_coefs,
   grouping = "section",
   title = "Forest plot with grouped sections"
 )
-```
 
-This is also a good place to turn on alternating row striping.
-
-```{r grouped-striped}
+## ----grouped-striped----------------------------------------------------------
 ggforestplot(
   sectioned_coefs,
   grouping = "section",
@@ -116,16 +72,8 @@ ggforestplot(
   stripe_fill = "grey94",
   title = "Grouped sections with striped rows"
 )
-```
 
-## Attach a side table
-
-Many reporting workflows need both the visual forest plot and a compact text
-summary beside it. `ggforestplot()` can attach a table to the left or right
-side of the plot showing terms, optional N values, and a formatted estimate
-column.
-
-```{r table-data}
+## ----table-data---------------------------------------------------------------
 tabled_coefs <- data.frame(
   term = c("Age", "BMI", "Smoking", "Stage II", "Stage III"),
   estimate = c(0.12, -0.10, 0.18, 0.30, 0.46),
@@ -134,9 +82,8 @@ tabled_coefs <- data.frame(
   sample_size = c(120, 115, 98, 87, 83),
   section = c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor")
 )
-```
 
-```{r table-left}
+## ----table-left---------------------------------------------------------------
 ggforestplot(
   tabled_coefs,
   grouping = "section",
@@ -146,11 +93,8 @@ ggforestplot(
   table_estimate_label = "Beta",
   title = "Forest plot with a left-side summary table"
 )
-```
 
-You can also move the table to the right side and relabel the estimate header.
-
-```{r table-right}
+## ----table-right--------------------------------------------------------------
 ggforestplot(
   tabled_coefs,
   grouping = "section",
@@ -159,18 +103,8 @@ ggforestplot(
   table_estimate_label = "HR",
   title = "Forest plot with a right-side summary table"
 )
-```
 
-When `table_position` is not `"none"`, the return value is a combined grob
-instead of a plain `ggplot`, so the most flexible styling workflow is to finish
-the plot styling first and then attach the table.
-
-## Compare multiple estimates per term
-
-The `group` argument is for a different kind of grouping: multiple estimates for
-the same term. This is useful when comparing models, cohorts, or timepoints.
-
-```{r comparison-data}
+## ----comparison-data----------------------------------------------------------
 comparison_coefs <- data.frame(
   term = rep(c("Age", "BMI", "Smoking", "Stage II", "Stage III"), 2),
   estimate = c(
@@ -191,9 +125,8 @@ comparison_coefs <- data.frame(
 )
 
 comparison_coefs
-```
 
-```{r comparison-plot}
+## ----comparison-plot----------------------------------------------------------
 ggforestplot(
   comparison_coefs,
   group = "model",
@@ -205,19 +138,8 @@ ggforestplot(
   table_estimate_label = "HR",
   title = "Comparing two model specifications"
 )
-```
 
-When you pass a `group` column, `ggforestplot()` colors each series and dodges
-the points so the estimates remain readable. In the attached table, grouped
-rows are collapsed into a single text cell per term.
-
-## Start from a fitted model
-
-If you have a model object and `broom` is installed, `ggforestplot()` can call
-`broom::tidy()` for you. This makes it easy to move from a fitted model to a
-coefficient plot without building the table yourself first.
-
-```{r model-plot}
+## ----model-plot---------------------------------------------------------------
 fit <- lm(mpg ~ wt + hp + qsec, data = mtcars)
 
 ggforestplot(
@@ -225,22 +147,11 @@ ggforestplot(
   sort_terms = "descending",
   title = "Forest plot directly from an lm() object"
 )
-```
 
-If you want to inspect or reuse the intermediate data, call
-`tidy_forest_model()` directly.
-
-```{r tidy-model}
+## ----tidy-model---------------------------------------------------------------
 tidy_forest_model(fit)
-```
 
-## Custom styling with ggplot2
-
-The return value from `ggforestplot()` is a regular `ggplot` object when no side
-table is attached, so you can continue styling it with scales, labels, and
-themes.
-
-```{r advanced-style}
+## ----advanced-style-----------------------------------------------------------
 ggforestplot(
   comparison_coefs,
   group = "model",
@@ -269,8 +180,4 @@ ggforestplot(
     strip.text.y.left = ggplot2::element_text(face = "bold"),
     plot.title.position = "plot"
   )
-```
 
-That last example is the main design idea behind `ggforestplotR`: the package
-should handle the repetitive forest-plot mechanics, while still letting you
-finish the visual design with the rest of the `ggplot2` ecosystem.

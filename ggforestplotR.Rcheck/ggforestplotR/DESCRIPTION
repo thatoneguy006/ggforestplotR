@@ -16,15 +16,10 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-Imports:
-    ggplot2,
-    patchwork,
-    rlang
-Suggests:
-    broom,
-    knitr,
-    rmarkdown,
-    testthat (>= 3.0.0),
-    tibble
+Imports: ggplot2, patchwork, rlang
+Suggests: broom, knitr, rmarkdown, testthat (>= 3.0.0), tibble
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+NeedsCompilation: no
+Packaged: 2026-03-13 01:33:39 UTC; CodexSandboxOffline
+Built: R 4.5.2; ; 2026-03-13 01:33:53 UTC; windows
