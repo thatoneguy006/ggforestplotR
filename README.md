@@ -26,28 +26,24 @@ The package currently supports three common workflows:
 library(ggforestplotR)
 library(ggplot2)
 
-coefs <- data.frame(
-  term = c("Age", "BMI", "Stage II", "Stage III"),
-  estimate = c(0.10, -0.08, 0.34, 0.52),
-  conf.low = c(0.02, -0.16, 0.12, 0.20),
-  conf.high = c(0.18, 0.00, 0.56, 0.84),
-  section = c("Clinical", "Clinical", "Tumor", "Tumor"),
-  sample_size = c(120, 115, 87, 83)
+sectioned_coefs <- data.frame(
+  term = c("Age", "BMI", "Smoking", "Stage II", "Stage III", "Nodes"),
+  estimate = c(0.10, -0.08, 0.20, 0.34, 0.52, 0.28),
+  conf.low = c(0.02, -0.16, 0.05, 0.12, 0.20, 0.06),
+  conf.high = c(0.18, 0.00, 0.35, 0.56, 0.84, 0.50),
+  section = c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor", "Tumor")
 )
 
 ggforestplot(
-  coefs,
+  sectioned_coefs,
   grouping = "section",
-  n = "sample_size",
-  striped_rows = TRUE
+  striped_rows = TRUE,
+  stripe_fill = "grey94"
 ) +
-  labs(title = "Grouped forest plot") +
-  add_forest_table(
-    position = "left",
-    show_n = TRUE,
-    estimate_label = "Beta"
-  )
+  ggplot2::labs(title = "Grouped forest plot with striped rows")
 ```
+
+![Example grouped forest plot](man/figures/README-forestplot-example.png)
 
 ## Learn more
 
