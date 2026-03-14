@@ -3,7 +3,7 @@
 ## Authors
 
 - **[Carson Richardson](https://github.com/thatoneguy006)**. Author,
-  maintainer.
+  maintainer. [](https://orcid.org/0009-0004-8710-1097)
 
 ## Citation
 
