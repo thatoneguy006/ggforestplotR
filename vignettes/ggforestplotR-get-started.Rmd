@@ -2,8 +2,7 @@
 title: "Get Started with ggforestplotR"
 output:
   rmarkdown::html_vignette:
-    highlight: null
-    pandoc_args: ["--syntax-highlighting=pygments"]
+    highlight: pygments
 vignette: >
   %\VignetteIndexEntry{Get Started with ggforestplotR}
   %\VignetteEngine{knitr::rmarkdown}
