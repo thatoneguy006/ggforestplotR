@@ -25,7 +25,7 @@ This vignette walks through five increasingly capable patterns:
 
 1. Build a basic forest plot from a coefficient table
 2. Split rows into grouped sections
-3. Attach a left or right summary table
+3. Attach a side summary table after styling the plot
 4. Compare multiple estimates for the same terms
 5. Add custom styling on top of the returned `ggplot` object
 
@@ -121,9 +121,9 @@ ggforestplot(
 ## Attach a side table
 
 Many reporting workflows need both the visual forest plot and a compact text
-summary beside it. `ggforestplot()` can attach a table to the left or right
-side of the plot showing terms, optional N values, and a formatted estimate
-column.
+summary beside it. The recommended workflow is to build the forest plot first,
+apply any `ggplot2` styling you need, and then call `add_forest_table()` to
+compose the table on the left or right side.
 
 ```{r table-data}
 tabled_coefs <- data.frame(
@@ -142,9 +142,12 @@ ggforestplot(
   grouping = "section",
   n = "sample_size",
   striped_rows = TRUE,
-  table_position = "left",
-  table_estimate_label = "Beta",
   title = "Forest plot with a left-side summary table"
+) +
+  add_forest_table(
+  position = "left",
+  show_n = TRUE,
+  estimate_label = "Beta"
 )
 ```
 
@@ -155,15 +158,21 @@ ggforestplot(
   tabled_coefs,
   grouping = "section",
   n = "sample_size",
-  table_position = "right",
-  table_estimate_label = "HR",
   title = "Forest plot with a right-side summary table"
+) +
+  ggplot2::theme(
+    panel.grid.major.y = ggplot2::element_blank(),
+    plot.title.position = "plot"
+  ) +
+  add_forest_table(
+  position = "right",
+  show_n = TRUE,
+  estimate_label = "HR"
 )
 ```
 
-When `table_position` is not `"none"`, the return value is a combined grob
-instead of a plain `ggplot`, so the most flexible styling workflow is to finish
-the plot styling first and then attach the table.
+Because `add_forest_table()` is called after the plot is built, styling stays
+local to the forest plot until the final composition step.
 
 ## Compare multiple estimates per term
 
@@ -201,9 +210,12 @@ ggforestplot(
   n = "sample_size",
   striped_rows = TRUE,
   dodge_width = 0.5,
-  table_position = "right",
-  table_estimate_label = "HR",
   title = "Comparing two model specifications"
+) +
+  add_forest_table(
+  position = "right",
+  show_n = TRUE,
+  estimate_label = "HR"
 )
 ```
 

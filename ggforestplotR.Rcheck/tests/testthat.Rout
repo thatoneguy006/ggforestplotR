@@ -19,8 +19,8 @@ Type 'q()' to quit R.
 > library(ggforestplotR)
 > 
 > test_check("ggforestplotR")
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 20 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 23 ]
 > 
 > proc.time()
    user  system elapsed 
-   1.67    0.21    1.89 
+   1.68    0.23    1.92 

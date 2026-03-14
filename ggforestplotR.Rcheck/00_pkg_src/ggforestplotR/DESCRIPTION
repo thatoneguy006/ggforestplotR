@@ -21,4 +21,4 @@ Suggests: broom, knitr, rmarkdown, testthat (>= 3.0.0), tibble
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2026-03-13 01:33:39 UTC; CodexSandboxOffline
+Packaged: 2026-03-14 15:09:50 UTC; CodexSandboxOffline

@@ -47,7 +47,7 @@ test_that("ggforestplot supports shape and staple width controls", {
   expect_true(all(built$data[[1]]$width == 0.25))
 })
 
-test_that("ggforestplot can attach a left-side summary table", {
+test_that("add_forest_table can attach a left-side summary table", {
   raw <- data.frame(
     term = c("Age", "BMI", "Treatment"),
     estimate = c(0.3, -0.2, 0.4),
@@ -56,43 +56,53 @@ test_that("ggforestplot can attach a left-side summary table", {
     sample_size = c(120, 115, 98)
   )
 
-  p <- ggforestplot(
-    raw,
-    n = "sample_size",
-    table_position = "left",
-    table_estimate_label = "Beta"
+  p <- ggforestplot(raw, n = "sample_size")
+  out <- add_forest_table(
+    p,
+    position = "left",
+    show_n = TRUE,
+    estimate_label = "Beta"
   )
 
-  expect_s3_class(p, "patchwork")
-  expect_s3_class(p, "ggplot")
+  expect_s3_class(out, "patchwork")
+  expect_s3_class(out, "ggplot")
 })
 
-test_that("ggforestplot can attach a right-side grouped summary table", {
+test_that("add_forest_table works with ggplot add syntax", {
   raw <- data.frame(
-    term = rep(c("Age", "BMI"), 2),
-    estimate = c(0.3, -0.2, 0.2, -0.1),
-    conf.low = c(0.1, -0.4, 0.0, -0.3),
-    conf.high = c(0.5, 0.0, 0.4, 0.1),
-    model = rep(c("Model A", "Model B"), each = 2),
-    section = rep(c("Clinical", "Clinical"), 2),
-    sample_size = c(120, 118, 120, 118)
+    term = c("Age", "BMI", "Treatment"),
+    estimate = c(0.3, -0.2, 0.4),
+    conf.low = c(0.1, -0.4, 0.2),
+    conf.high = c(0.5, 0.0, 0.6),
+    sample_size = c(120, 115, 98)
   )
 
-  p <- ggforestplot(
-    raw,
-    group = "model",
-    grouping = "section",
-    n = "sample_size",
-    striped_rows = TRUE,
-    table_position = "right",
-    table_estimate_label = "HR"
+  out <- ggforestplot(raw, n = "sample_size") +
+    ggplot2::theme(plot.title = ggplot2::element_text(face = "italic")) +
+    add_forest_table(position = "right", show_n = TRUE, estimate_label = "Beta")
+
+  expect_s3_class(out, "patchwork")
+  expect_s3_class(out, "ggplot")
+})
+
+test_that("ggforestplot warns instead of composing tables directly", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3, -0.2),
+    conf.low = c(0.1, -0.4),
+    conf.high = c(0.5, 0.0),
+    sample_size = c(120, 118)
   )
 
-  expect_s3_class(p, "patchwork")
+  expect_warning(
+    p <- ggforestplot(raw, n = "sample_size", table_position = "right"),
+    "deprecated"
+  )
+
   expect_s3_class(p, "ggplot")
 })
 
-test_that("ggforestplot validates N table requests", {
+test_that("add_forest_table validates N table requests", {
   raw <- data.frame(
     term = "Treatment",
     estimate = 1.2,
@@ -101,8 +111,18 @@ test_that("ggforestplot validates N table requests", {
   )
 
   expect_error(
-    ggforestplot(raw, table_position = "left", table_show_n = TRUE),
+    add_forest_table(ggforestplot(raw), position = "left", show_n = TRUE),
     "requires an `n` column"
+  )
+})
+
+test_that("add_forest_table requires a ggforestplot object", {
+  raw <- data.frame(x = 1:2, y = 1:2)
+  p <- ggplot2::ggplot(raw, ggplot2::aes(x, y)) + ggplot2::geom_point()
+
+  expect_error(
+    add_forest_table(p),
+    "must be created by"
   )
 })
 

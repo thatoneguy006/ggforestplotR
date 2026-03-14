@@ -181,6 +181,7 @@ build_forest_table_data <- function(data,
     long_parts[[i]] <- data.frame(
       row_key = table_rows$row_key,
       grouping_panel = table_rows$grouping_panel,
+      column_key = column_keys[i],
       column_position = positions[i],
       text = table_rows[[column_keys[i]]],
       stringsAsFactors = FALSE
@@ -272,7 +273,14 @@ build_forest_table_plot <- function(table_spec,
 
   p <- p +
     ggplot2::geom_text(
+      data = table_spec$table_data[table_spec$table_data$column_key == "term_text", , drop = FALSE],
       hjust = 0,
+      size = text_size,
+      lineheight = 0.95
+    ) +
+    ggplot2::geom_text(
+      data = table_spec$table_data[table_spec$table_data$column_key != "term_text", , drop = FALSE],
+      hjust = 0.5,
       size = text_size,
       lineheight = 0.95
     ) +

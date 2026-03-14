@@ -12,7 +12,7 @@ The package currently includes:
 - `ggforestplot()` to render a forest plot from either a model object or a tidy coefficient frame
 - grouped sections via the `grouping` argument
 - alternating row striping via `striped_rows = TRUE`
-- an attached summary table that can sit on the left or right side of the plot
+- `add_forest_table()` to attach a summary table on the left or right side of the plot
 
 ## Example
 
@@ -33,10 +33,13 @@ ggforestplot(
   grouping = "section",
   n = "sample_size",
   striped_rows = TRUE,
-  table_position = "left",
-  table_estimate_label = "Beta",
   title = "Example grouped forest plot"
-)
+) +
+  add_forest_table(
+    position = "left",
+    show_n = TRUE,
+    estimate_label = "Beta"
+  )
 ```
 
 ## Next steps

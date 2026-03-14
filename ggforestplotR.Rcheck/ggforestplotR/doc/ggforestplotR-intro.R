@@ -89,9 +89,12 @@ ggforestplot(
   grouping = "section",
   n = "sample_size",
   striped_rows = TRUE,
-  table_position = "left",
-  table_estimate_label = "Beta",
   title = "Forest plot with a left-side summary table"
+) +
+  add_forest_table(
+  position = "left",
+  show_n = TRUE,
+  estimate_label = "Beta"
 )
 
 ## ----table-right--------------------------------------------------------------
@@ -99,9 +102,16 @@ ggforestplot(
   tabled_coefs,
   grouping = "section",
   n = "sample_size",
-  table_position = "right",
-  table_estimate_label = "HR",
   title = "Forest plot with a right-side summary table"
+) +
+  ggplot2::theme(
+    panel.grid.major.y = ggplot2::element_blank(),
+    plot.title.position = "plot"
+  ) +
+  add_forest_table(
+  position = "right",
+  show_n = TRUE,
+  estimate_label = "HR"
 )
 
 ## ----comparison-data----------------------------------------------------------
@@ -134,9 +144,12 @@ ggforestplot(
   n = "sample_size",
   striped_rows = TRUE,
   dodge_width = 0.5,
-  table_position = "right",
-  table_estimate_label = "HR",
   title = "Comparing two model specifications"
+) +
+  add_forest_table(
+  position = "right",
+  show_n = TRUE,
+  estimate_label = "HR"
 )
 
 ## ----model-plot---------------------------------------------------------------
