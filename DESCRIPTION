@@ -6,8 +6,7 @@ Authors@R:
            family = "Richardson",
            role = c("aut", "cre"),
            email = "carson.richardson@outlook.com",
-           comment = c(ORCID = "0009-0004-8710-1097")
-)
+           comment = c(ORCID = "0009-0004-8710-1097"))
 Description: Tools for turning model coefficients into flexible forest
     plots using ggplot2. The package provides helpers to standardize
     coefficient data from a range of modelling workflows and render
