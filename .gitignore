@@ -16,3 +16,5 @@ website/
 .quarto/
 .quarto-local/
 .quarto-roaming/
+.pkg-lib/
+vignettes/*.html

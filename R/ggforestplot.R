@@ -82,6 +82,8 @@
     p_header = p_header,
     digits = digits
   )
+  table_spec <- layout_center_table_spec(table_spec, text_size = text_size)
+  table_width <- max(2.2, default_center_table_width(table_spec, text_size = text_size))
 
   table_plot <- build_forest_table_plot(
     table_spec = table_spec,
@@ -96,13 +98,207 @@
     grid_lines = grid_lines,
     grid_line_colour = grid_line_colour,
     grid_line_size = grid_line_size,
-    grid_line_linetype = grid_line_linetype
+    grid_line_linetype = grid_line_linetype,
+    x_expand = c(0, 0),
+    x_limits = default_center_table_limits(table_spec),
+    text_hjust = 0.5,
+    header_hjust = 0.5
   )
 
   combine_forest_plot_and_table(
     plot = plot_out,
     table_plot = table_plot,
-    table_position = position
+    table_position = position,
+    table_width = table_width
+  )
+}
+
+.compose_split_table <- function(plot,
+                                 show_terms = TRUE,
+                                 show_n = NULL,
+                                 show_estimate = TRUE,
+                                 show_p = FALSE,
+                                 left_columns = NULL,
+                                 right_columns = NULL,
+                                 term_header = "Term",
+                                 n_header = "N",
+                                 estimate_label = "Estimate",
+                                 p_header = "P-value",
+                                 digits = NULL,
+                                 text_size = NULL,
+                                 striped_rows = NULL,
+                                 stripe_fill = NULL,
+                                 stripe_colour = NULL,
+                                 left_width = NULL,
+                                 plot_width = NULL,
+                                 right_width = NULL) {
+  if (!inherits(plot, "ggplot")) {
+    stop("`plot` must be a ggplot object created by `ggforestplot()`.", call. = FALSE)
+  }
+
+  state <- plot$ggforestplotR_state
+
+  if (is.null(state)) {
+    stop("`plot` must be created by `ggforestplot()` before calling `add_split_table()`.", call. = FALSE)
+  }
+
+  if (is.null(show_n)) {
+    show_n <- any(!is.na(state$forest_data$n) & nzchar(state$forest_data$n))
+  }
+
+  if (is.null(digits)) {
+    digits <- 2
+  }
+
+  if (is.null(text_size)) {
+    text_size <- 3.2
+  }
+
+  if (is.null(striped_rows)) {
+    striped_rows <- isTRUE(state$defaults$striped_rows)
+  }
+
+  if (is.null(stripe_fill)) {
+    stripe_fill <- state$defaults$stripe_fill
+  }
+
+  if (is.null(stripe_colour)) {
+    stripe_colour <- state$defaults$stripe_colour
+  }
+
+  default_left <- c(if (isTRUE(show_terms)) "term", if (isTRUE(show_n)) "n")
+  default_right <- c(if (isTRUE(show_estimate)) "estimate", if (isTRUE(show_p)) "p")
+  resolved_left <- if (is.null(left_columns)) default_left else normalize_table_columns(left_columns)
+  resolved_right <- if (is.null(right_columns)) default_right else normalize_table_columns(right_columns)
+
+  if (length(resolved_left) == 0L) {
+    stop(
+      "`add_split_table()` requires at least one left-side column. Supply `left_columns` or enable `show_terms`/`show_n`.",
+      call. = FALSE
+    )
+  }
+
+  if (length(resolved_right) == 0L) {
+    stop(
+      "`add_split_table()` requires at least one right-side column. Supply `right_columns` or enable `show_estimate`/`show_p`.",
+      call. = FALSE
+    )
+  }
+
+  overlap <- intersect(resolved_left, resolved_right)
+
+  if (length(overlap) > 0L) {
+    stop(
+      sprintf("Split table columns cannot appear on both sides: %s", paste(overlap, collapse = ", ")),
+      call. = FALSE
+    )
+  }
+
+  if ("n" %in% c(resolved_left, resolved_right) && all(is.na(state$forest_data$n) | !nzchar(state$forest_data$n))) {
+    stop("An `n` column is required when split table columns include `n`.", call. = FALSE)
+  }
+
+  if ("p" %in% c(resolved_left, resolved_right) && all(is.na(state$forest_data$p.value))) {
+    stop("A `p.value` column is required when split table columns include `p`.", call. = FALSE)
+  }
+
+  left_spec <- build_forest_table_data(
+    state$forest_data,
+    show_terms = FALSE,
+    show_n = FALSE,
+    show_estimate = FALSE,
+    show_p = FALSE,
+    term_header = term_header,
+    n_header = n_header,
+    estimate_label = estimate_label,
+    p_header = p_header,
+    digits = digits,
+    columns = resolved_left
+  )
+
+  right_spec <- build_forest_table_data(
+    state$forest_data,
+    show_terms = FALSE,
+    show_n = FALSE,
+    show_estimate = FALSE,
+    show_p = FALSE,
+    term_header = term_header,
+    n_header = n_header,
+    estimate_label = estimate_label,
+    p_header = p_header,
+    digits = digits,
+    columns = resolved_right
+  )
+
+  left_spec <- layout_split_table_spec(left_spec, text_size = text_size, alignment = "left")
+  right_spec <- layout_split_table_spec(right_spec, text_size = text_size, alignment = "right")
+
+  if (is.null(left_width)) {
+    left_width <- default_split_table_width(left_spec, text_size = text_size, alignment = "left")
+  }
+
+  if (is.null(right_width)) {
+    right_width <- default_split_table_width(right_spec, text_size = text_size, alignment = "right")
+  }
+
+  if (is.null(plot_width)) {
+    plot_width <- default_split_plot_width(left_width, right_width)
+  }
+
+  left_plot <- build_forest_table_plot(
+    table_spec = left_spec,
+    stripe_data = state$stripe_data,
+    has_groupings = state$has_groupings,
+    grouping_strip_position = state$grouping_strip_position,
+    table_position = "left",
+    striped_rows = striped_rows,
+    stripe_fill = stripe_fill,
+    stripe_colour = stripe_colour,
+    text_size = text_size,
+    grid_lines = FALSE,
+    x_expand = c(0, 0),
+    x_limits = default_split_table_limits(left_spec, alignment = "left"),
+    plot_margin = ggplot2::margin(5.5, 0, 5.5, 5.5),
+    text_hjust = 0,
+    header_hjust = 0
+  )
+
+  right_plot <- build_forest_table_plot(
+    table_spec = right_spec,
+    stripe_data = state$stripe_data,
+    has_groupings = state$has_groupings,
+    grouping_strip_position = state$grouping_strip_position,
+    table_position = "right",
+    striped_rows = striped_rows,
+    stripe_fill = stripe_fill,
+    stripe_colour = stripe_colour,
+    text_size = text_size,
+    grid_lines = FALSE,
+    x_expand = c(0, 0),
+    x_limits = default_split_table_limits(right_spec, alignment = "right"),
+    plot_margin = ggplot2::margin(5.5, 5.5, 5.5, 0),
+    text_hjust = 1,
+    header_hjust = 1
+  )
+
+  plot_out <- plot + ggplot2::coord_cartesian(xlim = default_split_plot_limits(state$forest_data, exponentiate = state$defaults$exponentiate, include_zero = state$defaults$zero_line), clip = "off") + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    panel.border = ggplot2::element_blank(),
+    axis.line.x = ggplot2::element_line(colour = "black"),
+    axis.line.y = ggplot2::element_blank(),
+    panel.grid.major = ggplot2::element_blank(),
+    panel.grid.minor = ggplot2::element_blank(),
+    plot.margin = ggplot2::margin(5.5, 0, 5.5, 0)
+  )
+
+  patchwork::wrap_plots(
+    left_plot,
+    plot_out,
+    right_plot,
+    nrow = 1,
+    widths = c(left_width, plot_width, right_width)
   )
 }
 
@@ -167,7 +363,7 @@ ggforestplot <- function(data,
   stripe_data <- display_data$stripe_data
   separator_data <- display_data$separator_data
 
-  has_groups <- any(!is.na(forest_data$group))
+  has_groups <- any(!is.na(forest_data$group) & nzchar(forest_data$group))
   dodge <- ggplot2::position_dodge(width = dodge_width)
   mapping <- if (has_groups) {
     ggplot2::aes(
@@ -273,7 +469,9 @@ ggforestplot <- function(data,
     defaults = list(
       striped_rows = striped_rows,
       stripe_fill = stripe_fill,
-      stripe_colour = stripe_colour
+      stripe_colour = stripe_colour,
+      exponentiate = exponentiate,
+      zero_line = zero_line
     )
   )
 
@@ -350,9 +548,89 @@ add_forest_table <- function(plot = NULL,
   )
 }
 
+add_split_table <- function(plot = NULL,
+                            show_terms = TRUE,
+                            show_n = NULL,
+                            show_estimate = TRUE,
+                            show_p = FALSE,
+                            left_columns = NULL,
+                            right_columns = NULL,
+                            term_header = "Term",
+                            n_header = "N",
+                            estimate_label = "Estimate",
+                            p_header = "P-value",
+                            digits = NULL,
+                            text_size = NULL,
+                            striped_rows = NULL,
+                            stripe_fill = NULL,
+                            stripe_colour = NULL,
+                            left_width = NULL,
+                            plot_width = NULL,
+                            right_width = NULL) {
+  if (is.null(plot)) {
+    return(structure(
+      list(
+        show_terms = show_terms,
+        show_n = show_n,
+        show_estimate = show_estimate,
+        show_p = show_p,
+        left_columns = left_columns,
+        right_columns = right_columns,
+        term_header = term_header,
+        n_header = n_header,
+        estimate_label = estimate_label,
+        p_header = p_header,
+        digits = digits,
+        text_size = text_size,
+        striped_rows = striped_rows,
+        stripe_fill = stripe_fill,
+        stripe_colour = stripe_colour,
+        left_width = left_width,
+        plot_width = plot_width,
+        right_width = right_width
+      ),
+      class = "ggforestplot_split_table_adder"
+    ))
+  }
+
+  .compose_split_table(
+    plot = plot,
+    show_terms = show_terms,
+    show_n = show_n,
+    show_estimate = show_estimate,
+    show_p = show_p,
+    left_columns = left_columns,
+    right_columns = right_columns,
+    term_header = term_header,
+    n_header = n_header,
+    estimate_label = estimate_label,
+    p_header = p_header,
+    digits = digits,
+    text_size = text_size,
+    striped_rows = striped_rows,
+    stripe_fill = stripe_fill,
+    stripe_colour = stripe_colour,
+    left_width = left_width,
+    plot_width = plot_width,
+    right_width = right_width
+  )
+}
+
 ggplot_add.ggforestplot_table_adder <- function(object, plot, ...) {
   do.call(
     .compose_forest_table,
     c(list(plot = plot), object)
   )
 }
+
+ggplot_add.ggforestplot_split_table_adder <- function(object, plot, ...) {
+  do.call(
+    .compose_split_table,
+    c(list(plot = plot), object)
+  )
+}
+
+
+
+
+

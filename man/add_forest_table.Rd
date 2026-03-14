@@ -46,7 +46,7 @@ add_forest_table(
   \item{grid_line_linetype}{Line type used for the table grid lines.}
 }
 \value{A patchwork-composed plot containing the forest plot and side table, or a ggplot add-on object when \code{plot = NULL}.}
-\description{Compose a side table onto a forest plot after the plot has been styled.}
+\description{Compose a side table onto a forest plot after the plot has been styled. This helper should generally be added as the final step because it returns a patchwork composition instead of a plain \code{ggplot}.}
 \examples{
 coefs <- data.frame(
   term = c("Age", "BMI", "Treatment"),

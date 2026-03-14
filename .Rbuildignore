@@ -11,6 +11,8 @@
 ^_pkgdown\.yml$
 ^docs$
 ^docs/
+^docs-preview$
+^docs-preview/
 ^docs-pkgdown$
 ^docs-pkgdown/
 ^\.pkgdown-cache$
@@ -23,3 +25,7 @@
 ^\.quarto-roaming/
 ^pkgdown$
 ^pkgdown/
+^cran-comments\.md$
+^\.pkg-lib$
+^\.pkg-lib/
+^vignettes/.*\.html$

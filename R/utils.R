@@ -59,6 +59,63 @@ validate_forest_data <- function(data, exponentiate = FALSE) {
   invisible(data)
 }
 
+normalize_table_columns <- function(columns) {
+  default_order <- c("term", "n", "estimate", "p")
+
+  if (is.null(columns)) {
+    return(NULL)
+  }
+
+  if (is.numeric(columns)) {
+    idx <- as.integer(columns)
+
+    if (anyNA(idx) || any(idx < 1L | idx > length(default_order))) {
+      stop("Numeric table columns must be between 1 and 4.", call. = FALSE)
+    }
+
+    return(unique(default_order[idx]))
+  }
+
+  if (!is.character(columns)) {
+    stop("Table columns must be specified by name or position.", call. = FALSE)
+  }
+
+  aliases <- c(
+    term = "term",
+    terms = "term",
+    label = "term",
+    labels = "term",
+    subgroup = "term",
+    subgroups = "term",
+    n = "n",
+    samplesize = "n",
+    sample_size = "n",
+    estimate = "estimate",
+    estimates = "estimate",
+    effect = "estimate",
+    effects = "estimate",
+    p = "p",
+    pvalue = "p",
+    p.value = "p",
+    p_value = "p",
+    pvalues = "p"
+  )
+
+  normalized <- tolower(columns)
+  normalized <- gsub("\\s+", "", normalized)
+  resolved <- unname(aliases[normalized])
+
+  if (anyNA(resolved)) {
+    bad <- unique(columns[is.na(resolved)])
+    stop(
+      sprintf("Unsupported table columns: %s", paste(bad, collapse = ", ")),
+      call. = FALSE
+    )
+  }
+
+  unique(resolved)
+}
+
 build_forest_plot_data <- function(data) {
   has_groupings <- any(!is.na(data$grouping) & nzchar(data$grouping))
   plot_data <- data
@@ -186,7 +243,8 @@ build_forest_table_data <- function(data,
                                     n_header = "N",
                                     estimate_label = "Estimate",
                                     p_header = "P-value",
-                                    digits = 2) {
+                                    digits = 2,
+                                    columns = NULL) {
   row_levels <- levels(data$row_key)
   row_parts <- vector("list", length(row_levels))
 
@@ -223,43 +281,58 @@ build_forest_table_data <- function(data,
   table_rows <- do.call(rbind, row_parts)
   table_rows$row_key <- factor(table_rows$row_key, levels = row_levels)
 
-  column_keys <- character()
-  headers <- character()
+  if (is.null(columns)) {
+    column_keys <- character()
 
-  if (isTRUE(show_terms)) {
-    column_keys <- c(column_keys, "term_text")
-    headers <- c(headers, term_header)
-  }
+    if (isTRUE(show_terms)) {
+      column_keys <- c(column_keys, "term")
+    }
 
-  if (isTRUE(show_n)) {
-    column_keys <- c(column_keys, "n_text")
-    headers <- c(headers, n_header)
-  }
+    if (isTRUE(show_n)) {
+      column_keys <- c(column_keys, "n")
+    }
 
-  if (isTRUE(show_estimate)) {
-    column_keys <- c(column_keys, "estimate_text")
-    headers <- c(headers, sprintf("%s (95%% CI)", estimate_label))
-  }
+    if (isTRUE(show_estimate)) {
+      column_keys <- c(column_keys, "estimate")
+    }
 
-  if (isTRUE(show_p)) {
-    column_keys <- c(column_keys, "p_text")
-    headers <- c(headers, p_header)
+    if (isTRUE(show_p)) {
+      column_keys <- c(column_keys, "p")
+    }
+  } else {
+    column_keys <- normalize_table_columns(columns)
   }
 
   if (length(column_keys) == 0) {
     stop("Select at least one table column to display.", call. = FALSE)
   }
 
+  column_field_lookup <- c(
+    term = "term_text",
+    n = "n_text",
+    estimate = "estimate_text",
+    p = "p_text"
+  )
+  header_lookup <- c(
+    term = term_header,
+    n = n_header,
+    estimate = sprintf("%s (95%% CI)", estimate_label),
+    p = p_header
+  )
+
   positions <- seq(1, by = 1.6, length.out = length(column_keys))
   long_parts <- vector("list", length(column_keys))
 
   for (i in seq_along(column_keys)) {
+    column_key <- column_keys[[i]]
+    field_name <- unname(column_field_lookup[[column_key]])
+
     long_parts[[i]] <- data.frame(
       row_key = table_rows$row_key,
       grouping_panel = table_rows$grouping_panel,
-      column_key = column_keys[i],
+      column_key = column_key,
       column_position = positions[i],
-      text = table_rows[[column_keys[i]]],
+      text = table_rows[[field_name]],
       stringsAsFactors = FALSE
     )
   }
@@ -267,13 +340,12 @@ build_forest_table_data <- function(data,
   table_data <- do.call(rbind, long_parts)
   table_data$row_key <- factor(table_data$row_key, levels = row_levels)
 
-  header_positions <- positions
-
   list(
     table_data = table_data,
     positions = positions,
-    header_positions = header_positions,
-    headers = headers
+    header_positions = positions,
+    headers = unname(header_lookup[column_keys]),
+    column_keys = column_keys
   )
 }
 
@@ -379,6 +451,155 @@ build_table_line_data <- function(stripe_data, has_groupings = FALSE) {
   line_data
 }
 
+string_display_width <- function(x) {
+  x <- as.character(x)
+  x[is.na(x)] <- ""
+
+  if (length(x) == 0L) {
+    return(0)
+  }
+
+  widths <- vapply(strsplit(x, "\n", fixed = TRUE), function(parts) {
+    if (length(parts) == 0L) {
+      return(0)
+    }
+
+    max(nchar(parts, type = "width"), 0)
+  }, numeric(1))
+
+  max(widths, 0)
+}
+
+estimate_split_column_widths <- function(table_spec, text_size = 3.2, alignment = c("left", "center", "right")) {
+  alignment <- match.arg(alignment)
+  char_scale <- c(
+    term = 0.055,
+    n = 0.03,
+    estimate = 0.05,
+    p = 0.045
+  )
+  base_padding <- c(
+    term = 0.45,
+    n = 0.25,
+    estimate = 0.55,
+    p = 0.35
+  )
+  alignment_padding <- switch(
+    alignment,
+    left = 0.25,
+    right = 0.25,
+    center = 0.18
+  )
+
+  stats::setNames(vapply(seq_along(table_spec$column_keys), function(i) {
+    column_key <- table_spec$column_keys[[i]]
+    column_values <- table_spec$table_data$text[table_spec$table_data$column_key == column_key]
+    max_chars <- string_display_width(c(table_spec$headers[[i]], column_values))
+
+    unname(base_padding[[column_key]]) + alignment_padding +
+      max(max_chars, 1) * unname(char_scale[[column_key]]) * (text_size / 3.2)
+  }, numeric(1)), table_spec$column_keys)
+}
+
+layout_split_table_spec <- function(table_spec, text_size = 3.2, alignment = c("left", "right")) {
+  alignment <- match.arg(alignment)
+  column_widths <- estimate_split_column_widths(table_spec, text_size = text_size, alignment = alignment)
+  gap <- 0.2
+
+  positions <- if (alignment == "left") {
+    starts <- c(0, utils::head(cumsum(column_widths + gap), -1))
+    starts + 0.02
+  } else {
+    cumsum(column_widths + c(rep(gap, length(column_widths) - 1L), 0))
+  }
+
+  table_spec$table_data$column_position <- unname(positions[match(table_spec$table_data$column_key, table_spec$column_keys)])
+  table_spec$positions <- unname(positions)
+  table_spec$header_positions <- unname(positions)
+  table_spec$estimated_column_widths <- unname(column_widths)
+  table_spec$estimated_width <- sum(column_widths) + gap * max(length(column_widths) - 1L, 0) + 0.15
+  table_spec
+}
+
+default_split_table_width <- function(table_spec, text_size = 3.2, alignment = c("left", "center", "right")) {
+  if (!is.null(table_spec$estimated_width)) {
+    return(table_spec$estimated_width)
+  }
+
+  alignment <- match.arg(alignment)
+  column_widths <- estimate_split_column_widths(table_spec, text_size = text_size, alignment = alignment)
+  sum(column_widths) + 0.2 * max(length(column_widths) - 1L, 0) + 0.15
+}
+
+default_split_plot_width <- function(left_width, right_width) {
+  max(2.1, min(3.0, 0.5 * mean(c(left_width, right_width))))
+}
+
+layout_center_table_spec <- function(table_spec, text_size = 3.2) {
+  column_widths <- estimate_split_column_widths(table_spec, text_size = text_size, alignment = "center")
+  gap <- 0.55
+  left_edges <- cumsum(c(0, utils::head(column_widths + gap, -1)))
+  positions <- left_edges + column_widths / 2
+
+  table_spec$table_data$column_position <- unname(positions[match(table_spec$table_data$column_key, table_spec$column_keys)])
+  table_spec$positions <- unname(positions)
+  table_spec$header_positions <- unname(positions)
+  table_spec$estimated_column_widths <- unname(column_widths)
+  table_spec$estimated_width <- sum(column_widths) + gap * max(length(column_widths) - 1L, 0) + 0.35
+  table_spec
+}
+
+default_center_table_width <- function(table_spec, text_size = 3.2) {
+  if (!is.null(table_spec$estimated_width)) {
+    return(table_spec$estimated_width)
+  }
+
+  column_widths <- estimate_split_column_widths(table_spec, text_size = text_size, alignment = "center")
+  sum(column_widths) + 0.55 * max(length(column_widths) - 1L, 0) + 0.35
+}
+
+default_center_table_limits <- function(table_spec, pad = 0.12) {
+  widths <- table_spec$estimated_column_widths
+  positions <- table_spec$positions
+  c(min(positions - widths / 2) - pad, max(positions + widths / 2) + pad)
+}
+
+default_split_table_limits <- function(table_spec, alignment = c("left", "right"), pad = 0.06) {
+  alignment <- match.arg(alignment)
+  widths <- table_spec$estimated_column_widths
+  positions <- table_spec$positions
+
+  if (alignment == "left") {
+    xmin <- min(positions) - pad
+    xmax <- max(positions + widths) + pad
+  } else {
+    xmin <- min(positions - widths) - pad
+    xmax <- max(positions) + pad
+  }
+
+  c(xmin, xmax)
+}
+
+default_split_plot_limits <- function(forest_data, exponentiate = FALSE, include_zero = TRUE) {
+  xmin <- min(forest_data$conf.low, na.rm = TRUE)
+  xmax <- max(forest_data$conf.high, na.rm = TRUE)
+
+  if (isTRUE(include_zero)) {
+    null_value <- if (isTRUE(exponentiate)) 1 else 0
+    xmin <- min(xmin, null_value)
+    xmax <- max(xmax, null_value)
+  }
+
+  if (isTRUE(exponentiate)) {
+    pad_mult <- 1.08
+    c(xmin / pad_mult, xmax * pad_mult)
+  } else {
+    span <- xmax - xmin
+    pad <- if (is.finite(span) && span > 0) span * 0.08 else max(abs(xmax), 1) * 0.08
+    c(xmin - pad, xmax + pad)
+  }
+}
+
 build_forest_table_plot <- function(table_spec,
                                     stripe_data,
                                     has_groupings = FALSE,
@@ -391,7 +612,12 @@ build_forest_table_plot <- function(table_spec,
                                     grid_lines = FALSE,
                                     grid_line_colour = "black",
                                     grid_line_size = 0.3,
-                                    grid_line_linetype = 1) {
+                                    grid_line_linetype = 1,
+                                    x_expand = c(0.55, 1.7),
+                                    x_limits = NULL,
+                                    plot_margin = NULL,
+                                    text_hjust = 0.5,
+                                    header_hjust = 0.5) {
   grouping_strip_position <- match.arg(grouping_strip_position)
   table_position <- match.arg(table_position)
 
@@ -439,14 +665,7 @@ build_forest_table_plot <- function(table_spec,
 
   p <- p +
     ggplot2::geom_text(
-      data = table_spec$table_data[table_spec$table_data$column_key == "term_text", , drop = FALSE],
-      hjust = 0.5,
-      size = text_size,
-      lineheight = 0.95
-    ) +
-    ggplot2::geom_text(
-      data = table_spec$table_data[table_spec$table_data$column_key != "term_text", , drop = FALSE],
-      hjust = 0.5,
+      hjust = text_hjust,
       size = text_size,
       lineheight = 0.95
     ) +
@@ -454,7 +673,8 @@ build_forest_table_plot <- function(table_spec,
       breaks = table_spec$header_positions,
       labels = table_spec$headers,
       position = "top",
-      expand = ggplot2::expansion(add = c(0.55, 1.7))
+      expand = ggplot2::expansion(add = x_expand),
+      limits = x_limits
     ) +
     ggplot2::scale_y_discrete(
       labels = function(x) rep("", length(x)),
@@ -465,7 +685,12 @@ build_forest_table_plot <- function(table_spec,
       axis.title = ggplot2::element_blank(),
       axis.text.y = ggplot2::element_blank(),
       axis.text.x.bottom = ggplot2::element_blank(),
-      axis.text.x.top = ggplot2::element_text(face = "bold", colour = "black", hjust = 0.5, margin = ggplot2::margin(b = 0)),
+      axis.text.x.top = ggplot2::element_text(
+        face = "bold",
+        colour = "black",
+        hjust = header_hjust,
+        margin = ggplot2::margin(b = 0)
+      ),
       axis.ticks = ggplot2::element_blank(),
       panel.grid.major.y = ggplot2::element_blank(),
       panel.grid.major.x = ggplot2::element_blank(),
@@ -475,10 +700,14 @@ build_forest_table_plot <- function(table_spec,
       strip.text.y.left = ggplot2::element_blank(),
       strip.text.y.right = ggplot2::element_blank(),
       strip.placement = "outside",
-      plot.margin = if (table_position == "left") {
-        ggplot2::margin(5.5, 4, 5.5, 5.5)
+      plot.margin = if (is.null(plot_margin)) {
+        if (table_position == "left") {
+          ggplot2::margin(5.5, 4, 5.5, 5.5)
+        } else {
+          ggplot2::margin(5.5, 5.5, 5.5, 4)
+        }
       } else {
-        ggplot2::margin(5.5, 5.5, 5.5, 4)
+        plot_margin
       }
     )
 
@@ -494,9 +723,9 @@ build_forest_table_plot <- function(table_spec,
   p
 }
 
-combine_forest_plot_and_table <- function(plot, table_plot, table_position = c("left", "right")) {
+combine_forest_plot_and_table <- function(plot, table_plot, table_position = c("left", "right"), table_width = 2.2, plot_width = 2.4) {
   table_position <- match.arg(table_position)
-  widths <- c(2.2, 2.4)
+  widths <- c(table_width, plot_width)
 
   if (table_position == "left") {
     patchwork::wrap_plots(table_plot, plot, nrow = 1, widths = widths)

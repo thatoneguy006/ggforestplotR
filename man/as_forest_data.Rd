@@ -27,15 +27,31 @@ as_forest_data(
   \item{label}{Optional column name used for the displayed row label.}
   \item{group}{Optional column name used for color-grouping multiple estimates per row.}
   \item{grouping}{Optional column name used to split rows into grouped plot sections.}
-  \item{separator_group}{Optional column name used to identify contiguous multi-row blocks that can be outlined with separator lines.}
-  \item{n}{Optional column name holding sample sizes or other N labels for attached tables.}
+  \item{separator_group}{Optional column name used to identify labeled variable blocks that can be outlined with separator lines.}
+  \item{n}{Optional column name holding sample sizes or other N labels for table helpers.}
   \item{p.value}{Optional column name holding p-values.}
   \item{exponentiate}{Logical; if TRUE, require positive values for estimates and intervals.}
   \item{sort_terms}{How to sort rows: "none", "descending", or "ascending".}
 }
 \value{
-A standardized data frame with columns ready for \code{ggforestplot()}. The returned structure includes \code{separator_group} metadata when supplied.
+A standardized data frame ready for \code{ggforestplot()} and the table composition helpers.
 }
 \description{
-Standardizes a coefficient table into the internal forest-plot data structure.
+Standardizes a coefficient table into the internal forest-plot data structure used throughout \code{ggforestplotR}.
+}
+\examples{
+raw <- data.frame(
+  variable = c("Age", "BMI", "Treatment"),
+  beta = c(0.10, -0.08, 0.34),
+  lower = c(0.02, -0.16, 0.12),
+  upper = c(0.18, 0.00, 0.56)
+)
+
+as_forest_data(
+  data = raw,
+  term = "variable",
+  estimate = "beta",
+  conf.low = "lower",
+  conf.high = "upper"
+)
 }

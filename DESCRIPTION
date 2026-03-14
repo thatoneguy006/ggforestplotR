@@ -1,20 +1,16 @@
 Package: ggforestplotR
 Title: Build Forest Plots from Model Coefficients with ggplot2
 Version: 0.0.0.9000
-Authors@R: 
-    person(given = "ggforestplotR",
-           family = "Authors",
+Authors@R:
+    person(given = "Carson",
+           family = "Richardson",
            role = c("aut", "cre"),
-           email = "dev@example.com")
-Author: ggforestplotR Authors [aut, cre]
-Maintainer: ggforestplotR Authors <dev@example.com>
+           email = "carson.richardson@outlook.com")
 Description: Tools for turning model coefficients into flexible forest
     plots using ggplot2. The package provides helpers to standardize
     coefficient data from a range of modelling workflows and render
     publication-ready coefficient plots with a consistent interface.
 License: MIT + file LICENSE
-URL: https://thatoneguy006.github.io/ggforestplotR/, https://github.com/thatoneguy006/ggforestplotR
-BugReports: https://github.com/thatoneguy006/ggforestplotR/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
@@ -31,3 +27,5 @@ Suggests:
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/Needs/website: pkgdown
+URL: https://thatoneguy006.github.io/ggforestplotR/, https://github.com/thatoneguy006/ggforestplotR
+BugReports: https://github.com/thatoneguy006/ggforestplotR/issues

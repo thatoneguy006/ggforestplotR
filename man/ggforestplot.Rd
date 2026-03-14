@@ -55,5 +55,18 @@ ggforestplot(
   \item{zero_line_linetype}{Line type for the null reference line.}
   \item{zero_line_colour}{Color for the null reference line.}
 }
-\value{A \code{ggplot} object. Use standard \code{ggplot2} functions such as \code{labs()} for plot labels, and \code{add_forest_table()} to compose a side table after styling the plot.}
-\description{Builds a forest plot from standardized coefficient data or directly from a fitted model, with optional grouped sections, striped rows, separator lines for labeled variable blocks, and point-shape and staple controls.}
+\value{A \code{ggplot} object. Use standard \code{ggplot2} functions such as \code{labs()} for plot labels, and add composition helpers after styling the main plot.}
+\description{Builds a forest plot from standardized coefficient data or directly from a fitted model, with optional grouped sections, striped rows, separator lines for labeled variable blocks, and controls for point shape and confidence-interval staples.}
+\examples{
+coefs <- data.frame(
+  term = c("Age", "BMI", "Treatment"),
+  estimate = c(0.10, -0.08, 0.34),
+  conf.low = c(0.02, -0.16, 0.12),
+  conf.high = c(0.18, 0.00, 0.56)
+)
+
+ggforestplot(coefs)
+
+ggforestplot(coefs, striped_rows = TRUE, point_shape = 17) +
+  ggplot2::labs(title = "Basic forest plot")
+}
