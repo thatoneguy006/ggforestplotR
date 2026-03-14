@@ -2,8 +2,7 @@
 title: "Prepare Forest Data with Helper Functions"
 output:
   rmarkdown::html_vignette:
-    highlight: null
-    pandoc_args: ["--syntax-highlighting=pygments"]
+    highlight: pygments
 vignette: >
   %\VignetteIndexEntry{Prepare Forest Data with Helper Functions}
   %\VignetteEngine{knitr::rmarkdown}
