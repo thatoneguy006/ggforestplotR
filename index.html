@@ -94,27 +94,24 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://thatoneguy006.github.io/ggforestplotR/">ggforestplotR</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  term <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Age"</span>, <span class="st">"BMI"</span>, <span class="st">"Stage II"</span>, <span class="st">"Stage III"</span><span class="op">)</span>,</span>
-<span>  estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.10</span>, <span class="op">-</span><span class="fl">0.08</span>, <span class="fl">0.34</span>, <span class="fl">0.52</span><span class="op">)</span>,</span>
-<span>  conf.low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="op">-</span><span class="fl">0.16</span>, <span class="fl">0.12</span>, <span class="fl">0.20</span><span class="op">)</span>,</span>
-<span>  conf.high <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.18</span>, <span class="fl">0.00</span>, <span class="fl">0.56</span>, <span class="fl">0.84</span><span class="op">)</span>,</span>
-<span>  section <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Clinical"</span>, <span class="st">"Clinical"</span>, <span class="st">"Tumor"</span>, <span class="st">"Tumor"</span><span class="op">)</span>,</span>
-<span>  sample_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">115</span>, <span class="fl">87</span>, <span class="fl">83</span><span class="op">)</span></span>
+<span><span class="va">sectioned_coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  term <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Age"</span>, <span class="st">"BMI"</span>, <span class="st">"Smoking"</span>, <span class="st">"Stage II"</span>, <span class="st">"Stage III"</span>, <span class="st">"Nodes"</span><span class="op">)</span>,</span>
+<span>  estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.10</span>, <span class="op">-</span><span class="fl">0.08</span>, <span class="fl">0.20</span>, <span class="fl">0.34</span>, <span class="fl">0.52</span>, <span class="fl">0.28</span><span class="op">)</span>,</span>
+<span>  conf.low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="op">-</span><span class="fl">0.16</span>, <span class="fl">0.05</span>, <span class="fl">0.12</span>, <span class="fl">0.20</span>, <span class="fl">0.06</span><span class="op">)</span>,</span>
+<span>  conf.high <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.18</span>, <span class="fl">0.00</span>, <span class="fl">0.35</span>, <span class="fl">0.56</span>, <span class="fl">0.84</span>, <span class="fl">0.50</span><span class="op">)</span>,</span>
+<span>  section <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Clinical"</span>, <span class="st">"Clinical"</span>, <span class="st">"Clinical"</span>, <span class="st">"Tumor"</span>, <span class="st">"Tumor"</span>, <span class="st">"Tumor"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span></span>
-<span>  <span class="va">coefs</span>,</span>
+<span>  <span class="va">sectioned_coefs</span>,</span>
 <span>  grouping <span class="op">=</span> <span class="st">"section"</span>,</span>
-<span>  n <span class="op">=</span> <span class="st">"sample_size"</span>,</span>
-<span>  striped_rows <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  striped_rows <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  stripe_fill <span class="op">=</span> <span class="st">"grey94"</span></span>
 <span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Grouped forest plot"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span></span>
-<span>    position <span class="op">=</span> <span class="st">"left"</span>,</span>
-<span>    show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    estimate_label <span class="op">=</span> <span class="st">"Beta"</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Grouped forest plot with striped rows"</span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="reference/figures/README-forestplot-example.png" alt="Example grouped forest plot"><div class="figcaption">Example grouped forest plot</div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="learn-more">Learn more<a class="anchor" aria-label="anchor" href="#learn-more"></a>
