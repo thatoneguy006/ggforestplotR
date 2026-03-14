@@ -3,14 +3,20 @@
                                   show_terms = TRUE,
                                   show_n = NULL,
                                   show_estimate = TRUE,
+                                  show_p = FALSE,
                                   term_header = "Term",
                                   n_header = "N",
                                   estimate_label = "Estimate",
+                                  p_header = "P-value",
                                   digits = NULL,
                                   text_size = NULL,
                                   striped_rows = NULL,
                                   stripe_fill = NULL,
-                                  stripe_colour = NULL) {
+                                  stripe_colour = NULL,
+                                  grid_lines = FALSE,
+                                  grid_line_colour = "black",
+                                  grid_line_size = 0.3,
+                                  grid_line_linetype = 1) {
   position <- match.arg(position)
 
   if (!inherits(plot, "ggplot")) {
@@ -24,15 +30,15 @@
   }
 
   if (is.null(show_n)) {
-    show_n <- isTRUE(state$defaults$show_n)
+    show_n <- any(!is.na(state$forest_data$n) & nzchar(state$forest_data$n))
   }
 
   if (is.null(digits)) {
-    digits <- state$defaults$digits
+    digits <- 2
   }
 
   if (is.null(text_size)) {
-    text_size <- state$defaults$text_size
+    text_size <- 3.2
   }
 
   if (is.null(striped_rows)) {
@@ -51,6 +57,10 @@
     stop("`show_n = TRUE` requires an `n` column in the underlying forest data.", call. = FALSE)
   }
 
+  if (isTRUE(show_p) && all(is.na(state$forest_data$p.value))) {
+    stop("`show_p = TRUE` requires a `p.value` column in the underlying forest data.", call. = FALSE)
+  }
+
   plot_out <- plot
 
   if (isTRUE(show_terms)) {
@@ -65,9 +75,11 @@
     show_terms = show_terms,
     show_n = show_n,
     show_estimate = show_estimate,
+    show_p = show_p,
     term_header = term_header,
     n_header = n_header,
     estimate_label = estimate_label,
+    p_header = p_header,
     digits = digits
   )
 
@@ -75,11 +87,16 @@
     table_spec = table_spec,
     stripe_data = state$stripe_data,
     has_groupings = state$has_groupings,
+    grouping_strip_position = state$grouping_strip_position,
     table_position = position,
     striped_rows = striped_rows,
     stripe_fill = stripe_fill,
     stripe_colour = stripe_colour,
-    text_size = text_size
+    text_size = text_size,
+    grid_lines = grid_lines,
+    grid_line_colour = grid_line_colour,
+    grid_line_size = grid_line_size,
+    grid_line_linetype = grid_line_linetype
   )
 
   combine_forest_plot_and_table(
@@ -97,6 +114,8 @@ ggforestplot <- function(data,
                          label = term,
                          group = NULL,
                          grouping = NULL,
+                         grouping_strip_position = c("left", "right"),
+                         separator_group = NULL,
                          n = NULL,
                          p.value = NULL,
                          exponentiate = FALSE,
@@ -104,28 +123,20 @@ ggforestplot <- function(data,
                          point_size = 2.3,
                          point_shape = 19,
                          line_size = 0.5,
-                         staple_width = 0,
+                         staple_width = 0.2,
                          dodge_width = 0.6,
+                         separator_lines = FALSE,
+                         separator_line_linetype = 2,
+                         separator_line_colour = "black",
+                         separator_line_size = 0.4,
                          striped_rows = FALSE,
                          stripe_fill = "grey95",
                          stripe_colour = NA,
-                         table_position = c("none", "left", "right"),
-                         table_show_terms = TRUE,
-                         table_show_n = !is.null(n),
-                         table_show_estimate = TRUE,
-                         table_term_header = "Term",
-                         table_n_header = "N",
-                         table_estimate_label = "Estimate",
-                         table_digits = 2,
-                         table_text_size = 3.2,
                          zero_line = TRUE,
                          zero_line_linetype = 2,
-                         zero_line_colour = "grey60",
-                         xlab = NULL,
-                         ylab = NULL,
-                         title = NULL) {
+                         zero_line_colour = "grey60") {
   sort_terms <- match.arg(sort_terms)
-  table_position <- match.arg(table_position)
+  grouping_strip_position <- match.arg(grouping_strip_position)
 
   forest_data <- if (is.data.frame(data)) {
     as_forest_data(
@@ -137,6 +148,7 @@ ggforestplot <- function(data,
       label = label,
       group = group,
       grouping = grouping,
+      separator_group = separator_group,
       n = n,
       p.value = p.value,
       exponentiate = exponentiate,
@@ -153,6 +165,7 @@ ggforestplot <- function(data,
   display_data <- build_forest_plot_data(forest_data)
   forest_data <- display_data$plot_data
   stripe_data <- display_data$stripe_data
+  separator_data <- display_data$separator_data
 
   has_groups <- any(!is.na(forest_data$group))
   dodge <- ggplot2::position_dodge(width = dodge_width)
@@ -187,6 +200,17 @@ ggforestplot <- function(data,
       inherit.aes = FALSE,
       fill = stripe_fill,
       colour = stripe_colour
+    )
+  }
+
+  if (isTRUE(separator_lines) && nrow(separator_data) > 0L) {
+    p <- p + ggplot2::geom_hline(
+      data = separator_data,
+      mapping = ggplot2::aes(yintercept = .data$yintercept),
+      inherit.aes = FALSE,
+      linetype = separator_line_linetype,
+      colour = separator_line_colour,
+      linewidth = separator_line_size
     )
   }
 
@@ -231,22 +255,13 @@ ggforestplot <- function(data,
       ggplot2::vars(grouping_panel),
       ncol = 1,
       scales = "free_y",
-      strip.position = "left"
+      strip.position = grouping_strip_position
     )
   }
 
-  if (is.null(xlab)) {
-    xlab <- if (isTRUE(exponentiate)) "Estimate (log scale)" else "Estimate"
-  }
-
-  if (is.null(ylab)) {
-    ylab <- NULL
-  }
-
   p <- p + ggplot2::labs(
-    x = xlab,
-    y = ylab,
-    title = title,
+    x = if (isTRUE(exponentiate)) "Estimate (log scale)" else "Estimate",
+    y = NULL,
     colour = if (has_groups) "Group" else NULL
   )
 
@@ -254,22 +269,13 @@ ggforestplot <- function(data,
     forest_data = forest_data,
     stripe_data = stripe_data,
     has_groupings = display_data$has_groupings,
+    grouping_strip_position = grouping_strip_position,
     defaults = list(
       striped_rows = striped_rows,
       stripe_fill = stripe_fill,
-      stripe_colour = stripe_colour,
-      show_n = table_show_n,
-      digits = table_digits,
-      text_size = table_text_size
+      stripe_colour = stripe_colour
     )
   )
-
-  if (table_position != "none") {
-    warning(
-      "`table_position` in `ggforestplot()` is deprecated; call `add_forest_table()` on the returned plot instead.",
-      call. = FALSE
-    )
-  }
 
   p
 }
@@ -279,14 +285,20 @@ add_forest_table <- function(plot = NULL,
                              show_terms = TRUE,
                              show_n = NULL,
                              show_estimate = TRUE,
+                             show_p = FALSE,
                              term_header = "Term",
                              n_header = "N",
                              estimate_label = "Estimate",
+                             p_header = "P-value",
                              digits = NULL,
                              text_size = NULL,
                              striped_rows = NULL,
                              stripe_fill = NULL,
-                             stripe_colour = NULL) {
+                             stripe_colour = NULL,
+                             grid_lines = FALSE,
+                             grid_line_colour = "black",
+                             grid_line_size = 0.3,
+                             grid_line_linetype = 1) {
   position <- match.arg(position)
 
   if (is.null(plot)) {
@@ -296,14 +308,20 @@ add_forest_table <- function(plot = NULL,
         show_terms = show_terms,
         show_n = show_n,
         show_estimate = show_estimate,
+        show_p = show_p,
         term_header = term_header,
         n_header = n_header,
         estimate_label = estimate_label,
+        p_header = p_header,
         digits = digits,
         text_size = text_size,
         striped_rows = striped_rows,
         stripe_fill = stripe_fill,
-        stripe_colour = stripe_colour
+        stripe_colour = stripe_colour,
+        grid_lines = grid_lines,
+        grid_line_colour = grid_line_colour,
+        grid_line_size = grid_line_size,
+        grid_line_linetype = grid_line_linetype
       ),
       class = "ggforestplot_table_adder"
     ))
@@ -315,14 +333,20 @@ add_forest_table <- function(plot = NULL,
     show_terms = show_terms,
     show_n = show_n,
     show_estimate = show_estimate,
+    show_p = show_p,
     term_header = term_header,
     n_header = n_header,
     estimate_label = estimate_label,
+    p_header = p_header,
     digits = digits,
     text_size = text_size,
     striped_rows = striped_rows,
     stripe_fill = stripe_fill,
-    stripe_colour = stripe_colour
+    stripe_colour = stripe_colour,
+    grid_lines = grid_lines,
+    grid_line_colour = grid_line_colour,
+    grid_line_size = grid_line_size,
+    grid_line_linetype = grid_line_linetype
   )
 }
 

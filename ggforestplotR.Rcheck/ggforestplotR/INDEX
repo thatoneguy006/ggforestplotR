@@ -1,4 +1,0 @@
-add_forest_table        Add a Side Table to a Forest Plot
-as_forest_data          Standardize coefficient data for forest plots
-ggforestplot            Draw a ggplot2 forest plot
-tidy_forest_model       Tidy a model object for forest plotting

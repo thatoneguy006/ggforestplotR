@@ -6,6 +6,7 @@ test_that("as_forest_data standardizes coefficient columns", {
     upper = c(0.5, 0.0),
     cohort = c("A", "A"),
     section = c("Clinical", "Clinical"),
+    block = c("Anthropometrics", "Anthropometrics"),
     sample_size = c(120, 120)
   )
 
@@ -17,16 +18,18 @@ test_that("as_forest_data standardizes coefficient columns", {
     conf.high = "upper",
     group = "cohort",
     grouping = "section",
+    separator_group = "block",
     n = "sample_size"
   )
 
   expect_equal(
     names(out),
-    c("term", "estimate", "conf.low", "conf.high", "label", "group", "grouping", "n", "p.value")
+    c("term", "estimate", "conf.low", "conf.high", "label", "group", "grouping", "separator_group", "n", "p.value")
   )
   expect_equal(as.character(out$term), c("Age", "BMI"))
   expect_equal(as.character(out$group), c("A", "A"))
   expect_equal(as.character(out$grouping), c("Clinical", "Clinical"))
+  expect_equal(as.character(out$separator_group), c("Anthropometrics", "Anthropometrics"))
   expect_equal(as.character(out$n), c("120", "120"))
 })
 

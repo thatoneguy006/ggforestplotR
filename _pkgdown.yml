@@ -1,0 +1,75 @@
+url: https://thatoneguy006.github.io/ggforestplotR/
+
+development:
+  mode: auto
+
+repo:
+  url:
+    home: https://github.com/thatoneguy006/ggforestplotR/
+    source: https://github.com/thatoneguy006/ggforestplotR/blob/HEAD/
+    issue: https://github.com/thatoneguy006/ggforestplotR/issues/
+    user: https://github.com/
+
+template:
+  bootstrap: 5
+  light-switch: true
+  bslib:
+    font-size: 0.9rem
+    border-radius: 0.5rem
+    btn-border-radius: 0.25rem
+
+home:
+  title: ggforestplotR
+  description: Build coefficient-based forest plots with a ggplot2-first workflow.
+  sidebar:
+    html: pkgdown/home-sidebar.html
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, lightswitch, github]
+  components:
+    intro:
+      text: Get Started
+      href: articles/ggforestplotR-intro.html
+    articles:
+      text: Articles
+      menu:
+        - text: Getting Started
+          href: articles/ggforestplotR-intro.html
+    news:
+      text: Changelog
+      href: news/index.html
+    github:
+      icon: fab fa-github fa-lg
+      href: https://github.com/thatoneguy006/ggforestplotR
+      aria-label: GitHub
+
+articles:
+  - title: Get Started
+    navbar: ~
+    contents:
+      - ggforestplotR-intro
+
+reference:
+  - title: Plot Construction
+    desc: Main plotting functions for forest plot creation and composition.
+    contents:
+      - ggforestplot
+      - add_forest_table
+  - title: Data Preparation
+    desc: Helpers for standardizing coefficient data and tidying model outputs.
+    contents:
+      - as_forest_data
+      - tidy_forest_model
+
+footer:
+  structure:
+    left: developed_by
+    right: built_with
+
+authors:
+  ggforestplotR Authors:
+    href: https://github.com/thatoneguy006
+  sidebar:
+    roles: [aut, cre]

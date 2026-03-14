@@ -42,6 +42,11 @@ ggforestplot(
   )
 ```
 
+## Documentation
+
+- Package vignette: `vignettes/ggforestplotR-intro.Rmd`
+- GitHub Pages site: generated with `pkgdown`
+
 ## Next steps
 
 Planned work includes richer theming, grouped multi-model comparisons, and
