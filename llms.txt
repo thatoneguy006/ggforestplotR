@@ -43,19 +43,15 @@ ggforestplot(
   ggplot2::labs(title = "Grouped forest plot with striped rows")
 ```
 
-![Example grouped forest
-plot](reference/figures/README-forestplot-example.png)
-
-Example grouped forest plot
+![](reference/figures/README-forestplot-example.png)
 
 ## Learn more
 
-- Package site: <https://thatoneguy006.github.io/ggforestplotR/>
-- Get started article:
+- Get started:
   <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-get-started.html>
-- Plot customization article:
+- Plot & Table customization:
   <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-plot-customization.html>
-- Data helpers article:
+- Data helpers:
   <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-data-helpers.html>
 
 ## Main functions
@@ -65,7 +61,8 @@ Example grouped forest plot
 - [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_forest_table.md)
   attaches a summary table to the left or right side of the plot.
 - [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_split_table.md)
-  places table columns on both sides of the forest plot.
+  creates a more traditional forestplot with tables on both sides of the
+  plot.
 - [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
   standardizes custom coefficient data.
 - [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
