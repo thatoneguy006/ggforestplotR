@@ -5,7 +5,7 @@
 - [Get Started with
   ggforestplotR](https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-get-started.md):
 
-### Plot Customization
+### Plot & Table Customization
 
 - [Customize Forest Plots and
   Tables](https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-plot-customization.md):

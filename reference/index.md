@@ -1,6 +1,6 @@
 # Package index
 
-## Plot Construction
+## Plot & Table Construction
 
 Main plotting functions for forest plot creation and composition.
 
