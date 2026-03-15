@@ -54,7 +54,7 @@ articles:
     navbar: ~
     contents:
       - ggforestplotR-get-started
-  - title: Plot Customization
+  - title: Plot & Table Customization
     navbar: Articles
     contents:
       - ggforestplotR-plot-customization
@@ -64,7 +64,7 @@ articles:
       - ggforestplotR-data-helpers
 
 reference:
-  - title: Plot Construction
+  - title: Plot & Table Construction
     desc: Main plotting functions for forest plot creation and composition.
     contents:
       - ggforestplot
