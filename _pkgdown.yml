@@ -37,7 +37,7 @@ navbar:
       menu:
         - text: Get Started
           href: articles/ggforestplotR-get-started.html
-        - text: Plot Customization
+        - text: Plot & Table Customization
           href: articles/ggforestplotR-plot-customization.html
         - text: Data Helpers
           href: articles/ggforestplotR-data-helpers.html
