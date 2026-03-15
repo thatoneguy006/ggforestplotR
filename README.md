@@ -43,19 +43,18 @@ ggforestplot(
   ggplot2::labs(title = "Grouped forest plot with striped rows")
 ```
 
-![Example grouped forest plot](man/figures/README-forestplot-example.png)
+![](man/figures/README-forestplot-example.png)
 
 ## Learn more
 
-- Package site: <https://thatoneguy006.github.io/ggforestplotR/>
-- Get started article: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-get-started.html>
-- Plot customization article: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-plot-customization.html>
-- Data helpers article: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-data-helpers.html>
+- Get started: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-get-started.html>
+- Plot & Table customization: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-plot-customization.html>
+- Data helpers: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-data-helpers.html>
 
 ## Main functions
 
 - `ggforestplot()` builds the plotting panel from a data frame or supported model object.
 - `add_forest_table()` attaches a summary table to the left or right side of the plot.
-- `add_split_table()` places table columns on both sides of the forest plot.
+- `add_split_table()` creates a more traditional forestplot with tables on both sides of the plot.
 - `as_forest_data()` standardizes custom coefficient data.
 - `tidy_forest_model()` converts fitted models into plotting-ready coefficient data.
