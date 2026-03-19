@@ -482,8 +482,13 @@ measure_table_text_widths <- function(table_spec, text_size = 3.2) {
     column_key <- table_spec$column_keys[[i]]
     column_values <- table_spec$table_data$text[table_spec$table_data$column_key == column_key]
     max_chars <- string_display_width(c(table_spec$headers[[i]], column_values))
+    scale <- char_scale[[column_key]]
 
-    max(max_chars, 1) * unname(char_scale[[column_key]]) * (text_size / 3.2)
+    if (is.null(scale)) {
+      scale <- 0.05
+    }
+
+    max(max_chars, 1) * unname(scale) * (text_size / 3.2)
   }, numeric(1)), table_spec$column_keys)
 }
 
@@ -512,9 +517,19 @@ estimate_split_column_widths <- function(table_spec, text_size = 3.2, alignment 
     column_key <- table_spec$column_keys[[i]]
     column_values <- table_spec$table_data$text[table_spec$table_data$column_key == column_key]
     max_chars <- string_display_width(c(table_spec$headers[[i]], column_values))
+    scale <- char_scale[[column_key]]
+    base_pad <- base_padding[[column_key]]
 
-    unname(base_padding[[column_key]]) + alignment_padding +
-      max(max_chars, 1) * unname(char_scale[[column_key]]) * (text_size / 3.2)
+    if (is.null(scale)) {
+      scale <- 0.05
+    }
+
+    if (is.null(base_pad)) {
+      base_pad <- 0.35
+    }
+
+    unname(base_pad) + alignment_padding +
+      max(max_chars, 1) * unname(scale) * (text_size / 3.2)
   }, numeric(1)), table_spec$column_keys)
 }
 
@@ -523,10 +538,11 @@ layout_split_table_spec <- function(table_spec, text_size = 3.2, alignment = c("
   column_widths <- estimate_split_column_widths(table_spec, text_size = text_size, alignment = alignment)
   text_widths <- measure_table_text_widths(table_spec, text_size = text_size)
   gap <- 0.2
+  left_inset <- if (alignment == "left") 0.02 else 0
 
   positions <- if (alignment == "left") {
     starts <- c(0, utils::head(cumsum(column_widths + gap), -1))
-    starts + 0.02
+    starts + left_inset
   } else {
     cumsum(column_widths + c(rep(gap, length(column_widths) - 1L), 0))
   }
@@ -536,7 +552,9 @@ layout_split_table_spec <- function(table_spec, text_size = 3.2, alignment = c("
   table_spec$header_positions <- unname(positions)
   table_spec$estimated_column_widths <- unname(column_widths)
   table_spec$displayed_column_widths <- unname(text_widths)
-  table_spec$estimated_width <- sum(column_widths) + gap * max(length(column_widths) - 1L, 0) + 0.15
+  table_spec$estimated_width <- sum(column_widths) +
+    gap * max(length(column_widths) - 1L, 0) +
+    left_inset + 0.15
   table_spec
 }
 
@@ -556,6 +574,7 @@ default_split_plot_width <- function(left_width, right_width) {
 
 layout_center_table_spec <- function(table_spec, text_size = 3.2) {
   column_widths <- estimate_split_column_widths(table_spec, text_size = text_size, alignment = "center")
+  text_widths <- measure_table_text_widths(table_spec, text_size = text_size)
   gap <- 0.55
   left_edges <- cumsum(c(0, utils::head(column_widths + gap, -1)))
   positions <- left_edges + column_widths / 2
@@ -564,6 +583,7 @@ layout_center_table_spec <- function(table_spec, text_size = 3.2) {
   table_spec$positions <- unname(positions)
   table_spec$header_positions <- unname(positions)
   table_spec$estimated_column_widths <- unname(column_widths)
+  table_spec$displayed_column_widths <- unname(text_widths)
   table_spec$estimated_width <- sum(column_widths) + gap * max(length(column_widths) - 1L, 0) + 0.35
   table_spec
 }
@@ -588,11 +608,7 @@ default_split_table_limits <- function(table_spec,
                                        inner_pad = 0.03,
                                        outer_pad = 0.08) {
   alignment <- match.arg(alignment)
-  widths <- if (!is.null(table_spec$displayed_column_widths)) {
-    table_spec$displayed_column_widths
-  } else {
-    table_spec$estimated_column_widths
-  }
+  widths <- table_spec$estimated_column_widths
   positions <- table_spec$positions
 
   if (alignment == "left") {
