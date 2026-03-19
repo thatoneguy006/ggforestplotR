@@ -140,6 +140,27 @@ test_that("ggforestplot enforces positive values for exponentiated plots", {
   expect_s3_class(ggforestplot(raw, exponentiate = TRUE), "ggplot")
 })
 
+test_that("ggforestplot can draw striped rows on exponentiated plots", {
+  raw <- data.frame(
+    term = c("Treatment", "Biomarker"),
+    estimate = c(1.2, 0.8),
+    conf.low = c(0.9, 0.6),
+    conf.high = c(1.6, 1.1)
+  )
+
+  expect_no_warning({
+    built <- ggplot2::ggplot_build(
+      ggforestplot(raw, exponentiate = TRUE, striped_rows = TRUE)
+    )
+  })
+
+  stripe_layers <- Filter(function(x) all(c("xmin", "xmax", "ymin", "ymax") %in% names(x)), built$data)
+
+  expect_true(length(stripe_layers) >= 1L)
+  expect_true(all(is.finite(stripe_layers[[1]]$xmin)))
+  expect_true(all(is.finite(stripe_layers[[1]]$xmax)))
+})
+
 test_that("ggforestplot allows grouping strip labels on the right", {
   raw <- data.frame(
     term = c("Age", "BMI", "Stage II", "Stage III"),

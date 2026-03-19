@@ -433,6 +433,15 @@ ggforestplot <- function(data,
   forest_data <- display_data$plot_data
   stripe_data <- display_data$stripe_data
   separator_data <- display_data$separator_data
+  plot_stripe_data <- stripe_data
+  plot_x_limits <- default_split_plot_limits(
+    forest_data,
+    exponentiate = exponentiate,
+    include_zero = zero_line
+  )
+
+  plot_stripe_data$xmin <- plot_x_limits[1]
+  plot_stripe_data$xmax <- plot_x_limits[2]
 
   has_groups <- any(!is.na(forest_data$group) & nzchar(forest_data$group))
   dodge <- ggplot2::position_dodge(width = dodge_width)
@@ -457,7 +466,7 @@ ggforestplot <- function(data,
 
   if (isTRUE(striped_rows)) {
     p <- p + ggplot2::geom_rect(
-      data = stripe_data[stripe_data$fill_key == "stripe", , drop = FALSE],
+      data = plot_stripe_data[plot_stripe_data$fill_key == "stripe", , drop = FALSE],
       mapping = ggplot2::aes(
         xmin = .data$xmin,
         xmax = .data$xmax,
