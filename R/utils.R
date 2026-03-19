@@ -583,7 +583,10 @@ default_center_table_limits <- function(table_spec, pad = 0.12) {
   c(min(positions - widths / 2) - pad, max(positions + widths / 2) + pad)
 }
 
-default_split_table_limits <- function(table_spec, alignment = c("left", "right"), pad = 0.06) {
+default_split_table_limits <- function(table_spec,
+                                       alignment = c("left", "right"),
+                                       inner_pad = 0.03,
+                                       outer_pad = 0.08) {
   alignment <- match.arg(alignment)
   widths <- if (!is.null(table_spec$displayed_column_widths)) {
     table_spec$displayed_column_widths
@@ -593,11 +596,11 @@ default_split_table_limits <- function(table_spec, alignment = c("left", "right"
   positions <- table_spec$positions
 
   if (alignment == "left") {
-    xmin <- min(positions) - pad
-    xmax <- max(positions + widths) + pad
+    xmin <- min(positions) - outer_pad
+    xmax <- max(positions + widths) + inner_pad
   } else {
-    xmin <- min(positions - widths) - pad
-    xmax <- max(positions) + pad
+    xmin <- min(positions - widths) - inner_pad
+    xmax <- max(positions) + outer_pad
   }
 
   c(xmin, xmax)
