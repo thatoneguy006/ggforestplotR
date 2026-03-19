@@ -434,7 +434,7 @@ ggforestplot <- function(data,
   stripe_data <- display_data$stripe_data
   separator_data <- display_data$separator_data
   plot_stripe_data <- stripe_data
-  plot_x_limits <- default_split_plot_limits(
+  plot_x_limits <- default_plot_background_limits(
     forest_data,
     exponentiate = exponentiate,
     include_zero = zero_line
