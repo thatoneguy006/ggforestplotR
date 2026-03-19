@@ -12,13 +12,13 @@ install.packages("remotes")
 remotes::install_github("thatoneguy006/ggforestplotR")
 ```
 
-## Core workflows
+## Supported workflows
 
-The package currently supports three common workflows:
+`ggforestplotR` currently supports three core workflows:
 
-- Build a forest plot directly from a coefficient table
-- Start from a fitted model and tidy it for plotting with `broom`
-- Add side tables or split-table layouts for reporting-ready output
+- Plot directly from a coefficient table when you already have estimates and confidence intervals.
+- Start from a fitted model object and tidy it through `broom` before plotting.
+- Compose reporting-oriented side tables or split-table layouts around the forest plot.
 
 ## Quick example
 
@@ -55,6 +55,6 @@ ggforestplot(
 
 - `ggforestplot()` builds the plotting panel from a data frame or supported model object.
 - `add_forest_table()` attaches a summary table to the left or right side of the plot.
-- `add_split_table()` creates a more traditional forestplot with tables on both sides of the plot.
+- `add_split_table()` creates a more traditional forestplot layout with table columns on both sides of the plot.
 - `as_forest_data()` standardizes custom coefficient data.
 - `tidy_forest_model()` converts fitted models into plotting-ready coefficient data.
