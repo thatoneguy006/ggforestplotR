@@ -616,31 +616,7 @@ default_split_plot_limits <- function(forest_data, exponentiate = FALSE, include
   } else {
     span <- xmax - xmin
     pad <- if (is.finite(span) && span > 0) span * 0.08 else max(abs(xmax), 1) * 0.08
-    c(xmin - pad, xmax + pad)
-  }
-}
-
-default_centered_split_plot_limits <- function(forest_data, exponentiate = FALSE, include_zero = TRUE) {
-  null_value <- if (isTRUE(exponentiate)) 1 else 0
-  xmin <- min(forest_data$conf.low, na.rm = TRUE)
-  xmax <- max(forest_data$conf.high, na.rm = TRUE)
-
-  if (isTRUE(exponentiate)) {
-    lower <- if (isTRUE(include_zero)) min(xmin, null_value) else xmin
-    upper <- if (isTRUE(include_zero)) max(xmax, null_value) else xmax
-    max_dist <- max(abs(log10(lower / null_value)), abs(log10(upper / null_value)))
-    pad <- if (is.finite(max_dist) && max_dist > 0) max_dist * 0.08 else 0.08
-    extent <- max_dist + pad
-
-    c(null_value / (10 ^ extent), null_value * (10 ^ extent))
-  } else {
-    lower <- if (isTRUE(include_zero)) min(xmin, null_value) else xmin
-    upper <- if (isTRUE(include_zero)) max(xmax, null_value) else xmax
-    max_dist <- max(abs(lower - null_value), abs(upper - null_value))
-    pad <- if (is.finite(max_dist) && max_dist > 0) max_dist * 0.08 else 0.08
-    extent <- max_dist + pad
-
-    c(null_value - extent, null_value + extent)
+      c(xmin - pad, xmax + pad)
   }
 }
 
