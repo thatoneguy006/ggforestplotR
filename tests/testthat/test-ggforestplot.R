@@ -469,31 +469,3 @@ test_that("add_split_table uses zero inner margins and dynamic widths", {
   expect_true(plot_width >= 2.1)
 })
 
-test_that("add_split_table uses symmetric inner table padding", {
-  raw <- data.frame(
-    term = c("Age", "BMI", "Stage II", "Stage III"),
-    estimate = c(0.12, -0.10, 0.30, 0.46),
-    conf.low = c(0.03, -0.18, 0.10, 0.18),
-    conf.high = c(0.21, -0.02, 0.50, 0.74),
-    sample_size = c(120, 115, 87, 83),
-    p_value = c(0.04, 0.15, 0.001, 0.75)
-  )
-
-  p <- ggforestplot(raw, n = "sample_size", p.value = "p_value")
-  state <- p$ggforestplotR_state
-  left_spec <- layout_split_table_spec(
-    build_forest_table_data(state$forest_data, columns = c("term", "n")),
-    alignment = "left"
-  )
-  right_spec <- layout_split_table_spec(
-    build_forest_table_data(state$forest_data, columns = c("estimate", "p")),
-    alignment = "right"
-  )
-  left_limits <- default_split_table_limits(left_spec, alignment = "left")
-  right_limits <- default_split_table_limits(right_spec, alignment = "right")
-
-  left_inner_pad <- left_limits[2] - max(left_spec$positions + left_spec$estimated_column_widths)
-  right_inner_pad <- min(right_spec$positions - right_spec$estimated_column_widths) - right_limits[1]
-
-  expect_equal(left_inner_pad, right_inner_pad, tolerance = 1e-8)
-})

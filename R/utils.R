@@ -470,6 +470,23 @@ string_display_width <- function(x) {
   max(widths, 0)
 }
 
+measure_table_text_widths <- function(table_spec, text_size = 3.2) {
+  char_scale <- c(
+    term = 0.055,
+    n = 0.03,
+    estimate = 0.05,
+    p = 0.045
+  )
+
+  stats::setNames(vapply(seq_along(table_spec$column_keys), function(i) {
+    column_key <- table_spec$column_keys[[i]]
+    column_values <- table_spec$table_data$text[table_spec$table_data$column_key == column_key]
+    max_chars <- string_display_width(c(table_spec$headers[[i]], column_values))
+
+    max(max_chars, 1) * unname(char_scale[[column_key]]) * (text_size / 3.2)
+  }, numeric(1)), table_spec$column_keys)
+}
+
 estimate_split_column_widths <- function(table_spec, text_size = 3.2, alignment = c("left", "center", "right")) {
   alignment <- match.arg(alignment)
   char_scale <- c(
@@ -504,6 +521,7 @@ estimate_split_column_widths <- function(table_spec, text_size = 3.2, alignment 
 layout_split_table_spec <- function(table_spec, text_size = 3.2, alignment = c("left", "right")) {
   alignment <- match.arg(alignment)
   column_widths <- estimate_split_column_widths(table_spec, text_size = text_size, alignment = alignment)
+  text_widths <- measure_table_text_widths(table_spec, text_size = text_size)
   gap <- 0.2
 
   positions <- if (alignment == "left") {
@@ -517,6 +535,7 @@ layout_split_table_spec <- function(table_spec, text_size = 3.2, alignment = c("
   table_spec$positions <- unname(positions)
   table_spec$header_positions <- unname(positions)
   table_spec$estimated_column_widths <- unname(column_widths)
+  table_spec$displayed_column_widths <- unname(text_widths)
   table_spec$estimated_width <- sum(column_widths) + gap * max(length(column_widths) - 1L, 0) + 0.15
   table_spec
 }
@@ -566,7 +585,11 @@ default_center_table_limits <- function(table_spec, pad = 0.12) {
 
 default_split_table_limits <- function(table_spec, alignment = c("left", "right"), pad = 0.06) {
   alignment <- match.arg(alignment)
-  widths <- table_spec$estimated_column_widths
+  widths <- if (!is.null(table_spec$displayed_column_widths)) {
+    table_spec$displayed_column_widths
+  } else {
+    table_spec$estimated_column_widths
+  }
   positions <- table_spec$positions
 
   if (alignment == "left") {
