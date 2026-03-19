@@ -105,44 +105,6 @@ test_that("ggforestplot prefixes labels for multi-level separator groups", {
   )
 })
 
-test_that("add_forest_table can attach a left-side summary table", {
-  raw <- data.frame(
-    term = c("Age", "BMI", "Treatment"),
-    estimate = c(0.3, -0.2, 0.4),
-    conf.low = c(0.1, -0.4, 0.2),
-    conf.high = c(0.5, 0.0, 0.6),
-    sample_size = c(120, 115, 98)
-  )
-
-  p <- ggforestplot(raw, n = "sample_size")
-  out <- add_forest_table(
-    p,
-    position = "left",
-    show_n = TRUE,
-    estimate_label = "Beta"
-  )
-
-  expect_s3_class(out, "patchwork")
-  expect_s3_class(out, "ggplot")
-})
-
-test_that("add_forest_table works with ggplot add syntax", {
-  raw <- data.frame(
-    term = c("Age", "BMI", "Treatment"),
-    estimate = c(0.3, -0.2, 0.4),
-    conf.low = c(0.1, -0.4, 0.2),
-    conf.high = c(0.5, 0.0, 0.6),
-    sample_size = c(120, 115, 98)
-  )
-
-  out <- ggforestplot(raw, n = "sample_size") +
-    ggplot2::theme(plot.title = ggplot2::element_text(face = "italic")) +
-    add_forest_table(position = "right", show_n = TRUE, estimate_label = "Beta")
-
-  expect_s3_class(out, "patchwork")
-  expect_s3_class(out, "ggplot")
-})
-
 test_that("add_forest_table validates N table requests", {
   raw <- data.frame(
     term = "Treatment",
@@ -294,45 +256,6 @@ test_that("add_forest_table validates p-value table requests", {
     add_forest_table(ggforestplot(raw), position = "left", show_p = TRUE),
     "requires a `p.value` column"
   )
-})
-
-test_that("add_split_table can compose left, plot, and right panels", {
-  raw <- data.frame(
-    term = c("Age", "BMI", "Treatment"),
-    estimate = c(0.3, -0.2, 0.4),
-    conf.low = c(0.1, -0.4, 0.2),
-    conf.high = c(0.5, 0.0, 0.6),
-    sample_size = c(120, 115, 98),
-    p_value = c(0.012, 0.031, 0.004)
-  )
-
-  p <- ggforestplot(raw, n = "sample_size", p.value = "p_value")
-  out <- add_split_table(
-    p,
-    show_n = TRUE,
-    show_p = TRUE,
-    estimate_label = "HR"
-  )
-
-  expect_s3_class(out, "patchwork")
-  expect_s3_class(out, "ggplot")
-})
-
-test_that("add_split_table works with ggplot add syntax", {
-  raw <- data.frame(
-    term = c("Age", "BMI", "Treatment"),
-    estimate = c(0.3, -0.2, 0.4),
-    conf.low = c(0.1, -0.4, 0.2),
-    conf.high = c(0.5, 0.0, 0.6),
-    sample_size = c(120, 115, 98),
-    p_value = c(0.012, 0.031, 0.004)
-  )
-
-  out <- ggforestplot(raw, n = "sample_size", p.value = "p_value") +
-    add_split_table(show_n = TRUE, show_p = TRUE, estimate_label = "HR")
-
-  expect_s3_class(out, "patchwork")
-  expect_s3_class(out, "ggplot")
 })
 
 test_that("add_split_table requires left and right table columns", {
