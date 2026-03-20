@@ -3,10 +3,7 @@
 ## Major changes
 
 - Finalized the table-composition workflow with `add_forest_table()` and `add_split_table()` as post-plot helpers.
-- Added configurable side-table and split-table columns, including `N`, formatted estimates with 95% confidence intervals, and optional p-values.
 - Refined split-table layout logic, including dynamic panel widths from column counts, alignment controls, and cleaner stripe/background handling.
-- Added grouped sections, striped rows, separator lines for labeled blocks, exponentiated forest plot support, point-shape control, and confidence-interval staple-width control.
-- Expanded regression coverage with contract tests for table composition and exponentiated plotting behavior.
 - Converted package documentation to roxygen-generated `NAMESPACE` and `.Rd` files.
 - Reworked package documentation, including pkgdown configuration, README installation guidance, and the vignette set.
 
