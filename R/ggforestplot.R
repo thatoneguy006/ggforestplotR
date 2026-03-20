@@ -281,7 +281,15 @@
     header_hjust = 1
   )
 
-  plot_out <- plot + ggplot2::coord_cartesian(xlim = default_split_plot_limits(state$forest_data, exponentiate = state$defaults$exponentiate, include_zero = state$defaults$zero_line), clip = "off") + ggplot2::theme(
+  plot_out <- plot + ggplot2::coord_cartesian(
+    xlim = default_split_plot_limits(
+      state$forest_data,
+      exponentiate = state$defaults$exponentiate,
+      include_zero = state$defaults$zero_line
+    ),
+    clip = "off",
+    expand = FALSE
+  ) + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank(),
     axis.title.y = ggplot2::element_blank(),

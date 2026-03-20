@@ -366,6 +366,28 @@ test_that("add_split_table removes panel border and keeps x-axis line", {
   expect_s3_class(center_plot$theme$panel.grid.minor, "element_blank")
 })
 
+test_that("add_split_table centers the plot range around the null value without expansion", {
+  raw <- data.frame(
+    term = c("Stage III", "Stage II", "Smoking", "BMI", "Age"),
+    estimate = c(0.46, 0.30, 0.18, -0.10, 0.12),
+    conf.low = c(0.18, 0.10, 0.04, -0.18, 0.03),
+    conf.high = c(0.74, 0.50, 0.32, -0.02, 0.21),
+    sample_size = c(83, 87, 98, 115, 120),
+    p_value = c(0.75, 0.001, 0.29, 0.15, 0.04)
+  )
+
+  out <- add_split_table(
+    ggforestplot(raw, n = "sample_size", p.value = "p_value"),
+    left_columns = c("term", "n"),
+    right_columns = c("estimate", "p")
+  )
+
+  center_plot <- out$patches$plots[[2]]
+  x_range <- ggplot2::ggplot_build(center_plot)$layout$panel_params[[1]]$x.range
+
+  expect_equal(x_range, c(-0.74, 0.74), tolerance = 1e-8)
+})
+
 test_that("add_split_table uses split-specific alignment and no grid lines", {
   raw <- data.frame(
     term = c("Age", "BMI", "Treatment"),

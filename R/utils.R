@@ -660,22 +660,21 @@ default_plot_background_limits <- function(forest_data, exponentiate = FALSE, in
 }
 
 default_split_plot_limits <- function(forest_data, exponentiate = FALSE, include_zero = TRUE) {
+  null_value <- if (isTRUE(exponentiate)) 1 else 0
   xmin <- min(forest_data$conf.low, na.rm = TRUE)
   xmax <- max(forest_data$conf.high, na.rm = TRUE)
 
   if (isTRUE(include_zero)) {
-    null_value <- if (isTRUE(exponentiate)) 1 else 0
     xmin <- min(xmin, null_value)
     xmax <- max(xmax, null_value)
   }
 
   if (isTRUE(exponentiate)) {
-    pad_mult <- 1.08
-    c(xmin / pad_mult, xmax * pad_mult)
+    max_dist <- max(abs(log10(xmin / null_value)), abs(log10(xmax / null_value)))
+    c(null_value / (10 ^ max_dist), null_value * (10 ^ max_dist))
   } else {
-    span <- xmax - xmin
-    pad <- if (is.finite(span) && span > 0) span * 0.08 else max(abs(xmax), 1) * 0.08
-      c(xmin - pad, xmax + pad)
+    max_dist <- max(abs(xmin - null_value), abs(xmax - null_value))
+    c(null_value - max_dist, null_value + max_dist)
   }
 }
 
