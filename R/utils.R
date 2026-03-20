@@ -589,6 +589,29 @@ layout_center_table_spec <- function(table_spec, text_size = 3.2) {
   table_spec
 }
 
+compute_table_x_limits <- function(table_spec, pad = 0.03) {
+  widths <- if (!is.null(table_spec$displayed_column_widths)) {
+    table_spec$displayed_column_widths
+  } else {
+    table_spec$estimated_column_widths
+  }
+  positions <- table_spec$positions
+  alignment <- if (!is.null(table_spec$alignment)) table_spec$alignment else "center"
+
+  if (alignment == "left") {
+    xmin <- min(positions) - pad
+    xmax <- max(positions + widths) + pad
+  } else if (alignment == "right") {
+    xmin <- min(positions - widths) - pad
+    xmax <- max(positions) + pad
+  } else {
+    xmin <- min(positions - widths / 2) - pad
+    xmax <- max(positions + widths / 2) + pad
+  }
+
+  c(xmin, xmax)
+}
+
 # ─── Plot limits ─────────────────────────────────────────────────────────────
 
 default_plot_background_limits <- function(forest_data,
@@ -661,11 +684,19 @@ build_forest_table_plot <- function(table_spec,
                                     header_hjust = 0.5) {
   grouping_strip_position <- match.arg(grouping_strip_position)
   table_position <- match.arg(table_position)
+
+  if (all(is.na(table_spec$positions))) {
+    table_spec <- layout_center_table_spec(table_spec, text_size = text_size)
+  }
   
   p <- ggplot2::ggplot(
     table_spec$table_data,
     ggplot2::aes(x = .data$column_position, y = .data$row_key, label = .data$text)
   )
+
+  if (is.null(x_limits)) {
+    x_limits <- compute_table_x_limits(table_spec)
+  }
   
   if (isTRUE(striped_rows)) {
     p <- p + ggplot2::geom_rect(

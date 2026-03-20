@@ -255,6 +255,7 @@
     stripe_colour = stripe_colour,
     text_size = text_size,
     grid_lines = FALSE,
+    plot_margin = ggplot2::margin(5.5, 0, 5.5, 5.5),
     text_hjust = 0,
     header_hjust = 0
   )
@@ -270,6 +271,7 @@
     stripe_colour = stripe_colour,
     text_size = text_size,
     grid_lines = FALSE,
+    plot_margin = ggplot2::margin(5.5, 5.5, 5.5, 0),
     text_hjust = 1,
     header_hjust = 1
   )
