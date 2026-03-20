@@ -281,25 +281,25 @@
     header_hjust = 1
   )
 
-  plot_out <- plot + ggplot2::coord_cartesian(
-    xlim = default_split_plot_limits(
-      state$forest_data,
-      exponentiate = state$defaults$exponentiate,
-      include_zero = state$defaults$zero_line
-    ),
-    clip = "off",
-    expand = FALSE
-  ) + ggplot2::theme(
+  plot_theme_args <- list(
     axis.text.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank(),
     axis.title.y = ggplot2::element_blank(),
     panel.border = ggplot2::element_blank(),
-    axis.line.x = ggplot2::element_line(colour = "black"),
     axis.line.y = ggplot2::element_blank(),
     panel.grid.major = ggplot2::element_blank(),
-    panel.grid.minor = ggplot2::element_blank(),
-    plot.margin = ggplot2::margin(5.5, 0, 5.5, 0)
+    panel.grid.minor = ggplot2::element_blank()
   )
+
+  if (is.null(plot$theme$axis.line.x)) {
+    plot_theme_args$axis.line.x <- ggplot2::element_line(colour = "black")
+  }
+
+  if (is.null(plot$theme$plot.margin)) {
+    plot_theme_args$plot.margin <- ggplot2::margin(5.5, 0, 5.5, 0)
+  }
+
+  plot_out <- plot + do.call(ggplot2::theme, plot_theme_args)
 
   patchwork::wrap_plots(
     left_plot,
