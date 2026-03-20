@@ -441,23 +441,20 @@ test_that("add_split_table uses zero inner margins and dynamic widths", {
     build_forest_table_data(state$forest_data, columns = c("estimate", "p")),
     alignment = "right"
   )
-  left_width <- default_split_table_width(left_spec, alignment = "left")
-  right_width <- default_split_table_width(right_spec, alignment = "right")
-  plot_width <- default_split_plot_width(left_width, right_width)
-  short_left_width <- default_split_table_width(
-    layout_split_table_spec(
-      build_forest_table_data(
-        ggforestplot(
-          transform(raw, term = c("Age", "BMI", "Treatment")),
-          n = "sample_size",
-          p.value = "p_value"
-        )$ggforestplotR_state$forest_data,
-        columns = c("term", "n")
-      ),
-      alignment = "left"
+  left_width <- left_spec$content_width
+  right_width <- right_spec$content_width
+  plot_width <- 2.5
+  short_left_width <- layout_split_table_spec(
+    build_forest_table_data(
+      ggforestplot(
+        transform(raw, term = c("Age", "BMI", "Treatment")),
+        n = "sample_size",
+        p.value = "p_value"
+      )$ggforestplotR_state$forest_data,
+      columns = c("term", "n")
     ),
     alignment = "left"
-  )
+  )$content_width
 
   expect_equal(as.numeric((p + ggplot2::theme(plot.margin = ggplot2::margin(5.5, 0, 5.5, 0)))$theme$plot.margin), c(5.5, 0, 5.5, 0))
   expect_true(left_width > short_left_width)
@@ -466,6 +463,6 @@ test_that("add_split_table uses zero inner margins and dynamic widths", {
   expect_true(right_spec$positions[1] > 1)
   expect_true(left_width > 0)
   expect_true(right_width > 0)
-  expect_true(plot_width >= 2.1)
+  expect_equal(plot_width, 2.5)
 })
 

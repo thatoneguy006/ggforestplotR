@@ -83,7 +83,7 @@
     digits = digits
   )
   table_spec <- layout_center_table_spec(table_spec, text_size = text_size)
-  table_width <- max(2.2, default_center_table_width(table_spec, text_size = text_size))
+  table_width <- max(2.2, table_spec$content_width)
 
   table_plot <- build_forest_table_plot(
     table_spec = table_spec,
@@ -99,8 +99,6 @@
     grid_line_colour = grid_line_colour,
     grid_line_size = grid_line_size,
     grid_line_linetype = grid_line_linetype,
-    x_expand = c(0, 0),
-    x_limits = default_center_table_limits(table_spec),
     text_hjust = 0.5,
     header_hjust = 0.5
   )
@@ -234,15 +232,15 @@
   right_spec <- layout_split_table_spec(right_spec, text_size = text_size, alignment = "right")
 
   if (is.null(left_width)) {
-    left_width <- default_split_table_width(left_spec, text_size = text_size, alignment = "left")
+    left_width <- left_spec$content_width
   }
 
   if (is.null(right_width)) {
-    right_width <- default_split_table_width(right_spec, text_size = text_size, alignment = "right")
+    right_width <- right_spec$content_width
   }
 
   if (is.null(plot_width)) {
-    plot_width <- default_split_plot_width(left_width, right_width)
+    plot_width <- 2.5
   }
 
   left_plot <- build_forest_table_plot(
@@ -256,9 +254,6 @@
     stripe_colour = stripe_colour,
     text_size = text_size,
     grid_lines = FALSE,
-    x_expand = c(0, 0),
-    x_limits = default_split_table_limits(left_spec, alignment = "left"),
-    plot_margin = ggplot2::margin(5.5, 0, 5.5, 5.5),
     text_hjust = 0,
     header_hjust = 0
   )
@@ -274,9 +269,6 @@
     stripe_colour = stripe_colour,
     text_size = text_size,
     grid_lines = FALSE,
-    x_expand = c(0, 0),
-    x_limits = default_split_table_limits(right_spec, alignment = "right"),
-    plot_margin = ggplot2::margin(5.5, 5.5, 5.5, 0),
     text_hjust = 1,
     header_hjust = 1
   )
@@ -301,12 +293,21 @@
 
   plot_out <- plot + do.call(ggplot2::theme, plot_theme_args)
 
-  patchwork::wrap_plots(
-    left_plot,
-    plot_out,
-    right_plot,
-    nrow = 1,
-    widths = c(left_width, plot_width, right_width)
+  if (!is.null(left_width)) {
+    left_spec$content_width <- left_width
+  }
+
+  if (!is.null(right_width)) {
+    right_spec$content_width <- right_width
+  }
+
+  combine_split_forest_plot(
+    plot = plot_out,
+    left_table = left_plot,
+    right_table = right_plot,
+    left_spec = left_spec,
+    right_spec = right_spec,
+    plot_width = plot_width
   )
 }
 
