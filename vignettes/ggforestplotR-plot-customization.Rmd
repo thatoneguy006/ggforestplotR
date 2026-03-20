@@ -21,8 +21,6 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(ggforestplotR)
 library(ggplot2)
-library(dplyr)
-library(survival)
 ```
 
 This article focuses on utility and enhanced customization of forest plots and accompanied tables.
@@ -147,10 +145,10 @@ ggforestplot(
 You can use `exponentiate = TRUE` for models on the log-odds scale (or similar).
 
 ```{r logistic-regression-data}
-data(starwars)
+data(CO2)
 
-l1 <- glm(as.factor(sex) ~ mass + height + birth_year, family = binomial(link = "logit"), 
-    data = starwars |> filter(sex %in% c("male", "female")))
+l1 <- glm(Treatment ~ conc + uptake + Type, family = binomial(link = "logit"), 
+    data = CO2)
 ```
 
 ```{r logistic-regression, warning=FALSE}
@@ -167,11 +165,11 @@ We can do this for survival models as well.
 lung <- survival::lung
 
 lung <- lung |>  
-  mutate(
-    status = recode(status, `1` = 0, `2` = 1)
+  dplyr::mutate(
+    status = dplyr::recode(status, `1` = 0, `2` = 1)
   )
 
-s1 <- coxph(Surv(time, status) ~ sex + age + ph.karno + pat.karno, data = lung)
+s1 <- survival::coxph(Surv(time, status) ~ sex + age + ph.karno + pat.karno, data = lung)
 ```
 
 ```{r survival-analysis-plot}
