@@ -2,7 +2,7 @@
 % Please edit documentation in R/ggforestplot.R
 \name{add_forest_table}
 \alias{add_forest_table}
-\title{Add a side table to a forest plot}
+\title{Add a summary table to a forest plot}
 \usage{
 add_forest_table(
   plot = NULL,
@@ -36,13 +36,12 @@ forest plot.}
 \item{show_terms}{Whether to show the term column in the table.}
 
 \item{show_n}{Whether to show the \code{N} column. Defaults to \code{TRUE} when the
-underlying plot data include an \code{n} column.}
+underlying plot data includes an \code{n} column.}
 
 \item{show_estimate}{Whether to show the formatted estimate and confidence
 interval column.}
 
-\item{show_p}{Whether to show the p-value column to the right of the
-estimate column.}
+\item{show_p}{Whether to display the p-value column.}
 
 \item{term_header}{Header text for the term column.}
 
@@ -79,9 +78,7 @@ A patchwork-composed plot containing the forest plot and side
 table, or a ggplot add-on object when \code{plot = NULL}.
 }
 \description{
-Compose a side table onto a forest plot after the plot has been styled.
-This helper should generally be added as the final step because it returns
-a patchwork composition instead of a plain \code{ggplot}.
+Compose a summary table onto a forest plot.
 }
 \examples{
 coefs <- data.frame(

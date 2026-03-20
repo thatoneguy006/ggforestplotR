@@ -90,12 +90,8 @@ A patchwork-composed plot containing a left table, the forest plot,
 and a right table, or a ggplot add-on object when \code{plot = NULL}.
 }
 \description{
-Compose split table blocks around a forest plot so that text columns appear
-on both sides of the plotting panel. This helper should generally be added
-last because it returns a patchwork composition. Split tables do not draw
-table grid lines, left-side columns are left-justified, right-side columns
-are right-justified, and the default widths are estimated from the
-displayed text to reduce clipping.
+Compose split table blocks around a forest plot so that summary data appear
+on both sides of the plotting panel.
 }
 \examples{
 coefs <- data.frame(

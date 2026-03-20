@@ -74,8 +74,8 @@ test_that("ggforestplot can draw separator lines for each labeled variable block
     ggforestplot(
       raw,
       label = "label",
-      separator_group = "block",
-      separator_lines = TRUE,
+      separate_groups = "block",
+      separate_lines = TRUE,
       zero_line = FALSE
     )
   )
@@ -97,7 +97,7 @@ test_that("ggforestplot prefixes labels for multi-level separator groups", {
     block = c("Race", "Race", "Race", "Age")
   )
 
-  p <- ggforestplot(raw, label = "label", separator_group = "block")
+  p <- ggforestplot(raw, label = "label", separate_groups = "block")
 
   expect_equal(
     as.character(p$ggforestplotR_state$forest_data$label),

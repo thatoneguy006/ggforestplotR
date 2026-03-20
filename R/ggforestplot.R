@@ -325,7 +325,7 @@
 #' @param grouping Optional column name used to split rows into grouped plot
 #'   sections.
 #' @param grouping_strip_position Positioning for grouped section strips.
-#' @param separator_group Optional column name used to identify labeled
+#' @param separate_groups Optional column name used to identify labeled
 #'   variable blocks that can be outlined with grid lines.
 #' @param n Optional column name holding sample sizes or other N labels for
 #'   table helpers.
@@ -340,8 +340,8 @@
 #' @param staple_width Width of the terminal staples on confidence interval
 #'   lines.
 #' @param dodge_width Horizontal dodging used for grouped estimates.
-#' @param separator_lines Logical; if `TRUE`, draw grid lines
-#'   around each labeled block identified by `separator_group`.
+#' @param separate_lines Logical; if `TRUE`, draw grid lines
+#'   around each labeled block identified by `separate_groups`.
 #' @param separator_line_linetype Line type used for separator lines.
 #' @param separator_line_colour Colour used for separator lines.
 #' @param separator_line_size Line width used for separator lines.
@@ -378,7 +378,7 @@ ggforestplot <- function(data,
                          group = NULL,
                          grouping = NULL,
                          grouping_strip_position = c("left", "right"),
-                         separator_group = NULL,
+                         separate_groups = NULL,
                          n = NULL,
                          p.value = NULL,
                          exponentiate = FALSE,
@@ -388,7 +388,7 @@ ggforestplot <- function(data,
                          line_size = 0.5,
                          staple_width = 0.2,
                          dodge_width = 0.6,
-                         separator_lines = FALSE,
+                         separate_lines = FALSE,
                          separator_line_linetype = 2,
                          separator_line_colour = "black",
                          separator_line_size = 0.4,
@@ -411,7 +411,7 @@ ggforestplot <- function(data,
       label = label,
       group = group,
       grouping = grouping,
-      separator_group = separator_group,
+      separate_groups = separate_groups,
       n = n,
       p.value = p.value,
       exponentiate = exponentiate,
@@ -479,7 +479,7 @@ ggforestplot <- function(data,
     )
   }
 
-  if (isTRUE(separator_lines) && nrow(separator_data) > 0L) {
+  if (isTRUE(separate_lines) && nrow(separator_data) > 0L) {
     p <- p + ggplot2::geom_hline(
       data = separator_data,
       mapping = ggplot2::aes(yintercept = .data$yintercept),

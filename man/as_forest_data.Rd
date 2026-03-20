@@ -13,7 +13,7 @@ as_forest_data(
   label = term,
   group = NULL,
   grouping = NULL,
-  separator_group = NULL,
+  separate_groups = NULL,
   n = NULL,
   p.value = NULL,
   exponentiate = FALSE,
@@ -39,7 +39,7 @@ estimates per row.}
 \item{grouping}{Optional column name used to split rows into grouped plot
 sections.}
 
-\item{separator_group}{Optional column name used to identify labeled
+\item{separate_groups}{Optional column name used to identify labeled
 variable blocks that can be outlined with separator lines.}
 
 \item{n}{Optional column name holding sample sizes or other N labels for

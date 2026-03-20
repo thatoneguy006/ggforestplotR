@@ -24,7 +24,7 @@ resolve_column <- function(data, column, arg, required = TRUE) {
 validate_forest_data <- function(data, exponentiate = FALSE) {
   required <- c(
     "term", "estimate", "conf.low", "conf.high",
-    "label", "group", "grouping", "separator_group", "n", "p.value"
+    "label", "group", "grouping", "separate_groups", "n", "p.value"
   )
   missing <- setdiff(required, names(data))
   
@@ -170,7 +170,7 @@ assign_grouping_panels <- function(data, has_groupings) {
   }
 }
 
-#' Within each panel, if a separator_group value appears more than once the
+#' Within each panel, if a separate_groups value appears more than once the
 #' labels are ambiguous.  Prefix them with "group: label" so the axis is
 #' readable.
 prefix_ambiguous_labels <- function(data, has_groupings) {
@@ -178,13 +178,13 @@ prefix_ambiguous_labels <- function(data, has_groupings) {
   
   for (pv in panel_values) {
     idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
-    sep_vals <- data$separator_group[idx]
+    sep_vals <- data$separate_groups[idx]
     counts <- table(sep_vals[!is.na(sep_vals) & nzchar(sep_vals)])
     prefix_groups <- names(counts[counts > 1L])
     
     if (length(prefix_groups) > 0L) {
       prefix_idx <- idx[!is.na(sep_vals) & sep_vals %in% prefix_groups]
-      data$label[prefix_idx] <- paste0(data$separator_group[prefix_idx], ": ", data$label[prefix_idx])
+      data$label[prefix_idx] <- paste0(data$separate_groups[prefix_idx], ": ", data$label[prefix_idx])
     }
   }
   
@@ -254,9 +254,9 @@ build_stripe_rectangles <- function(data, has_groupings) {
   stripe_data
 }
 
-#' Detect runs of identical separator_group values within each panel and
+#' Detect runs of identical separate_groups values within each panel and
 #' return a data frame of horizontal separator positions.
-build_separator_lines <- function(data, has_groupings) {
+build_separate_lines <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
   parts <- vector("list", length(panel_values))
   
@@ -266,10 +266,10 @@ build_separator_lines <- function(data, has_groupings) {
     
     row_keys <- levels(data$row_key)[levels(data$row_key) %in% data$row_key[idx]]
     
-    # Map each row_key to its separator_group value
+    # Map each row_key to its separate_groups value
     sep_groups <- vapply(row_keys, function(rk) {
       row_idx <- idx[as.character(data$row_key[idx]) == rk]
-      vals <- unique(data$separator_group[row_idx])
+      vals <- unique(data$separate_groups[row_idx])
       vals <- vals[!is.na(vals) & nzchar(vals)]
       if (length(vals) == 0L) NA_character_ else vals[1L]
     }, character(1))
@@ -290,7 +290,7 @@ build_separator_lines <- function(data, has_groupings) {
         
         separator_rows[[length(separator_rows) + 1L]] <- data.frame(
           grouping_panel = if (has_groupings) pv else NA_character_,
-          separator_group = unname(current),
+          separate_groups = unname(current),
           yintercept = c(run_start - 0.5, run_end + 0.5),
           stringsAsFactors = FALSE
         )
@@ -325,7 +325,7 @@ build_forest_plot_data <- function(data) {
   plot_data <- assign_row_keys(plot_data, has_groupings)
   
   stripe_data <- build_stripe_rectangles(plot_data, has_groupings)
-  separator_data <- build_separator_lines(plot_data, has_groupings)
+  separator_data <- build_separate_lines(plot_data, has_groupings)
   axis_labels <- build_axis_labels(plot_data, has_groupings)
   
   list(

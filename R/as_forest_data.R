@@ -13,7 +13,7 @@
 #'   estimates per row.
 #' @param grouping Optional column name used to split rows into grouped plot
 #'   sections.
-#' @param separator_group Optional column name used to identify labeled
+#' @param separate_groups Optional column name used to identify labeled
 #'   variable blocks that can be outlined with separator lines.
 #' @param n Optional column name holding sample sizes or other N labels for
 #'   table helpers.
@@ -50,7 +50,7 @@ as_forest_data <- function(data,
                            label = term,
                            group = NULL,
                            grouping = NULL,
-                           separator_group = NULL,
+                           separate_groups = NULL,
                            n = NULL,
                            p.value = NULL,
                            exponentiate = FALSE,
@@ -69,7 +69,7 @@ as_forest_data <- function(data,
     label = resolve_column(data, label, "label", required = FALSE),
     group = resolve_column(data, group, "group", required = FALSE),
     grouping = resolve_column(data, grouping, "grouping", required = FALSE),
-    separator_group = resolve_column(data, separator_group, "separator_group", required = FALSE),
+    separate_groups = resolve_column(data, separate_groups, "separate_groups", required = FALSE),
     n = resolve_column(data, n, "n", required = FALSE),
     p.value = resolve_column(data, p.value, "p.value", required = FALSE)
   )
@@ -100,10 +100,10 @@ as_forest_data <- function(data,
     as.character(data[[cols$grouping]])
   }
 
-  out$separator_group <- if (is.null(cols$separator_group)) {
+  out$separate_groups <- if (is.null(cols$separate_groups)) {
     NA_character_
   } else {
-    as.character(data[[cols$separator_group]])
+    as.character(data[[cols$separate_groups]])
   }
 
   out$n <- if (is.null(cols$n)) {

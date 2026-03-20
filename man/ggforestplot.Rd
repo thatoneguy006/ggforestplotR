@@ -14,7 +14,7 @@ ggforestplot(
   group = NULL,
   grouping = NULL,
   grouping_strip_position = c("left", "right"),
-  separator_group = NULL,
+  separate_groups = NULL,
   n = NULL,
   p.value = NULL,
   exponentiate = FALSE,
@@ -24,7 +24,7 @@ ggforestplot(
   line_size = 0.5,
   staple_width = 0.2,
   dodge_width = 0.6,
-  separator_lines = FALSE,
+  separate_lines = FALSE,
   separator_line_linetype = 2,
   separator_line_colour = "black",
   separator_line_size = 0.4,
@@ -40,42 +40,33 @@ ggforestplot(
 \item{data}{Either a tidy coefficient data frame or a model object
 supported by \code{\link[broom:reexports]{broom::tidy()}}.}
 
-\item{term}{Column name holding the model term identifier when \code{data} is a
-data frame.}
+\item{term}{Column name holding the model term identifiers.}
 
-\item{estimate}{Column name holding the point estimate when \code{data} is a
-data frame.}
+\item{estimate}{Column name holding the point estimates.}
 
-\item{conf.low}{Column name holding the lower confidence bound when \code{data}
-is a data frame.}
+\item{conf.low}{Column name holding the lower confidence bounds.}
 
-\item{conf.high}{Column name holding the upper confidence bound when \code{data}
-is a data frame.}
+\item{conf.high}{Column name holding the upper confidence bounds.}
 
-\item{label}{Optional column name used for the displayed row label when
-\code{data} is a data frame.}
+\item{label}{Optional column name used for the displayed row labels.}
 
-\item{group}{Optional column name used for color-grouping multiple
-estimates per row when \code{data} is a data frame.}
+\item{group}{Optional column name used for color-grouping estimates.}
 
 \item{grouping}{Optional column name used to split rows into grouped plot
-sections when \code{data} is a data frame.}
+sections.}
 
-\item{grouping_strip_position}{Whether grouped section strips should appear
-on the left or right side of the plot.}
+\item{grouping_strip_position}{Positioning for grouped section strips.}
 
-\item{separator_group}{Optional column name used to identify labeled
-variable blocks that can be outlined with separator lines when \code{data} is
-a data frame.}
+\item{separate_groups}{Optional column name used to identify labeled
+variable blocks that can be outlined with grid lines.}
 
 \item{n}{Optional column name holding sample sizes or other N labels for
-table helpers when \code{data} is a data frame.}
+table helpers.}
 
-\item{p.value}{Optional column name holding p-values when \code{data} is a data
-frame.}
+\item{p.value}{Optional column name holding p-values.}
 
-\item{exponentiate}{Logical; if \code{TRUE}, draw the estimate axis on a log
-scale with a null line at 1.}
+\item{exponentiate}{Logical; if \code{TRUE}, transform the estimates and draw the
+axis on the log scale with the null line at 1.}
 
 \item{sort_terms}{How to sort rows: \code{"none"}, \code{"descending"}, or
 \code{"ascending"}.}
@@ -91,8 +82,8 @@ lines.}
 
 \item{dodge_width}{Horizontal dodging used for grouped estimates.}
 
-\item{separator_lines}{Logical; if \code{TRUE}, draw dashed separator lines
-around each labeled block identified by \code{separator_group}.}
+\item{separate_lines}{Logical; if \code{TRUE}, draw grid lines
+around each labeled block identified by \code{separate_groups}.}
 
 \item{separator_line_linetype}{Line type used for separator lines.}
 
@@ -119,9 +110,7 @@ styling the main plot.
 }
 \description{
 Builds a forest plot from standardized coefficient data or directly from a
-fitted model, with optional grouped sections, striped rows, separator lines
-for labeled variable blocks, and controls for point shape and
-confidence-interval staples.
+fitted model.
 }
 \examples{
 coefs <- data.frame(
