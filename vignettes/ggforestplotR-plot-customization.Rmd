@@ -169,7 +169,7 @@ logit_fit <- glm(event ~ age + bmi + status, data = logit_data, family = binomia
 ggforestplot(logit_fit, exponentiate = TRUE, striped_rows = T) +
   add_forest_table(position = "left", 
                    estimate_label = "OR", 
-                   show_p = TRUE)
+                   show_p = F)
 ```
 
 ## Compare multiple estimates

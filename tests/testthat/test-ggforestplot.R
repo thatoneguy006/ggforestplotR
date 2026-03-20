@@ -159,6 +159,15 @@ test_that("ggforestplot can draw striped rows on exponentiated plots", {
   expect_true(length(stripe_layers) >= 1L)
   expect_true(all(is.finite(stripe_layers[[1]]$xmin)))
   expect_true(all(is.finite(stripe_layers[[1]]$xmax)))
+
+  p <- ggforestplot(raw, exponentiate = TRUE, striped_rows = TRUE)
+  expected_limits <- default_plot_background_limits(
+    p$ggforestplotR_state$forest_data,
+    exponentiate = TRUE,
+    include_zero = TRUE
+  )
+
+  expect_equal(p$scales$get_scales("x")$limits, log10(expected_limits))
 })
 
 test_that("ggforestplot allows grouping strip labels on the right", {
