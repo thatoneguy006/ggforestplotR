@@ -16,12 +16,15 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports:
     ggplot2,
+    lifecycle,
     patchwork,
     rlang
 Suggests:
     broom,
+    dplyr,
     knitr,
     rmarkdown,
+    survival,
     testthat (>= 3.0.0),
     tibble
 VignetteBuilder: knitr

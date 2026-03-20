@@ -3,6 +3,7 @@
 ## Major changes
 
 - Refined split-table layout logic, including dynamic panel widths from column counts, alignment controls, and cleaner stripe/background handling.
+- `add_forest_table()` now allows for custom column ordering via the `columns` argument.
 - Converted package documentation to roxygen-generated `NAMESPACE` and `.Rd` files.
 - Reworked package documentation, including pkgdown configuration, README installation guidance, and the vignette set.
 
