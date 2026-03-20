@@ -470,66 +470,83 @@ string_display_width <- function(x) {
   max(widths, 0)
 }
 
+measure_max_grob_width <- function(text,
+                                   fontsize_pt,
+                                   fontface = "plain") {
+  text <- as.character(text)
+  text[is.na(text)] <- ""
+
+  if (length(text) == 0L) {
+    return(0)
+  }
+
+  widths <- vapply(text, function(value) {
+    lines <- strsplit(value, "\n", fixed = TRUE)[[1]]
+
+    if (length(lines) == 0L) {
+      return(0)
+    }
+
+    max(vapply(lines, function(line) {
+      if (!nzchar(line)) {
+        return(0)
+      }
+
+      grid::convertWidth(
+        grid::grobWidth(
+          grid::textGrob(
+            line,
+            gp = grid::gpar(fontsize = fontsize_pt, fontface = fontface)
+          )
+        ),
+        "inches",
+        valueOnly = TRUE
+      )
+    }, numeric(1)), 0)
+  }, numeric(1))
+
+  max(widths, 0)
+}
+
 measure_table_text_widths <- function(table_spec, text_size = 3.2) {
-  char_scale <- c(
-    term = 0.055,
-    n = 0.03,
-    estimate = 0.05,
-    p = 0.045
-  )
+  text_size_pt <- text_size * (72.27 / 25.4)
+  header_size_pt <- 11
 
   stats::setNames(vapply(seq_along(table_spec$column_keys), function(i) {
     column_key <- table_spec$column_keys[[i]]
     column_values <- table_spec$table_data$text[table_spec$table_data$column_key == column_key]
-    max_chars <- string_display_width(c(table_spec$headers[[i]], column_values))
-    scale <- char_scale[[column_key]]
-
-    if (is.null(scale)) {
-      scale <- 0.05
-    }
-
-    max(max_chars, 1) * unname(scale) * (text_size / 3.2)
+    max(
+      measure_max_grob_width(table_spec$headers[[i]], fontsize_pt = header_size_pt, fontface = "bold"),
+      measure_max_grob_width(column_values, fontsize_pt = text_size_pt, fontface = "plain")
+    )
   }, numeric(1)), table_spec$column_keys)
 }
 
 estimate_split_column_widths <- function(table_spec, text_size = 3.2, alignment = c("left", "center", "right")) {
   alignment <- match.arg(alignment)
-  char_scale <- c(
-    term = 0.055,
-    n = 0.03,
-    estimate = 0.05,
-    p = 0.045
-  )
   base_padding <- c(
-    term = 0.45,
-    n = 0.25,
-    estimate = 0.55,
-    p = 0.35
+    term = 0.16,
+    n = 0.10,
+    estimate = 0.18,
+    p = 0.12
   )
+  text_widths <- measure_table_text_widths(table_spec, text_size = text_size)
   alignment_padding <- switch(
     alignment,
-    left = 0.25,
-    right = 0.25,
-    center = 0.18
+    left = 0.06,
+    right = 0.06,
+    center = 0.05
   )
 
   stats::setNames(vapply(seq_along(table_spec$column_keys), function(i) {
     column_key <- table_spec$column_keys[[i]]
-    column_values <- table_spec$table_data$text[table_spec$table_data$column_key == column_key]
-    max_chars <- string_display_width(c(table_spec$headers[[i]], column_values))
-    scale <- char_scale[[column_key]]
     base_pad <- base_padding[[column_key]]
 
-    if (is.null(scale)) {
-      scale <- 0.05
-    }
-
     if (is.null(base_pad)) {
-      base_pad <- 0.35
+      base_pad <- 0.14
     }
 
-    unname(base_pad) + alignment_padding +
-      max(max_chars, 1) * unname(scale) * (text_size / 3.2)
+    unname(text_widths[[column_key]]) + unname(base_pad) + alignment_padding
   }, numeric(1)), table_spec$column_keys)
 }
 
