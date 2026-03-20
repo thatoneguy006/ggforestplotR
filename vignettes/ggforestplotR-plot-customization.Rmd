@@ -21,7 +21,6 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(ggforestplotR)
 library(ggplot2)
-library(dplyr)
 ```
 
 This article focuses on utility and enhanced customization of forest plots and accompanied tables.
@@ -146,36 +145,27 @@ ggforestplot(
 You can use `exponentiate = TRUE` for models on the log-odds scale (or similar).
 
 ```{r logistic-regression-data}
-set.seed(123)
+data(starwars)
 
-logit_data <- data.frame(
-  age = rnorm(250, mean = 62, sd = 8),
-  bmi = rnorm(250, mean = 28, sd = 4),
-  status = factor(rbinom(250, 1, 0.45), labels = c("Control", "Treatment"))
-)
-
-linpred <- -9 +
-  0.09 * logit_data$age +
-  0.11 * logit_data$bmi +
-  0.6 * (logit_data$status == "Treatment")
-
-logit_data$event <- rbinom(250, 1, plogis(linpred))
-
-logit_fit <- glm(event ~ age + bmi + status, data = logit_data, family = binomial())
+l1 <- glm(as.factor(sex) ~ mass + height + birth_year, family = binomial(link = "logit"), 
+    data = starwars |> filter(sex %in% c("male", "female")))
 ```
 
-```{r logistic-regression}
-ggforestplot(logit_fit, exponentiate = TRUE, striped_rows = T) +
+```{r logistic-regression, warning=FALSE}
+
+ggforestplot(l1, exponentiate = TRUE, striped_rows = T) +
   add_forest_table(position = "left", 
                    estimate_label = "OR", 
                    show_p = F)
 ```
 
+We can do this for survival models as well.
+
 ```{r survival-analysis-data}
 library(survival)
 lung <- survival::lung
 
-lung <- lung %>%  
+lung <- lung |>  
   mutate(
     status = recode(status, `1` = 0, `2` = 1)
   )
@@ -185,7 +175,7 @@ s1 <- coxph(Surv(time, status) ~ sex + age + ph.karno + pat.karno, data = lung)
 
 ```{r survival-analysis-plot}
 ggforestplot(s1, exponentiate = T, striped_rows = T) +
-  add_forest_table()
+  add_forest_table(estimate_label = "HR")
 ```
 
 ## Compare multiple estimates
