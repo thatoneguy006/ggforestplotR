@@ -612,6 +612,20 @@ compute_table_x_limits <- function(table_spec, pad = 0.03) {
   c(xmin, xmax)
 }
 
+split_table_width_multiplier <- function(n_columns) {
+  n_columns <- as.integer(n_columns[[1]])
+
+  if (is.na(n_columns) || n_columns <= 0L) {
+    return(0)
+  }
+
+  if (n_columns == 1L) {
+    return(0.5)
+  }
+
+  1 + (n_columns - 2L) / 3
+}
+
 # ─── Plot limits ─────────────────────────────────────────────────────────────
 
 default_plot_background_limits <- function(forest_data,
@@ -792,15 +806,12 @@ combine_split_forest_plot <- function(plot,
   left_w  <- if (!is.null(left_spec))  left_spec$content_width  else 0
   right_w <- if (!is.null(right_spec)) right_spec$content_width else 0
   
-  # Equal table widths = centred plot
-  table_width <- max(left_w, right_w, 1)
-  
   panels <- list()
   widths <- numeric()
   
   if (!is.null(left_table)) {
     panels <- c(panels, list(left_table))
-    widths <- c(widths, table_width)
+    widths <- c(widths, left_w)
   }
   
   panels <- c(panels, list(plot))
@@ -808,7 +819,7 @@ combine_split_forest_plot <- function(plot,
   
   if (!is.null(right_table)) {
     panels <- c(panels, list(right_table))
-    widths <- c(widths, table_width)
+    widths <- c(widths, right_w)
   }
   
   patchwork::wrap_plots(panels, nrow = 1, widths = widths)

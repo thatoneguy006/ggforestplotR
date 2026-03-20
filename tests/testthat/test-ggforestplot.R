@@ -421,7 +421,7 @@ test_that("add_split_table uses split-specific alignment and no grid lines", {
 })
 
 
-test_that("add_split_table uses zero inner margins and dynamic widths", {
+test_that("add_split_table sizes panels from split column counts", {
   raw <- data.frame(
     term = c("Very long predictor name", "BMI", "Treatment"),
     estimate = c(0.3, -0.2, 0.4),
@@ -431,38 +431,23 @@ test_that("add_split_table uses zero inner margins and dynamic widths", {
     p_value = c(0.012, 0.031, 0.004)
   )
 
-  p <- ggforestplot(raw, n = "sample_size", p.value = "p_value")
-  state <- p$ggforestplotR_state
-  left_spec <- layout_split_table_spec(
-    build_forest_table_data(state$forest_data, columns = c("term", "n")),
-    alignment = "left"
-  )
-  right_spec <- layout_split_table_spec(
-    build_forest_table_data(state$forest_data, columns = c("estimate", "p")),
-    alignment = "right"
-  )
-  left_width <- left_spec$content_width
-  right_width <- right_spec$content_width
-  plot_width <- 2.5
-  short_left_width <- layout_split_table_spec(
-    build_forest_table_data(
-      ggforestplot(
-        transform(raw, term = c("Age", "BMI", "Treatment")),
-        n = "sample_size",
-        p.value = "p_value"
-      )$ggforestplotR_state$forest_data,
-      columns = c("term", "n")
-    ),
-    alignment = "left"
-  )$content_width
+  out_equal <- ggforestplot(raw, n = "sample_size", p.value = "p_value") +
+    add_split_table(left_columns = c("term", "n"), right_columns = c("estimate", "p"))
+  widths_equal <- out_equal$patches$layout$widths
 
-  expect_equal(as.numeric((p + ggplot2::theme(plot.margin = ggplot2::margin(5.5, 0, 5.5, 0)))$theme$plot.margin), c(5.5, 0, 5.5, 0))
-  expect_true(left_width > short_left_width)
-  expect_true(all(diff(left_spec$positions) > 0))
-  expect_true(all(diff(right_spec$positions) > 0))
-  expect_true(right_spec$positions[1] > 1)
-  expect_true(left_width > 0)
-  expect_true(right_width > 0)
-  expect_equal(plot_width, 2.5)
+  out_unequal <- ggforestplot(raw, n = "sample_size", p.value = "p_value") +
+    add_split_table(left_columns = "term", right_columns = c("estimate", "p"))
+  widths_unequal <- out_unequal$patches$layout$widths
+
+  out_three <- ggforestplot(raw, n = "sample_size", p.value = "p_value") +
+    add_split_table(left_columns = c("term", "n", "p"), right_columns = "estimate")
+  widths_three <- out_three$patches$layout$widths
+
+  expect_equal(widths_equal, c(2.5, 2.5, 2.5))
+  expect_equal(widths_unequal, c(1.25, 2.5, 2.5))
+  expect_equal(widths_three, c(2.5 * (4 / 3), 2.5, 1.25))
+  expect_equal(split_table_width_multiplier(1), 0.5)
+  expect_equal(split_table_width_multiplier(2), 1)
+  expect_equal(split_table_width_multiplier(3), 4 / 3)
 })
 

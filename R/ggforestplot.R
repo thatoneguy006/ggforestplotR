@@ -232,16 +232,16 @@
   left_spec <- layout_split_table_spec(left_spec, text_size = text_size, alignment = "left")
   right_spec <- layout_split_table_spec(right_spec, text_size = text_size, alignment = "right")
 
+  if (is.null(plot_width)) {
+    plot_width <- 2.5
+  }
+
   if (is.null(left_width)) {
-    left_width <- left_spec$content_width
+    left_width <- plot_width * split_table_width_multiplier(length(left_spec$column_keys))
   }
 
   if (is.null(right_width)) {
-    right_width <- right_spec$content_width
-  }
-
-  if (is.null(plot_width)) {
-    plot_width <- 2.5
+    right_width <- plot_width * split_table_width_multiplier(length(right_spec$column_keys))
   }
 
   left_plot <- build_forest_table_plot(
@@ -296,13 +296,8 @@
 
   plot_out <- plot + do.call(ggplot2::theme, plot_theme_args)
 
-  if (!is.null(left_width)) {
-    left_spec$content_width <- left_width
-  }
-
-  if (!is.null(right_width)) {
-    right_spec$content_width <- right_width
-  }
+  left_spec$content_width <- left_width
+  right_spec$content_width <- right_width
 
   combine_split_forest_plot(
     plot = plot_out,
