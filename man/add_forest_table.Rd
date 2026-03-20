@@ -12,7 +12,6 @@ add_forest_table(
   show_estimate = TRUE,
   show_p = FALSE,
   columns = NULL,
-  column_positions = NULL,
   term_header = "Term",
   n_header = "N",
   estimate_label = "Estimate",
@@ -49,10 +48,6 @@ interval column.}
 the order they should appear. Accepts names such as \code{"n"} and \code{"term"},
 or positions \code{1:4} corresponding to \code{term}, \code{n}, \code{estimate}, and \code{p}.
 When supplied, this overrides the default \verb{show_*} column selection.}
-
-\item{column_positions}{Optional manual x-positions for the displayed
-side-table columns. Supply either a numeric vector in display order or a
-named numeric vector using any of \code{term}, \code{n}, \code{estimate}, and \code{p}.}
 
 \item{term_header}{Header text for the term column.}
 

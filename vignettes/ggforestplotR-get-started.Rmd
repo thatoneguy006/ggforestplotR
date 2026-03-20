@@ -38,7 +38,7 @@ This article covers the basic entry points and the minimum data you need.
 
 ## Start from a coefficient table
 
-The simplest input is a data frame with a term, estimate, and confidence limits.
+The simplest input is a data frame with a term, estimate, and confidence limits. If your columns use different names, map them explicitly.
 
 ```{r basic-plot}
 basic_coefs <- data.frame(
@@ -48,35 +48,13 @@ basic_coefs <- data.frame(
   conf.high = c(0.18, 0.00, 0.56)
 )
 
-ggforestplot(basic_coefs) +
-  ggplot2::labs(title = "Basic forest plot")
-```
-
-If your columns use different names, map them explicitly.
-
-```{r remapped-columns}
-renamed_coefs <- data.frame(
-  variable = c("Age", "BMI", "Treatment"),
-  beta = c(0.10, -0.08, 0.34),
-  lower = c(0.02, -0.16, 0.12),
-  upper = c(0.18, 0.00, 0.56)
-)
-
-ggforestplot(
-  renamed_coefs,
-  term = "variable",
-  estimate = "beta",
-  conf.low = "lower",
-  conf.high = "upper"
-) +
-  ggplot2::labs(title = "Forest plot with remapped columns")
+ggforestplot(basic_coefs)
 ```
 
 ## Add grouped sections and row striping
 
 Use `grouping` when you want related variables separated into labeled panels.
-Add `striped_rows = TRUE` when a larger display benefits from clearer row
-tracking.
+Add `striped_rows = TRUE` to color alternating rows in the plot.
 
 ```{r grouped-striped}
 sectioned_coefs <- data.frame(
@@ -92,13 +70,12 @@ ggforestplot(
   grouping = "section",
   striped_rows = TRUE,
   stripe_fill = "grey94"
-) +
-  ggplot2::labs(title = "Grouped forest plot with striped rows")
+)
 ```
 
-## Add a side table
+## Add a summary table
 
-Use `add_forest_table()` after you finish the main `ggplot2` styling.
+Use `add_forest_table()` to add a summary table to your forest plot.
 
 ```{r side-table}
 tabled_coefs <- data.frame(
@@ -110,7 +87,6 @@ tabled_coefs <- data.frame(
 )
 
 ggforestplot(tabled_coefs, n = "sample_size", striped_rows = TRUE) +
-  ggplot2::labs(title = "Forest plot with a left-side summary table") +
   add_forest_table(
     position = "left",
     show_n = TRUE,
@@ -118,14 +94,12 @@ ggforestplot(tabled_coefs, n = "sample_size", striped_rows = TRUE) +
   )
 ```
 
-## Add split tables
+## Add split summary tables
 
-Use `add_split_table()` when the term columns should stay on the left and the
-summary statistics should move to the right.
+Use `add_split_table()` to create a more traditional looking forest plot, with summary data on either side of the plot.
 
 ```{r split-table}
-ggforestplot(tabled_coefs, n = "sample_size") +
-  ggplot2::labs(title = "Forest plot with split tables") +
+ggforestplot(tabled_coefs, n = "sample_size", striped_rows = T) +
   add_split_table(
     left_columns = c("term", "n"),
     right_columns = c("estimate")
@@ -139,13 +113,12 @@ If `broom` is installed, `ggforestplot()` can work directly from a fitted model.
 ```{r model-plot}
 fit <- lm(mpg ~ wt + hp + qsec, data = mtcars)
 
-ggforestplot(fit, sort_terms = "descending") +
-  ggplot2::labs(title = "Forest plot directly from an lm() object")
+ggforestplot(fit, sort_terms = "descending")
 ```
 
 ## Next articles
 
 For more detail, see:
 
-- `ggforestplotR-plot-customization` for styling, separators, and table layouts.
+- `ggforestplotR-plot-customization` for enhanced customization of the plots and summary tables.
 - `ggforestplotR-data-helpers` for `as_forest_data()` and `tidy_forest_model()`.

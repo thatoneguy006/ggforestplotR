@@ -21,6 +21,8 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(ggforestplotR)
 library(ggplot2)
+library(dplyr)
+library(survival)
 ```
 
 This article focuses on utility and enhanced customization of forest plots and accompanied tables.
@@ -116,8 +118,7 @@ ggforestplot(
     estimate_label = "Beta",
     grid_lines = T,
     grid_line_linetype = 2,
-    grid_line_colour = "red",
-    column_positions = c(term = 0.6, n = 1.7, estimate = 4.0, p = 5.0)
+    grid_line_colour = "red"
   )
 ```
 
@@ -163,7 +164,6 @@ ggforestplot(l1, exponentiate = TRUE, striped_rows = T) +
 We can do this for survival models as well.
 
 ```{r survival-analysis-data}
-library(survival)
 lung <- survival::lung
 
 lung <- lung |>  

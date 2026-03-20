@@ -213,40 +213,6 @@ test_that("forest table centers the Term header and text", {
   expect_equal(table_plot$theme$axis.text.x.top$hjust, 0.5)
 })
 
-test_that("add_forest_table supports manual side-table column positions", {
-  raw <- data.frame(
-    term = c("Age", "BMI", "Treatment"),
-    estimate = c(0.3, -0.2, 0.4),
-    conf.low = c(0.1, -0.4, 0.2),
-    conf.high = c(0.5, 0.0, 0.6),
-    sample_size = c(120, 115, 98)
-  )
-
-  p <- ggforestplot(raw, n = "sample_size")
-  table_spec <- build_forest_table_data(
-    p$ggforestplotR_state$forest_data,
-    show_n = TRUE
-  )
-  table_spec <- layout_center_table_spec(table_spec)
-  custom_spec <- apply_manual_column_positions(
-    table_spec,
-    c(term = 0.6, n = 1.7, estimate = 4.0)
-  )
-
-  expect_equal(custom_spec$positions, c(0.6, 1.7, 4.0))
-  expect_equal(custom_spec$header_positions, c(0.6, 1.7, 4.0))
-  expect_true(custom_spec$content_width > table_spec$content_width)
-  expect_s3_class(
-    add_forest_table(
-      p,
-      position = "left",
-      show_n = TRUE,
-      column_positions = c(term = 0.6, n = 1.7, estimate = 4.0)
-    ),
-    "patchwork"
-  )
-})
-
 test_that("add_forest_table supports explicit side-table column order", {
   raw <- data.frame(
     term = c("Age", "BMI", "Treatment"),

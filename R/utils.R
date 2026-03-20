@@ -589,63 +589,6 @@ layout_center_table_spec <- function(table_spec, text_size = 3.2) {
   table_spec
 }
 
-apply_manual_column_positions <- function(table_spec, column_positions) {
-  if (is.null(column_positions)) {
-    return(table_spec)
-  }
-
-  if (is.list(column_positions)) {
-    column_positions <- unlist(column_positions, use.names = TRUE)
-  }
-
-  if (!is.numeric(column_positions)) {
-    stop("`column_positions` must be a numeric vector or named numeric vector.", call. = FALSE)
-  }
-
-  values <- as.numeric(column_positions)
-
-  if (anyNA(values) || any(!is.finite(values))) {
-    stop("`column_positions` must contain only finite numeric values.", call. = FALSE)
-  }
-
-  positions <- table_spec$positions
-  keys <- table_spec$column_keys
-  position_names <- names(column_positions)
-
-  if (is.null(position_names) || !any(nzchar(position_names))) {
-    if (length(values) != length(keys)) {
-      stop(
-        "`column_positions` must either be named or have one value per displayed table column.",
-        call. = FALSE
-      )
-    }
-    positions <- values
-  } else {
-    if (anyDuplicated(position_names)) {
-      stop("`column_positions` cannot contain duplicate column names.", call. = FALSE)
-    }
-
-    bad <- setdiff(position_names, keys)
-    if (length(bad) > 0L) {
-      stop(
-        sprintf("Unsupported `column_positions` names: %s", paste(bad, collapse = ", ")),
-        call. = FALSE
-      )
-    }
-
-    positions[match(position_names, keys)] <- values
-  }
-
-  table_spec$positions <- unname(positions)
-  table_spec$header_positions <- unname(positions)
-  table_spec$table_data$column_position <- unname(
-    positions[match(table_spec$table_data$column_key, table_spec$column_keys)]
-  )
-  table_spec$content_width <- diff(compute_table_x_limits(table_spec, pad = 0))
-
-  table_spec
-}
-
 compute_table_x_limits <- function(table_spec, pad = 0.03) {
   widths <- if (!is.null(table_spec$displayed_column_widths)) {
     table_spec$displayed_column_widths
