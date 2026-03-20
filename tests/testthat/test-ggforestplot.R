@@ -341,7 +341,7 @@ test_that("add_split_table accepts explicit left and right columns by position",
   expect_s3_class(out, "ggplot")
 })
 
-test_that("add_split_table removes only y-axis elements from the forest plot", {
+test_that("add_split_table removes panel border and keeps x-axis line", {
   raw <- data.frame(
     term = c("Age", "BMI", "Treatment"),
     estimate = c(0.3, -0.2, 0.4),
@@ -352,20 +352,18 @@ test_that("add_split_table removes only y-axis elements from the forest plot", {
   )
 
   out <- add_split_table(
-    ggforestplot(raw, n = "sample_size", p.value = "p_value") +
-      ggplot2::labs(title = "Split") +
-      ggplot2::theme(panel.grid.major = ggplot2::element_line(colour = "red")),
+    ggforestplot(raw, n = "sample_size", p.value = "p_value") + ggplot2::labs(title = "Split"),
     left_columns = c("term", "n"),
     right_columns = c("estimate", "p")
   )
 
   center_plot <- out$patches$plots[[2]]
 
-  expect_s3_class(center_plot$theme$axis.text.y, "element_blank")
-  expect_s3_class(center_plot$theme$axis.ticks.y, "element_blank")
-  expect_s3_class(center_plot$theme$axis.title.y, "element_blank")
-  expect_equal(center_plot$labels$title, "Split")
-  expect_s3_class(center_plot$theme$panel.grid.major, "element_line")
+  expect_s3_class(center_plot$theme$panel.border, "element_blank")
+  expect_s3_class(center_plot$theme$axis.line.x, "element_line")
+  expect_s3_class(center_plot$theme$axis.line.y, "element_blank")
+  expect_s3_class(center_plot$theme$panel.grid.major, "element_blank")
+  expect_s3_class(center_plot$theme$panel.grid.minor, "element_blank")
 })
 
 test_that("add_split_table uses split-specific alignment and no grid lines", {
