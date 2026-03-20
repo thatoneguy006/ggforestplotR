@@ -312,37 +312,26 @@
 #' Draw a ggplot2 forest plot
 #'
 #' Builds a forest plot from standardized coefficient data or directly from a
-#' fitted model, with optional grouped sections, striped rows, separator lines
-#' for labeled variable blocks, and controls for point shape and
-#' confidence-interval staples.
+#' fitted model.
 #'
 #' @param data Either a tidy coefficient data frame or a model object
 #'   supported by [broom::tidy()].
-#' @param term Column name holding the model term identifier when `data` is a
-#'   data frame.
-#' @param estimate Column name holding the point estimate when `data` is a
-#'   data frame.
-#' @param conf.low Column name holding the lower confidence bound when `data`
-#'   is a data frame.
-#' @param conf.high Column name holding the upper confidence bound when `data`
-#'   is a data frame.
-#' @param label Optional column name used for the displayed row label when
-#'   `data` is a data frame.
-#' @param group Optional column name used for color-grouping multiple
-#'   estimates per row when `data` is a data frame.
+#' @param term Column name holding the model term identifiers.
+#' @param estimate Column name holding the point estimates.
+#' @param conf.low Column name holding the lower confidence bounds.
+#' @param conf.high Column name holding the upper confidence bounds. 
+#' @param label Optional column name used for the displayed row labels. 
+#' @param group Optional column name used for color-grouping estimates.
 #' @param grouping Optional column name used to split rows into grouped plot
-#'   sections when `data` is a data frame.
-#' @param grouping_strip_position Whether grouped section strips should appear
-#'   on the left or right side of the plot.
+#'   sections.
+#' @param grouping_strip_position Positioning for grouped section strips.
 #' @param separator_group Optional column name used to identify labeled
-#'   variable blocks that can be outlined with separator lines when `data` is
-#'   a data frame.
+#'   variable blocks that can be outlined with grid lines.
 #' @param n Optional column name holding sample sizes or other N labels for
-#'   table helpers when `data` is a data frame.
-#' @param p.value Optional column name holding p-values when `data` is a data
-#'   frame.
-#' @param exponentiate Logical; if `TRUE`, draw the estimate axis on a log
-#'   scale with a null line at 1.
+#'   table helpers.
+#' @param p.value Optional column name holding p-values. 
+#' @param exponentiate Logical; if `TRUE`, transform the estimates and draw the
+#'  axis on the log scale with the null line at 1.
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
 #'   `"ascending"`.
 #' @param point_size Point size for coefficient markers.
@@ -351,7 +340,7 @@
 #' @param staple_width Width of the terminal staples on confidence interval
 #'   lines.
 #' @param dodge_width Horizontal dodging used for grouped estimates.
-#' @param separator_lines Logical; if `TRUE`, draw dashed separator lines
+#' @param separator_lines Logical; if `TRUE`, draw grid lines
 #'   around each labeled block identified by `separator_group`.
 #' @param separator_line_linetype Line type used for separator lines.
 #' @param separator_line_colour Colour used for separator lines.
@@ -572,11 +561,9 @@ ggforestplot <- function(data,
   p
 }
 
-#' Add a side table to a forest plot
+#' Add a summary table to a forest plot
 #'
-#' Compose a side table onto a forest plot after the plot has been styled.
-#' This helper should generally be added as the final step because it returns
-#' a patchwork composition instead of a plain `ggplot`.
+#' Compose a summary table onto a forest plot.
 #'
 #' @param plot A plot created by [ggforestplot()]. Leave as `NULL` to use
 #'   `+ add_forest_table(...)` syntax.
@@ -584,11 +571,10 @@ ggforestplot <- function(data,
 #'   forest plot.
 #' @param show_terms Whether to show the term column in the table.
 #' @param show_n Whether to show the `N` column. Defaults to `TRUE` when the
-#'   underlying plot data include an `n` column.
+#'   underlying plot data includes an `n` column.
 #' @param show_estimate Whether to show the formatted estimate and confidence
 #'   interval column.
-#' @param show_p Whether to show the p-value column to the right of the
-#'   estimate column.
+#' @param show_p Whether to display the p-value column.
 #' @param term_header Header text for the term column.
 #' @param n_header Header text for the `N` column.
 #' @param estimate_label Header label for the estimate column.
@@ -709,12 +695,8 @@ add_forest_table <- function(plot = NULL,
 
 #' Add split tables around a forest plot
 #'
-#' Compose split table blocks around a forest plot so that text columns appear
-#' on both sides of the plotting panel. This helper should generally be added
-#' last because it returns a patchwork composition. Split tables do not draw
-#' table grid lines, left-side columns are left-justified, right-side columns
-#' are right-justified, and the default widths are estimated from the
-#' displayed text to reduce clipping.
+#' Compose split table blocks around a forest plot so that summary data appear
+#' on both sides of the plotting panel.
 #'
 #' @param plot A plot created by [ggforestplot()]. Leave as `NULL` to use
 #'   `+ add_split_table(...)` syntax.

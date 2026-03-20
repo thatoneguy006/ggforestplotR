@@ -21,6 +21,7 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(ggforestplotR)
 library(ggplot2)
+library(dplyr)
 ```
 
 This article focuses on utility and enhanced customization of forest plots and accompanied tables.
@@ -121,10 +122,9 @@ ggforestplot(
 ```
 
 
-## Use split tables
+## Split tables
 
-`add_split_table()` can be used to create more traditional looking forest plots. You can choose which summary information goes to which side. Like `add_forest_table()`, it
-should be added after any plot-level styling. You can also specify split-table columns by position instead of name.
+`add_split_table()` can be used to create more traditional looking forest plots. You can choose which summary information goes to which side. Like `add_forest_table()`, it should be added after any plot-level styling. 
 
 ```{r split-table}
 ggforestplot(
@@ -169,6 +169,23 @@ ggforestplot(logit_fit, exponentiate = TRUE, striped_rows = T) +
   add_forest_table(position = "left", 
                    estimate_label = "OR", 
                    show_p = F)
+```
+
+```{r survival-analysis-data}
+library(survival)
+lung <- survival::lung
+
+lung <- lung %>%  
+  mutate(
+    status = recode(status, `1` = 0, `2` = 1)
+  )
+
+s1 <- coxph(Surv(time, status) ~ sex + age + ph.karno + pat.karno, data = lung)
+```
+
+```{r survival-analysis-plot}
+ggforestplot(s1, exponentiate = T, striped_rows = T) +
+  add_forest_table()
 ```
 
 ## Compare multiple estimates
