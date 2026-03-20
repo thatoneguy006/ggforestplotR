@@ -134,10 +134,10 @@ ggforestplot(
   p.value = "p_value",
   striped_rows = TRUE
 ) +
-  #scale_x_continuous(limits = c(-.8,.8)) +
+  scale_x_continuous(limits = c(-.8,.8)) +
   add_split_table(
-    left_columns = c("term", "n", "estimate"),
-    right_columns = c("p"),
+    left_columns = c("term","n"),
+    right_columns = c("estimate","p"),
     estimate_label = "Beta"
   ) 
 ```
