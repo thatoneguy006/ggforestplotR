@@ -8,19 +8,18 @@ from tidy coefficient tables or fitted model objects.
 Install the current development version from GitHub.
 
 ```r
-install.packages("remotes")
+#install.packages("remotes")
 remotes::install_github("thatoneguy006/ggforestplotR")
 ```
 
 ## Supported workflows
 
-`ggforestplotR` currently supports three core workflows:
+`ggforestplotR` currently supports two core workflows:
 
-- Plot directly from a coefficient table when you already have estimates and confidence intervals.
-- Start from a fitted model object and tidy it through `broom` before plotting.
-- Compose reporting-oriented side tables or split-table layouts around the forest plot.
+- Plot directly from a table of coefficient data.
+- Plot using data from a fitted model object.
 
-## Quick example
+## Basic example
 
 ```r
 library(ggforestplotR)
@@ -38,12 +37,36 @@ ggforestplot(
   sectioned_coefs,
   grouping = "section",
   striped_rows = TRUE,
-  stripe_fill = "grey94"
-) +
-  ggplot2::labs(title = "Grouped forest plot with striped rows")
+  stripe_fill = "grey94",
+  grouping_strip_position = "right"
+)
 ```
 
 ![](man/figures/README-forestplot-example.png)
+
+## Add a summary table
+```r
+ggforestplot(
+  sectioned_coefs,
+  striped_rows = TRUE,
+  stripe_fill = "grey94"
+) +
+  add_forest_table()
+```
+
+![](man/figures/README-forestplot-table-example.png)
+
+## Add a split summary table
+```r
+ggforestplot(
+  sectioned_coefs,
+  striped_rows = TRUE,
+  stripe_fill = "grey94"
+) +
+  add_split_table()
+```
+
+![](man/figures/README-forestplot-split-table-example.png)
 
 ## Learn more
 
