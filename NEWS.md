@@ -10,7 +10,7 @@
 
 ## Initial development version
 
-- Created `ggforestplot()` for coefficient-driven forest plots from tidy data frames and supported model objects.
-- Added `as_forest_data()` and `tidy_forest_model()` helpers for preparing standardized forest-plot data.
-- Finalized the table-composition workflow with `add_forest_table()` and `add_split_table()` as post-plot helpers.
-- Added the initial package scaffolding, manual pages, tests, and website/vignette infrastructure.
+- Added grouped section support for forest plots.
+- Added `add_forest_table()` and `add_split_table()` for plot-table composition.
+- Added various plot and table customization options.
+- Added package documentation, tests, and a getting-started vignette.
