@@ -83,7 +83,7 @@
     digits = digits
   )
   table_spec <- layout_center_table_spec(table_spec, text_size = text_size)
-  table_width <- max(2.2, table_spec$content_width)
+  table_width <- max(2.4, table_spec$content_width + 0.15)
 
   table_plot <- build_forest_table_plot(
     table_spec = table_spec,
@@ -99,6 +99,7 @@
     grid_line_colour = grid_line_colour,
     grid_line_size = grid_line_size,
     grid_line_linetype = grid_line_linetype,
+    x_expand = ggplot2::expansion(mult = 0.08),
     text_hjust = 0.5,
     header_hjust = 0.5
   )
