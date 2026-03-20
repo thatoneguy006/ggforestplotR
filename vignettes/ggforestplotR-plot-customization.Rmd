@@ -95,8 +95,7 @@ ggforestplot(
   add_forest_table(
     show_n = TRUE,
     show_p = TRUE,
-    estimate_label = "Beta",
-    position = "right"
+    estimate_label = "Beta"
   )
 ```
 

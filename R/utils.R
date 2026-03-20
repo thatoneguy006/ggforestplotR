@@ -656,7 +656,7 @@ build_forest_table_plot <- function(table_spec,
                                     grid_line_linetype = 1,
                                     x_expand = ggplot2::expansion(mult = 0.05),
                                     x_limits = NULL,
-                                    plot_margin = ggplot2::margin(5.5, 2, 5.5, 2),
+                                    plot_margin = ggplot2::margin(5.5, 4, 5.5, 4),
                                     text_hjust = 0.5,
                                     header_hjust = 0.5) {
   grouping_strip_position <- match.arg(grouping_strip_position)
@@ -704,6 +704,7 @@ build_forest_table_plot <- function(table_spec,
       expand = x_expand,
       limits = x_limits
     ) +
+    ggplot2::coord_cartesian(clip = "off") +
     ggplot2::scale_y_discrete(labels = function(x) rep("", length(x)), drop = TRUE) +
     ggplot2::theme_void() +
     ggplot2::theme(
