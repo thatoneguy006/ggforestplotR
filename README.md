@@ -2,7 +2,7 @@
 ___
 <!-- badges: start -->
   [![R-CMD-check](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml)
-  <!-- badges: end -->
+<!-- badges: end -->
 
 ## Overview
 `ggforestplotR` provides a `ggplot2`-first workflow for building forest plots
