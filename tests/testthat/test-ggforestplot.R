@@ -247,6 +247,38 @@ test_that("add_forest_table supports manual side-table column positions", {
   )
 })
 
+test_that("add_forest_table supports explicit side-table column order", {
+  raw <- data.frame(
+    term = c("Age", "BMI", "Treatment"),
+    estimate = c(0.3, -0.2, 0.4),
+    conf.low = c(0.1, -0.4, 0.2),
+    conf.high = c(0.5, 0.0, 0.6),
+    sample_size = c(120, 115, 98),
+    p_value = c(0.012, 0.031, 0.004)
+  )
+
+  p <- ggforestplot(raw, n = "sample_size", p.value = "p_value")
+  table_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    term_header = "Term",
+    n_header = "N",
+    estimate_label = "Beta",
+    p_header = "P-value",
+    columns = c("n", "term", "estimate", "p")
+  )
+
+  expect_equal(table_spec$column_keys, c("n", "term", "estimate", "p"))
+  expect_equal(table_spec$headers, c("N", "Term", "Beta (95% CI)", "P-value"))
+  expect_s3_class(
+    add_forest_table(
+      p,
+      position = "left",
+      columns = c("n", "term", "estimate", "p")
+    ),
+    "patchwork"
+  )
+})
+
 test_that("forest table can draw horizontal separator lines only", {
   raw <- data.frame(
     term = c("Age", "BMI", "Treatment"),

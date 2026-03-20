@@ -116,7 +116,8 @@ ggforestplot(
     estimate_label = "Beta",
     grid_lines = T,
     grid_line_linetype = 2,
-    grid_line_colour = "red"
+    grid_line_colour = "red",
+    column_positions = c(term = 0.6, n = 1.7, estimate = 4.0, p = 5.0)
   )
 ```
 

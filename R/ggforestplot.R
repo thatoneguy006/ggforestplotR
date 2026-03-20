@@ -4,6 +4,7 @@
                                   show_n = NULL,
                                   show_estimate = TRUE,
                                   show_p = FALSE,
+                                  columns = NULL,
                                   column_positions = NULL,
                                   term_header = "Term",
                                   n_header = "N",
@@ -81,7 +82,8 @@
     n_header = n_header,
     estimate_label = estimate_label,
     p_header = p_header,
-    digits = digits
+    digits = digits,
+    columns = columns
   )
   table_spec <- layout_center_table_spec(table_spec, text_size = text_size)
   table_spec <- apply_manual_column_positions(table_spec, column_positions)
@@ -577,6 +579,10 @@ ggforestplot <- function(data,
 #' @param show_estimate Whether to show the formatted estimate and confidence
 #'   interval column.
 #' @param show_p Whether to display the p-value column.
+#' @param columns Optional explicit columns to display in the side table, in
+#'   the order they should appear. Accepts names such as `"n"` and `"term"`,
+#'   or positions `1:4` corresponding to `term`, `n`, `estimate`, and `p`.
+#'   When supplied, this overrides the default `show_*` column selection.
 #' @param column_positions Optional manual x-positions for the displayed
 #'   side-table columns. Supply either a numeric vector in display order or a
 #'   named numeric vector using any of `term`, `n`, `estimate`, and `p`.
@@ -634,6 +640,7 @@ add_forest_table <- function(plot = NULL,
                              show_n = NULL,
                              show_estimate = TRUE,
                              show_p = FALSE,
+                             columns = NULL,
                              column_positions = NULL,
                              term_header = "Term",
                              n_header = "N",
@@ -658,6 +665,7 @@ add_forest_table <- function(plot = NULL,
         show_n = show_n,
         show_estimate = show_estimate,
         show_p = show_p,
+        columns = columns,
         column_positions = column_positions,
         term_header = term_header,
         n_header = n_header,
@@ -684,6 +692,7 @@ add_forest_table <- function(plot = NULL,
     show_n = show_n,
     show_estimate = show_estimate,
     show_p = show_p,
+    columns = columns,
     column_positions = column_positions,
     term_header = term_header,
     n_header = n_header,

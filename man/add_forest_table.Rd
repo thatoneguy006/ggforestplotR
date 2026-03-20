@@ -11,6 +11,7 @@ add_forest_table(
   show_n = NULL,
   show_estimate = TRUE,
   show_p = FALSE,
+  columns = NULL,
   column_positions = NULL,
   term_header = "Term",
   n_header = "N",
@@ -43,6 +44,11 @@ underlying plot data includes an \code{n} column.}
 interval column.}
 
 \item{show_p}{Whether to display the p-value column.}
+
+\item{columns}{Optional explicit columns to display in the side table, in
+the order they should appear. Accepts names such as \code{"n"} and \code{"term"},
+or positions \code{1:4} corresponding to \code{term}, \code{n}, \code{estimate}, and \code{p}.
+When supplied, this overrides the default \verb{show_*} column selection.}
 
 \item{column_positions}{Optional manual x-positions for the displayed
 side-table columns. Supply either a numeric vector in display order or a
