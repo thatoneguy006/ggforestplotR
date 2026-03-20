@@ -111,6 +111,8 @@ normalize_table_columns <- function(columns) {
 #' character vector of per-row formatted strings, then need identical
 #' deduplication / group-prefixing / newline-collapsing.  This function
 #' handles that single concern.
+#' @keywords internal
+#' @noRd
 collapse_grouped_values <- function(formatted, group = NULL) {
   keep <- !is.na(formatted) & nzchar(formatted)
   
@@ -173,6 +175,8 @@ assign_grouping_panels <- function(data, has_groupings) {
 #' Within each panel, if a separate_groups value appears more than once the
 #' labels are ambiguous.  Prefix them with "group: label" so the axis is
 #' readable.
+#' @keywords internal
+#' @noRd
 prefix_ambiguous_labels <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
   
@@ -193,6 +197,8 @@ prefix_ambiguous_labels <- function(data, has_groupings) {
 
 #' Assign a unique row_key per label within each panel and set factor levels
 #' in display order.
+#' @keywords internal
+#' @noRd
 assign_row_keys <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
   data$row_key <- NA_character_
@@ -214,6 +220,8 @@ assign_row_keys <- function(data, has_groupings) {
 }
 
 #' Build axis label lookup: row_key -> display label.
+#' @keywords internal
+#' @noRd
 build_axis_labels <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
   labels <- character()
@@ -229,6 +237,8 @@ build_axis_labels <- function(data, has_groupings) {
 }
 
 #' Build a data frame of alternating stripe rectangles for each panel.
+#' @keywords internal
+#' @noRd
 build_stripe_rectangles <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
   parts <- vector("list", length(panel_values))
@@ -256,6 +266,8 @@ build_stripe_rectangles <- function(data, has_groupings) {
 
 #' Detect runs of identical separate_groups values within each panel and
 #' return a data frame of horizontal separator positions.
+#' @keywords internal
+#' @noRd
 build_separate_lines <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
   parts <- vector("list", length(panel_values))
@@ -316,6 +328,8 @@ build_separate_lines <- function(data, has_groupings) {
 }
 
 #' Main entry point.  Orchestrates the four passes defined above.
+#' @keywords internal
+#' @noRd
 build_forest_plot_data <- function(data) {
   has_groupings <- any(!is.na(data$grouping) & nzchar(data$grouping))
   plot_data <- data
@@ -470,6 +484,8 @@ build_table_line_data <- function(stripe_data, has_groupings = FALSE) {
 
 #' Ground-truth width measurement via grid graphics.  Handles multi-line
 #' strings by splitting on newlines and returning the widest line.
+#' @keywords internal
+#' @noRd
 measure_max_grob_width <- function(text, fontsize_pt, fontface = "plain") {
   text <- as.character(text)
   text[is.na(text)] <- ""
@@ -497,6 +513,8 @@ measure_max_grob_width <- function(text, fontsize_pt, fontface = "plain") {
 
 #' Measure the displayed text width (in inches) for each column, taking the
 #' max of the header and all cell values.
+#' @keywords internal
+#' @noRd
 measure_table_text_widths <- function(table_spec, text_size = 3.2) {
   text_size_pt <- text_size * (72.27 / 25.4)
   header_size_pt <- 11
@@ -515,6 +533,8 @@ measure_table_text_widths <- function(table_spec, text_size = 3.2) {
 
 #' Default per-column base padding.  Uses a known lookup for the four standard
 #' keys and a sensible fallback for anything else.
+#' @keywords internal
+#' @noRd
 column_base_padding <- function(column_key) {
   known <- c(term = 0.16, n = 0.10, estimate = 0.18, p = 0.12)
   pad <- known[[column_key]]
@@ -522,6 +542,8 @@ column_base_padding <- function(column_key) {
 }
 
 #' Total column width = measured text width + base padding + alignment padding.
+#' @keywords internal
+#' @noRd
 estimate_split_column_widths <- function(table_spec,
                                          text_size = 3.2,
                                          alignment = c("left", "center", "right")) {
@@ -542,6 +564,8 @@ estimate_split_column_widths <- function(table_spec,
 #' Computes column positions and a content width.  Does NOT try to account for
 #' which side of the plot the table will sit on — that's handled at assembly
 #' time by equalising the two table widths.
+#' @keywords internal
+#' @noRd
 layout_split_table_spec <- function(table_spec,
                                     text_size = 3.2,
                                     alignment = c("left", "right")) {
@@ -678,6 +702,8 @@ default_split_plot_limits <- function(forest_data,
 #' Uses symmetric expansion and uniform margins.  The "equal spacing"
 #' guarantee comes from `combine_split_forest_plot()` giving both table
 #' panels the same patchwork width — not from per-side padding hacks here.
+#' @keywords internal
+#' @noRd
 build_forest_table_plot <- function(table_spec,
                                     stripe_data,
                                     has_groupings = FALSE,
@@ -797,6 +823,8 @@ build_forest_table_plot <- function(table_spec,
 #' @param left_spec Left table_spec (needs `content_width`), or NULL.
 #' @param right_spec Right table_spec (needs `content_width`), or NULL.
 #' @param plot_width Width ratio for the forest plot panel.
+#' @keywords internal
+#' @noRd
 combine_split_forest_plot <- function(plot,
                                       left_table = NULL,
                                       right_table = NULL,
@@ -826,6 +854,8 @@ combine_split_forest_plot <- function(plot,
 }
 
 #' Convenience wrapper for single-table layouts (table on one side only).
+#' @keywords internal
+#' @noRd
 combine_forest_plot_and_table <- function(plot, table_plot,
                                           table_position = c("left", "right"),
                                           table_width = 2.2,
