@@ -58,7 +58,7 @@ ggforestplot(
 Use `separate_groups` and `separate_lines` when you want a more distinct visual separation between variables. This is especially useful for categorical variables with many levels. `separate_groups` automatically appends the variable name to the level.
 
 ```{r separators}
-race_coefs <- data.frame(
+block_coefs <- data.frame(
   term = c("race_black", "race_white", "race_other", "age", "bmi"),
   label = c("Black", "White", "Other", "Age", "BMI"),
   estimate = c(0.24, 0.08, -0.04, 0.12, -0.09),
@@ -68,7 +68,7 @@ race_coefs <- data.frame(
 )
 
 ggforestplot(
-  race_coefs,
+  block_coefs,
   label = "label",
   separate_groups = "variable_block",
   separate_lines = TRUE,

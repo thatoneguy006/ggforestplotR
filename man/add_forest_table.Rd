@@ -11,6 +11,7 @@ add_forest_table(
   show_n = NULL,
   show_estimate = TRUE,
   show_p = FALSE,
+  column_positions = NULL,
   term_header = "Term",
   n_header = "N",
   estimate_label = "Estimate",
@@ -42,6 +43,10 @@ underlying plot data includes an \code{n} column.}
 interval column.}
 
 \item{show_p}{Whether to display the p-value column.}
+
+\item{column_positions}{Optional manual x-positions for the displayed
+side-table columns. Supply either a numeric vector in display order or a
+named numeric vector using any of \code{term}, \code{n}, \code{estimate}, and \code{p}.}
 
 \item{term_header}{Header text for the term column.}
 
