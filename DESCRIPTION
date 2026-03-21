@@ -16,7 +16,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports:
     ggplot2,
-    lifecycle,
     patchwork,
     rlang
 Suggests:
