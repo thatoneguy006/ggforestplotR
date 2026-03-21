@@ -1,15 +1,15 @@
 Package: ggforestplotR
-Title: Build Forest Plots from Model Coefficients with ggplot2
+Title: Publication-Ready Forest Plots with 'ggplot2'
 Version: 0.1.0
 Authors@R:
     person(given = "Carson",
            family = "Richardson",
-           role = c("aut", "cre"),
+           role = c("aut", "cre", "cph"),
            email = "carson.richardson@outlook.com")
-Description: Tools for turning model coefficients into flexible forest
-    plots using ggplot2. The package provides helpers to standardize
+Description: Transform model coefficients into flexible forest
+    plots using 'ggplot2'. Provides helpers to standardize
     coefficient data from a range of modelling workflows and render
-    publication-ready coefficient plots with a consistent interface.
+    publication-ready forest plots with a consistent interface.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
