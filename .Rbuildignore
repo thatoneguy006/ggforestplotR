@@ -31,3 +31,4 @@
 ^\.pkg-lib/
 ^vignettes/.*\.html$
 ^NEWS\.html$
+^CRAN-SUBMISSION$
