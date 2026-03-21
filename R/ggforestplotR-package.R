@@ -9,5 +9,4 @@
 #' @keywords internal
 #' @importFrom ggplot2 ggplot_add
 #' @importFrom rlang .data
-#' @importFrom lifecycle deprecated
 "_PACKAGE"

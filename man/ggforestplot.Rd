@@ -122,6 +122,5 @@ coefs <- data.frame(
 
 ggforestplot(coefs)
 
-ggforestplot(coefs, striped_rows = TRUE, point_shape = 17) +
-  ggplot2::labs(title = "Basic forest plot")
+ggforestplot(coefs, striped_rows = TRUE, point_shape = 17)
 }
