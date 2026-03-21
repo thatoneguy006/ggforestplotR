@@ -30,3 +30,4 @@
 ^\.pkg-lib$
 ^\.pkg-lib/
 ^vignettes/.*\.html$
+^NEWS\.html$
