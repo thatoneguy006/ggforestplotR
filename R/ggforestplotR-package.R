@@ -1,7 +1,7 @@
 #' ggforestplotR: Forest plots from model coefficients with ggplot2
 #'
-#' Tools for turning model coefficients into flexible forest plots using
-#' `ggplot2`. The package provides helpers to standardize coefficient data
+#' Transform model coefficients into flexible forest plots using
+#' `ggplot2`. Provides helpers to standardize coefficient data
 #' from a range of modelling workflows and render publication-ready
 #' coefficient plots with a consistent interface.
 #' 
