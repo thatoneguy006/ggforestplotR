@@ -60,8 +60,7 @@ forest_ready <- as_forest_data(
 Once the data are standardized, you can pass them straight into `ggforestplot()`.
 
 ```{r helper-to-plot}
-ggforestplot(forest_ready) +
-  ggplot2::labs(title = "Forest plot from standardized coefficient data")
+ggforestplot(forest_ready)
 ```
 
 ## Use `tidy_forest_model()` for model objects
@@ -78,37 +77,6 @@ model_ready <- tidy_forest_model(fit)
 The returned object can be passed directly into `ggforestplot()`.
 
 ```{r helper-to-plot-model}
-ggforestplot(model_ready) +
-  ggplot2::labs(title = "Forest plot from tidy_forest_model() output")
+ggforestplot(model_ready)
 ```
 
-For logistic regression, set `exponentiate = TRUE` to return odds ratios instead
-of log-odds coefficients.
-
-```{r tidy-logistic-model}
-set.seed(123)
-
-logit_data <- data.frame(
-  age = rnorm(250, mean = 62, sd = 8),
-  bmi = rnorm(250, mean = 28, sd = 4),
-  treatment = factor(rbinom(250, 1, 0.45), labels = c("Control", "Treatment"))
-)
-
-linpred <- -9 +
-  0.09 * logit_data$age +
-  0.11 * logit_data$bmi +
-  0.9 * (logit_data$treatment == "Treatment")
-
-logit_data$event <- rbinom(250, 1, plogis(linpred))
-
-logit_fit <- glm(event ~ age + bmi + treatment, data = logit_data, family = binomial())
-logit_ready <- tidy_forest_model(logit_fit, exponentiate = TRUE)
-```
-
-```{r helper-to-plot-logistic}
-ggforestplot(logit_ready) +
-  ggplot2::labs(
-    title = "Forest plot from exponentiated logistic regression output",
-    x = "Odds ratio"
-  )
-```

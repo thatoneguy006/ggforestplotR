@@ -1,5 +1,10 @@
-# ggforestplotR
+# ggforestplotR <img src="man/figures/ggforestplotR_logo.png" align="right" height="160" alt="" />
+___
+<!-- badges: start -->
+  [![R-CMD-check](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
 
+## Overview
 `ggforestplotR` provides a `ggplot2`-first workflow for building forest plots
 from tidy coefficient tables or fitted model objects.
 
@@ -8,19 +13,18 @@ from tidy coefficient tables or fitted model objects.
 Install the current development version from GitHub.
 
 ```r
-install.packages("remotes")
+#install.packages("remotes")
 remotes::install_github("thatoneguy006/ggforestplotR")
 ```
 
-## Core workflows
+## Supported workflows
 
-The package currently supports three common workflows:
+`ggforestplotR` currently supports two core workflows:
 
-- Build a forest plot directly from a coefficient table
-- Start from a fitted model and tidy it for plotting with `broom`
-- Add side tables or split-table layouts for reporting-ready output
+- Plot directly from a table of coefficient data.
+- Plot using data from a fitted model object.
 
-## Quick example
+## Basic example
 
 ```r
 library(ggforestplotR)
@@ -38,12 +42,36 @@ ggforestplot(
   sectioned_coefs,
   grouping = "section",
   striped_rows = TRUE,
-  stripe_fill = "grey94"
-) +
-  ggplot2::labs(title = "Grouped forest plot with striped rows")
+  stripe_fill = "grey94",
+  grouping_strip_position = "right"
+)
 ```
 
 ![](man/figures/README-forestplot-example.png)
+
+## Add a summary table
+```r
+ggforestplot(
+  sectioned_coefs,
+  striped_rows = TRUE,
+  stripe_fill = "grey94"
+) +
+  add_forest_table()
+```
+
+![](man/figures/README-forestplot-table-example.png)
+
+## Add a split summary table
+```r
+ggforestplot(
+  sectioned_coefs,
+  striped_rows = TRUE,
+  stripe_fill = "grey94"
+) +
+  add_split_table()
+```
+
+![](man/figures/README-forestplot-split-table-example.png)
 
 ## Learn more
 
@@ -55,6 +83,6 @@ ggforestplot(
 
 - `ggforestplot()` builds the plotting panel from a data frame or supported model object.
 - `add_forest_table()` attaches a summary table to the left or right side of the plot.
-- `add_split_table()` creates a more traditional forestplot with tables on both sides of the plot.
+- `add_split_table()` creates a more traditional forestplot layout with table columns on both sides of the plot.
 - `as_forest_data()` standardizes custom coefficient data.
 - `tidy_forest_model()` converts fitted models into plotting-ready coefficient data.

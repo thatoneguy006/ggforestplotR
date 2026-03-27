@@ -26,6 +26,8 @@
 ^pkgdown$
 ^pkgdown/
 ^cran-comments\.md$
+^LICENSE\.md$
 ^\.pkg-lib$
 ^\.pkg-lib/
 ^vignettes/.*\.html$
+^NEWS\.html$

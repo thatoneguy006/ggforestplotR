@@ -1,16 +1,3 @@
-test_that("ggforestplot returns a ggplot object for tidy input", {
-  raw <- data.frame(
-    term = c("Age", "BMI"),
-    estimate = c(0.3, -0.2),
-    conf.low = c(0.1, -0.4),
-    conf.high = c(0.5, 0.0)
-  )
-
-  p <- ggforestplot(raw)
-
-  expect_s3_class(p, "ggplot")
-})
-
 test_that("ggforestplot defaults staple width to 0.2", {
   raw <- data.frame(
     term = c("Age", "BMI"),
@@ -74,8 +61,8 @@ test_that("ggforestplot can draw separator lines for each labeled variable block
     ggforestplot(
       raw,
       label = "label",
-      separator_group = "block",
-      separator_lines = TRUE,
+      separate_groups = "block",
+      separate_lines = TRUE,
       zero_line = FALSE
     )
   )
@@ -97,50 +84,12 @@ test_that("ggforestplot prefixes labels for multi-level separator groups", {
     block = c("Race", "Race", "Race", "Age")
   )
 
-  p <- ggforestplot(raw, label = "label", separator_group = "block")
+  p <- ggforestplot(raw, label = "label", separate_groups = "block")
 
   expect_equal(
     as.character(p$ggforestplotR_state$forest_data$label),
     c("Race: Black", "Race: White", "Race: Other", "Age")
   )
-})
-
-test_that("add_forest_table can attach a left-side summary table", {
-  raw <- data.frame(
-    term = c("Age", "BMI", "Treatment"),
-    estimate = c(0.3, -0.2, 0.4),
-    conf.low = c(0.1, -0.4, 0.2),
-    conf.high = c(0.5, 0.0, 0.6),
-    sample_size = c(120, 115, 98)
-  )
-
-  p <- ggforestplot(raw, n = "sample_size")
-  out <- add_forest_table(
-    p,
-    position = "left",
-    show_n = TRUE,
-    estimate_label = "Beta"
-  )
-
-  expect_s3_class(out, "patchwork")
-  expect_s3_class(out, "ggplot")
-})
-
-test_that("add_forest_table works with ggplot add syntax", {
-  raw <- data.frame(
-    term = c("Age", "BMI", "Treatment"),
-    estimate = c(0.3, -0.2, 0.4),
-    conf.low = c(0.1, -0.4, 0.2),
-    conf.high = c(0.5, 0.0, 0.6),
-    sample_size = c(120, 115, 98)
-  )
-
-  out <- ggforestplot(raw, n = "sample_size") +
-    ggplot2::theme(plot.title = ggplot2::element_text(face = "italic")) +
-    add_forest_table(position = "right", show_n = TRUE, estimate_label = "Beta")
-
-  expect_s3_class(out, "patchwork")
-  expect_s3_class(out, "ggplot")
 })
 
 test_that("add_forest_table validates N table requests", {
@@ -167,15 +116,34 @@ test_that("add_forest_table requires a ggforestplot object", {
   )
 })
 
-test_that("ggforestplot enforces positive values for exponentiated plots", {
+test_that("ggforestplot can draw striped rows on exponentiated plots", {
   raw <- data.frame(
-    term = "Treatment",
-    estimate = 1.2,
-    conf.low = 0.9,
-    conf.high = 1.6
+    term = c("Treatment", "Biomarker"),
+    estimate = c(1.2, 0.8),
+    conf.low = c(0.9, 0.6),
+    conf.high = c(1.6, 1.1)
   )
 
-  expect_s3_class(ggforestplot(raw, exponentiate = TRUE), "ggplot")
+  expect_no_warning({
+    built <- ggplot2::ggplot_build(
+      ggforestplot(raw, exponentiate = TRUE, striped_rows = TRUE)
+    )
+  })
+
+  stripe_layers <- Filter(function(x) all(c("xmin", "xmax", "ymin", "ymax") %in% names(x)), built$data)
+
+  expect_true(length(stripe_layers) >= 1L)
+  expect_true(all(is.finite(stripe_layers[[1]]$xmin)))
+  expect_true(all(is.finite(stripe_layers[[1]]$xmax)))
+
+  p <- ggforestplot(raw, exponentiate = TRUE, striped_rows = TRUE)
+  expected_limits <- default_plot_background_limits(
+    p$ggforestplotR_state$forest_data,
+    exponentiate = TRUE,
+    include_zero = TRUE
+  )
+
+  expect_equal(p$scales$get_scales("x")$limits, log10(expected_limits))
 })
 
 test_that("ggforestplot allows grouping strip labels on the right", {
@@ -219,6 +187,38 @@ test_that("forest table centers the Term header and text", {
   expect_equal(table_spec$header_positions[1], table_spec$positions[1])
   expect_equal(table_plot$layers[[1]]$aes_params$hjust, 0.5)
   expect_equal(table_plot$theme$axis.text.x.top$hjust, 0.5)
+})
+
+test_that("add_forest_table supports explicit side-table column order", {
+  raw <- data.frame(
+    term = c("Age", "BMI", "Treatment"),
+    estimate = c(0.3, -0.2, 0.4),
+    conf.low = c(0.1, -0.4, 0.2),
+    conf.high = c(0.5, 0.0, 0.6),
+    sample_size = c(120, 115, 98),
+    p_value = c(0.012, 0.031, 0.004)
+  )
+
+  p <- ggforestplot(raw, n = "sample_size", p.value = "p_value")
+  table_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    term_header = "Term",
+    n_header = "N",
+    estimate_label = "Beta",
+    p_header = "P-value",
+    columns = c("n", "term", "estimate", "p")
+  )
+
+  expect_equal(table_spec$column_keys, c("n", "term", "estimate", "p"))
+  expect_equal(table_spec$headers, c("N", "Term", "Beta (95% CI)", "P-value"))
+  expect_s3_class(
+    add_forest_table(
+      p,
+      position = "left",
+      columns = c("n", "term", "estimate", "p")
+    ),
+    "patchwork"
+  )
 })
 
 test_that("forest table can draw horizontal separator lines only", {
@@ -294,45 +294,6 @@ test_that("add_forest_table validates p-value table requests", {
     add_forest_table(ggforestplot(raw), position = "left", show_p = TRUE),
     "requires a `p.value` column"
   )
-})
-
-test_that("add_split_table can compose left, plot, and right panels", {
-  raw <- data.frame(
-    term = c("Age", "BMI", "Treatment"),
-    estimate = c(0.3, -0.2, 0.4),
-    conf.low = c(0.1, -0.4, 0.2),
-    conf.high = c(0.5, 0.0, 0.6),
-    sample_size = c(120, 115, 98),
-    p_value = c(0.012, 0.031, 0.004)
-  )
-
-  p <- ggforestplot(raw, n = "sample_size", p.value = "p_value")
-  out <- add_split_table(
-    p,
-    show_n = TRUE,
-    show_p = TRUE,
-    estimate_label = "HR"
-  )
-
-  expect_s3_class(out, "patchwork")
-  expect_s3_class(out, "ggplot")
-})
-
-test_that("add_split_table works with ggplot add syntax", {
-  raw <- data.frame(
-    term = c("Age", "BMI", "Treatment"),
-    estimate = c(0.3, -0.2, 0.4),
-    conf.low = c(0.1, -0.4, 0.2),
-    conf.high = c(0.5, 0.0, 0.6),
-    sample_size = c(120, 115, 98),
-    p_value = c(0.012, 0.031, 0.004)
-  )
-
-  out <- ggforestplot(raw, n = "sample_size", p.value = "p_value") +
-    add_split_table(show_n = TRUE, show_p = TRUE, estimate_label = "HR")
-
-  expect_s3_class(out, "patchwork")
-  expect_s3_class(out, "ggplot")
 })
 
 test_that("add_split_table requires left and right table columns", {
@@ -422,8 +383,6 @@ test_that("add_split_table removes panel border and keeps x-axis line", {
   expect_s3_class(center_plot$theme$panel.grid.minor, "element_blank")
 })
 
-
-
 test_that("add_split_table uses split-specific alignment and no grid lines", {
   raw <- data.frame(
     term = c("Age", "BMI", "Treatment"),
@@ -479,7 +438,7 @@ test_that("add_split_table uses split-specific alignment and no grid lines", {
 })
 
 
-test_that("add_split_table uses zero inner margins and dynamic widths", {
+test_that("add_split_table sizes panels from split column counts", {
   raw <- data.frame(
     term = c("Very long predictor name", "BMI", "Treatment"),
     estimate = c(0.3, -0.2, 0.4),
@@ -489,69 +448,23 @@ test_that("add_split_table uses zero inner margins and dynamic widths", {
     p_value = c(0.012, 0.031, 0.004)
   )
 
-  p <- ggforestplot(raw, n = "sample_size", p.value = "p_value")
-  state <- p$ggforestplotR_state
-  left_spec <- layout_split_table_spec(
-    build_forest_table_data(state$forest_data, columns = c("term", "n")),
-    alignment = "left"
-  )
-  right_spec <- layout_split_table_spec(
-    build_forest_table_data(state$forest_data, columns = c("estimate", "p")),
-    alignment = "right"
-  )
-  left_width <- default_split_table_width(left_spec, alignment = "left")
-  right_width <- default_split_table_width(right_spec, alignment = "right")
-  plot_width <- default_split_plot_width(left_width, right_width)
-  short_left_width <- default_split_table_width(
-    layout_split_table_spec(
-      build_forest_table_data(
-        ggforestplot(
-          transform(raw, term = c("Age", "BMI", "Treatment")),
-          n = "sample_size",
-          p.value = "p_value"
-        )$ggforestplotR_state$forest_data,
-        columns = c("term", "n")
-      ),
-      alignment = "left"
-    ),
-    alignment = "left"
-  )
+  out_equal <- ggforestplot(raw, n = "sample_size", p.value = "p_value") +
+    add_split_table(left_columns = c("term", "n"), right_columns = c("estimate", "p"))
+  widths_equal <- out_equal$patches$layout$widths
 
-  expect_equal(as.numeric((p + ggplot2::theme(plot.margin = ggplot2::margin(5.5, 0, 5.5, 0)))$theme$plot.margin), c(5.5, 0, 5.5, 0))
-  expect_true(left_width > short_left_width)
-  expect_true(all(diff(left_spec$positions) > 0))
-  expect_true(all(diff(right_spec$positions) > 0))
-  expect_true(right_spec$positions[1] > 1)
-  expect_true(left_width > 0)
-  expect_true(right_width > 0)
-  expect_true(plot_width >= 2.1)
+  out_unequal <- ggforestplot(raw, n = "sample_size", p.value = "p_value") +
+    add_split_table(left_columns = "term", right_columns = c("estimate", "p"))
+  widths_unequal <- out_unequal$patches$layout$widths
+
+  out_three <- ggforestplot(raw, n = "sample_size", p.value = "p_value") +
+    add_split_table(left_columns = c("term", "n", "p"), right_columns = "estimate")
+  widths_three <- out_three$patches$layout$widths
+
+  expect_equal(widths_equal, c(2.5, 2.5, 2.5))
+  expect_equal(widths_unequal, c(1.25, 2.5, 2.5))
+  expect_equal(widths_three, c(2.5 * (4 / 3), 2.5, 1.25))
+  expect_equal(split_table_width_multiplier(1), 0.5)
+  expect_equal(split_table_width_multiplier(2), 1)
+  expect_equal(split_table_width_multiplier(3), 4 / 3)
 })
 
-test_that("add_split_table uses symmetric inner table padding", {
-  raw <- data.frame(
-    term = c("Age", "BMI", "Stage II", "Stage III"),
-    estimate = c(0.12, -0.10, 0.30, 0.46),
-    conf.low = c(0.03, -0.18, 0.10, 0.18),
-    conf.high = c(0.21, -0.02, 0.50, 0.74),
-    sample_size = c(120, 115, 87, 83),
-    p_value = c(0.04, 0.15, 0.001, 0.75)
-  )
-
-  p <- ggforestplot(raw, n = "sample_size", p.value = "p_value")
-  state <- p$ggforestplotR_state
-  left_spec <- layout_split_table_spec(
-    build_forest_table_data(state$forest_data, columns = c("term", "n")),
-    alignment = "left"
-  )
-  right_spec <- layout_split_table_spec(
-    build_forest_table_data(state$forest_data, columns = c("estimate", "p")),
-    alignment = "right"
-  )
-  left_limits <- default_split_table_limits(left_spec, alignment = "left")
-  right_limits <- default_split_table_limits(right_spec, alignment = "right")
-
-  left_inner_pad <- left_limits[2] - max(left_spec$positions + left_spec$estimated_column_widths)
-  right_inner_pad <- min(right_spec$positions - right_spec$estimated_column_widths) - right_limits[1]
-
-  expect_equal(left_inner_pad, right_inner_pad, tolerance = 1e-8)
-})
