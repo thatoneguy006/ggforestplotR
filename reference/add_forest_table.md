@@ -1,8 +1,6 @@
-# Add a Side Table to a Forest Plot
+# Add a summary table to a forest plot
 
-Compose a side table onto a forest plot after the plot has been styled.
-This helper should generally be added as the final step because it
-returns a patchwork composition instead of a plain `ggplot`.
+Compose a summary table onto a forest plot.
 
 ## Usage
 
@@ -14,6 +12,7 @@ add_forest_table(
   show_n = NULL,
   show_estimate = TRUE,
   show_p = FALSE,
+  columns = NULL,
   term_header = "Term",
   n_header = "N",
   estimate_label = "Estimate",
@@ -49,7 +48,7 @@ add_forest_table(
 - show_n:
 
   Whether to show the `N` column. Defaults to `TRUE` when the underlying
-  plot data include an `n` column.
+  plot data includes an `n` column.
 
 - show_estimate:
 
@@ -57,8 +56,14 @@ add_forest_table(
 
 - show_p:
 
-  Whether to show the p-value column to the right of the estimate
-  column.
+  Whether to display the p-value column.
+
+- columns:
+
+  Optional explicit columns to display in the side table, in the order
+  they should appear. Accepts names such as `"n"` and `"term"`, or
+  positions `1:4` corresponding to `term`, `n`, `estimate`, and `p`.
+  When supplied, this overrides the default `show_*` column selection.
 
 - term_header:
 
@@ -136,9 +141,20 @@ coefs <- data.frame(
 )
 
 p <- ggforestplot(coefs, n = "sample_size", p.value = "p_value")
-add_forest_table(p, position = "left", show_n = TRUE, show_p = TRUE, estimate_label = "Beta")
+add_forest_table(
+  p,
+  position = "left",
+  show_n = TRUE,
+  show_p = TRUE,
+  estimate_label = "Beta"
+)
 
 
 ggforestplot(coefs, n = "sample_size", p.value = "p_value") +
-  add_forest_table(position = "right", show_n = TRUE, show_p = TRUE, estimate_label = "Beta")
+  add_forest_table(
+    position = "right",
+    show_n = TRUE,
+    show_p = TRUE,
+    estimate_label = "Beta"
+  )
 ```

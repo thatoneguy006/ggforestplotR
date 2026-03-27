@@ -1,11 +1,7 @@
-# Add Split Tables Around a Forest Plot
+# Add split tables around a forest plot
 
-Compose split table blocks around a forest plot so that text columns
-appear on both sides of the plotting panel. This helper should generally
-be added last because it returns a patchwork composition. Split tables
-do not draw table grid lines, left-side columns are left-justified,
-right-side columns are right-justified, and the default widths are
-estimated from the displayed text to reduce clipping.
+Compose split table blocks around a forest plot so that summary data
+appear on both sides of the plotting panel.
 
 ## Usage
 
@@ -120,18 +116,18 @@ add_split_table(
 - left_width:
 
   Optional width allocated to the left table block. By default this is
-  estimated from the displayed left-side text so long labels get more
-  room.
+  derived from the number of displayed left-side columns relative to
+  `plot_width`.
 
 - plot_width:
 
-  Optional width allocated to the forest plot panel. By default this is
-  derived from the left and right table widths.
+  Optional width allocated to the forest plot panel. Defaults to `2.5`.
 
 - right_width:
 
   Optional width allocated to the right table block. By default this is
-  estimated from the displayed right-side text.
+  derived from the number of displayed right-side columns relative to
+  `plot_width`.
 
 ## Value
 
@@ -160,5 +156,9 @@ add_split_table(
 
 
 ggforestplot(coefs, n = "sample_size", p.value = "p_value") +
-  add_split_table(left_columns = c(1, 2), right_columns = c(3, 4), estimate_label = "HR")
+  add_split_table(
+    left_columns = c(1, 2),
+    right_columns = c(3, 4),
+    estimate_label = "HR"
+  )
 ```

@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,7 +101,8 @@ need.</p>
 <h2 id="start-from-a-coefficient-table">Start from a coefficient table<a class="anchor" aria-label="anchor" href="#start-from-a-coefficient-table"></a>
 </h2>
 <p>The simplest input is a data frame with a term, estimate, and
-confidence limits.</p>
+confidence limits. If your columns use different names, map them
+explicitly.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">basic_coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  term <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Age"</span>, <span class="st">"BMI"</span>, <span class="st">"Treatment"</span><span class="op">)</span>,</span>
@@ -110,35 +111,16 @@ confidence limits.</p>
 <span>  conf.high <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.18</span>, <span class="fl">0.00</span>, <span class="fl">0.56</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">basic_coefs</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Basic forest plot"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">basic_coefs</span><span class="op">)</span></span></code></pre></div>
 <p><img src="ggforestplotR-get-started_files/figure-html/basic-plot-1.png" class="r-plt" alt="" width="768"></p>
-<p>If your columns use different names, map them explicitly.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">renamed_coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Age"</span>, <span class="st">"BMI"</span>, <span class="st">"Treatment"</span><span class="op">)</span>,</span>
-<span>  beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.10</span>, <span class="op">-</span><span class="fl">0.08</span>, <span class="fl">0.34</span><span class="op">)</span>,</span>
-<span>  lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="op">-</span><span class="fl">0.16</span>, <span class="fl">0.12</span><span class="op">)</span>,</span>
-<span>  upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.18</span>, <span class="fl">0.00</span>, <span class="fl">0.56</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span></span>
-<span>  <span class="va">renamed_coefs</span>,</span>
-<span>  term <span class="op">=</span> <span class="st">"variable"</span>,</span>
-<span>  estimate <span class="op">=</span> <span class="st">"beta"</span>,</span>
-<span>  conf.low <span class="op">=</span> <span class="st">"lower"</span>,</span>
-<span>  conf.high <span class="op">=</span> <span class="st">"upper"</span></span>
-<span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Forest plot with remapped columns"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="ggforestplotR-get-started_files/figure-html/remapped-columns-1.png" class="r-plt" alt="" width="768"></p>
 </div>
 <div class="section level2">
 <h2 id="add-grouped-sections-and-row-striping">Add grouped sections and row striping<a class="anchor" aria-label="anchor" href="#add-grouped-sections-and-row-striping"></a>
 </h2>
 <p>Use <code>grouping</code> when you want related variables separated
-into labeled panels. Add <code>striped_rows = TRUE</code> when a larger
-display benefits from clearer row tracking.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+into labeled panels. Add <code>striped_rows = TRUE</code> to color
+alternating rows in the plot.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sectioned_coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  term <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Age"</span>, <span class="st">"BMI"</span>, <span class="st">"Smoking"</span>, <span class="st">"Stage II"</span>, <span class="st">"Stage III"</span>, <span class="st">"Nodes"</span><span class="op">)</span>,</span>
 <span>  estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.10</span>, <span class="op">-</span><span class="fl">0.08</span>, <span class="fl">0.20</span>, <span class="fl">0.34</span>, <span class="fl">0.52</span>, <span class="fl">0.28</span><span class="op">)</span>,</span>
@@ -152,16 +134,15 @@ display benefits from clearer row tracking.</p>
 <span>  grouping <span class="op">=</span> <span class="st">"section"</span>,</span>
 <span>  striped_rows <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  stripe_fill <span class="op">=</span> <span class="st">"grey94"</span></span>
-<span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Grouped forest plot with striped rows"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="ggforestplotR-get-started_files/figure-html/grouped-striped-1.png" class="r-plt" alt="" width="768"></p>
 </div>
 <div class="section level2">
-<h2 id="add-a-side-table">Add a side table<a class="anchor" aria-label="anchor" href="#add-a-side-table"></a>
+<h2 id="add-a-summary-table">Add a summary table<a class="anchor" aria-label="anchor" href="#add-a-summary-table"></a>
 </h2>
-<p>Use <code><a href="../reference/add_forest_table.html">add_forest_table()</a></code> after you finish the main
-<code>ggplot2</code> styling.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>Use <code><a href="../reference/add_forest_table.html">add_forest_table()</a></code> to add a summary table to your
+forest plot.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tabled_coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  term <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Age"</span>, <span class="st">"BMI"</span>, <span class="st">"Smoking"</span>, <span class="st">"Stage II"</span>, <span class="st">"Stage III"</span><span class="op">)</span>,</span>
 <span>  estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.12</span>, <span class="op">-</span><span class="fl">0.10</span>, <span class="fl">0.18</span>, <span class="fl">0.30</span>, <span class="fl">0.46</span><span class="op">)</span>,</span>
@@ -171,7 +152,6 @@ display benefits from clearer row tracking.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">tabled_coefs</span>, n <span class="op">=</span> <span class="st">"sample_size"</span>, striped_rows <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Forest plot with a left-side summary table"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span></span>
 <span>    position <span class="op">=</span> <span class="st">"left"</span>,</span>
 <span>    show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -180,13 +160,12 @@ display benefits from clearer row tracking.</p>
 <p><img src="ggforestplotR-get-started_files/figure-html/side-table-1.png" class="r-plt" alt="" width="768"></p>
 </div>
 <div class="section level2">
-<h2 id="add-split-tables">Add split tables<a class="anchor" aria-label="anchor" href="#add-split-tables"></a>
+<h2 id="add-split-summary-tables">Add split summary tables<a class="anchor" aria-label="anchor" href="#add-split-summary-tables"></a>
 </h2>
-<p>Use <code><a href="../reference/add_split_table.html">add_split_table()</a></code> when the term columns should stay
-on the left and the summary statistics should move to the right.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">tabled_coefs</span>, n <span class="op">=</span> <span class="st">"sample_size"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Forest plot with split tables"</span><span class="op">)</span> <span class="op">+</span></span>
+<p>Use <code><a href="../reference/add_split_table.html">add_split_table()</a></code> to create a more traditional
+looking forest plot, with summary data on either side of the plot.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">tabled_coefs</span>, n <span class="op">=</span> <span class="st">"sample_size"</span>, striped_rows <span class="op">=</span> <span class="cn">T</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/add_split_table.html">add_split_table</a></span><span class="op">(</span></span>
 <span>    left_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"n"</span><span class="op">)</span>,</span>
 <span>    right_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"estimate"</span><span class="op">)</span></span>
@@ -198,11 +177,10 @@ on the left and the summary statistics should move to the right.</p>
 </h2>
 <p>If <code>broom</code> is installed, <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code> can
 work directly from a fitted model.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">wt</span> <span class="op">+</span> <span class="va">hp</span> <span class="op">+</span> <span class="va">qsec</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">fit</span>, sort_terms <span class="op">=</span> <span class="st">"descending"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Forest plot directly from an lm() object"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">fit</span>, sort_terms <span class="op">=</span> <span class="st">"descending"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="ggforestplotR-get-started_files/figure-html/model-plot-1.png" class="r-plt" alt="" width="768"></p>
 </div>
 <div class="section level2">
@@ -211,8 +189,8 @@ work directly from a fitted model.</p>
 <p>For more detail, see:</p>
 <ul>
 <li>
-<code>ggforestplotR-plot-customization</code> for styling,
-separators, and table layouts.</li>
+<code>ggforestplotR-plot-customization</code> for enhanced
+customization of the plots and summary tables.</li>
 <li>
 <code>ggforestplotR-data-helpers</code> for
 <code><a href="../reference/as_forest_data.html">as_forest_data()</a></code> and <code><a href="../reference/tidy_forest_model.html">tidy_forest_model()</a></code>.</li>

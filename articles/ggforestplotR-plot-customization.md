@@ -5,8 +5,8 @@ library(ggforestplotR)
 library(ggplot2)
 ```
 
-This article focuses on grouped displays, separator lines, table
-composition, and `ggplot2` styling.
+This article focuses on utility and enhanced customization of forest
+plots and accompanied tables.
 
 ## Base plotting data
 
@@ -33,20 +33,20 @@ ggforestplot(
   grouping = "section",
   grouping_strip_position = "right",
   striped_rows = TRUE
-) +
-  ggplot2::labs(title = "Grouped forest plot with right-side strips")
+)
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/grouping-right-1.png)
 
-## Add separator lines around a multi-level variable
+## Distinct variable separation
 
-Use `separator_group` and `separator_lines` when a categorical variable
-expands into several levels and you want visible boundaries around that
-block.
+Use `separate_groups` and `separate_lines` when you want a more distinct
+visual separation between variables. This is especially useful for
+categorical variables with many levels. `separate_groups` automatically
+appends the variable name to the level.
 
 ``` r
-race_coefs <- data.frame(
+block_coefs <- data.frame(
   term = c("race_black", "race_white", "race_other", "age", "bmi"),
   label = c("Black", "White", "Other", "Age", "BMI"),
   estimate = c(0.24, 0.08, -0.04, 0.12, -0.09),
@@ -56,13 +56,16 @@ race_coefs <- data.frame(
 )
 
 ggforestplot(
-  race_coefs,
+  block_coefs,
   label = "label",
-  separator_group = "variable_block",
-  separator_lines = TRUE,
+  separate_groups = "variable_block",
+  separate_lines = TRUE,
   striped_rows = TRUE
 ) +
-  ggplot2::labs(title = "Separator lines around a multi-level Race variable")
+  scale_y_discrete(limits = rev(c("BMI", "Age", "Race: White", 
+                                  "Race: Black", "Race: Other")))
+#> Scale for y is already present.
+#> Adding another scale for y, which will replace the existing scale.
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/separators-1.png)
@@ -70,21 +73,23 @@ ggforestplot(
 ## Add a side table
 
 [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_forest_table.md)
-is the simpler composition helper when all summary columns should sit on
-one side of the plot. Add it last, after the main plot styling, because
-it returns a patchwork composition rather than a plain `ggplot`.
+allows you to attach model information to the coefficient plot. The
+table can be added to either the left or right side and allows for some
+customization. You should **always** add the table **LAST**, after
+styling your plot because the function calls on `patchwork` internally.
+`patchwork` requires specific syntax to customize plots and is generally
+more difficult to get working correctly.
 
 ``` r
 ggforestplot(
   coefs,
   grouping = "section",
+  grouping_strip_position = "right",
   n = "sample_size",
   p.value = "p_value",
   striped_rows = TRUE
 ) +
-  ggplot2::labs(title = "Left-side summary table") +
   add_forest_table(
-    position = "left",
     show_n = TRUE,
     show_p = TRUE,
     estimate_label = "Beta"
@@ -93,11 +98,36 @@ ggforestplot(
 
 ![](ggforestplotR-plot-customization_files/figure-html/left-side-table-1.png)
 
-## Use split tables
+## Customize the table
+
+`add_forest_table` also lets you change some minor styling elements of
+the forest table.
+
+``` r
+ggforestplot(
+  coefs,
+  n = "sample_size",
+  p.value = "p_value",
+  striped_rows = TRUE
+) +
+  add_forest_table(
+    position = "left",
+    show_n = TRUE,
+    show_p = TRUE,
+    estimate_label = "Beta",
+    grid_lines = T,
+    grid_line_linetype = 2,
+    grid_line_colour = "red"
+  )
+```
+
+![](ggforestplotR-plot-customization_files/figure-html/unnamed-chunk-2-1.png)
+
+## Split tables
 
 [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_split_table.md)
-is better when term labels should stay on the left and the formatted
-statistics should move to the right. Like
+can be used to create more traditional looking forest plots. You can
+choose which summary information goes to which side. Like
 [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_forest_table.md),
 it should be added after any plot-level styling.
 
@@ -108,81 +138,62 @@ ggforestplot(
   p.value = "p_value",
   striped_rows = TRUE
 ) +
-  ggplot2::labs(title = "Split table layout") +
+  scale_x_continuous(limits = c(-.8,.8)) +
   add_split_table(
-    left_columns = c("term", "n"),
-    right_columns = c("estimate", "p"),
+    left_columns = c("term","n"),
+    right_columns = c("estimate","p"),
     estimate_label = "Beta"
-  )
+  ) 
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/split-table-1.png)
 
-You can also specify split-table columns by position instead of name.
+## Plotting other types of model coefficients
+
+You can use `exponentiate = TRUE` for models on the log-odds scale (or
+similar).
 
 ``` r
-ggforestplot(
-  coefs,
-  n = "sample_size",
-  p.value = "p_value"
-) +
-  add_split_table(
-    left_columns = c(1, 2),
-    right_columns = c(3, 4),
-    estimate_label = "Beta"
-  )
-```
+data(CO2)
 
-![](ggforestplotR-plot-customization_files/figure-html/split-table-position-1.png)
-
-## Plot odds ratios from logistic regression
-
-For logistic regression models, use `exponentiate = TRUE` so the x-axis
-is on an odds-ratio scale and the null reference stays at 1.
-
-``` r
-set.seed(123)
-
-logit_data <- data.frame(
-  age = rnorm(250, mean = 62, sd = 8),
-  bmi = rnorm(250, mean = 28, sd = 4),
-  treatment = factor(rbinom(250, 1, 0.45), labels = c("Control", "Treatment"))
-)
-
-linpred <- -9 +
-  0.09 * logit_data$age +
-  0.11 * logit_data$bmi +
-  0.9 * (logit_data$treatment == "Treatment")
-
-logit_data$event <- rbinom(250, 1, plogis(linpred))
-
-logit_fit <- glm(event ~ age + bmi + treatment, data = logit_data, family = binomial())
+l1 <- glm(Treatment ~ conc + uptake + Type, family = binomial(link = "logit"), 
+    data = CO2)
 ```
 
 ``` r
-ggforestplot(logit_fit, exponentiate = TRUE) +
-  ggplot2::labs(
-    title = "Odds ratios from a logistic regression model",
-    x = "Odds ratio"
-  )
+
+ggforestplot(l1, exponentiate = TRUE, striped_rows = T) +
+  add_forest_table(position = "left", 
+                   estimate_label = "OR", 
+                   show_p = F)
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/logistic-regression-1.png)
 
-You can attach a table here as well and relabel the estimate column for
-odds ratios explicitly.
+We can do this for survival models as well.
 
 ``` r
-ggforestplot(logit_fit, exponentiate = TRUE) +
-  ggplot2::labs(title = "Logistic regression with an odds-ratio table") +
-  add_forest_table(position = "right", estimate_label = "OR", show_p = TRUE)
+lung <- survival::lung
+
+lung <- lung |>  
+  dplyr::mutate(
+    status = dplyr::recode(status, `1` = 0, `2` = 1)
+  )
+
+s1 <- survival::coxph(Surv(time, status) ~ sex + age + ph.karno + pat.karno, data = lung)
 ```
 
-![](ggforestplotR-plot-customization_files/figure-html/logistic-regression-table-1.png)
+``` r
+ggforestplot(s1, exponentiate = T, striped_rows = T) +
+  add_forest_table(estimate_label = "HR")
+```
 
-## Compare multiple estimates per term
+![](ggforestplotR-plot-customization_files/figure-html/survival-analysis-plot-1.png)
 
-The `group` argument is for multiple estimates on the same row.
+## Compare multiple estimates
+
+The `group` argument is handy when comparing estimates from several
+models.
 
 ``` r
 comparison_coefs <- data.frame(
@@ -199,45 +210,10 @@ ggforestplot(
   group = "model",
   grouping = "section",
   striped_rows = TRUE,
-  dodge_width = 0.5
+  dodge_width = 0.5,
+  grouping_strip_position = "right"
 ) +
-  ggplot2::labs(title = "Comparing two model specifications")
+  theme(legend.position = "bottom")
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/comparison-1.png)
-
-## Finish with ggplot2 styling
-
-The returned object is still a normal `ggplot` until you add a table
-helper.
-
-``` r
-ggforestplot(
-  comparison_coefs,
-  group = "model",
-  grouping = "section",
-  striped_rows = TRUE,
-  stripe_fill = "#F3F4F6",
-  zero_line_colour = "#9CA3AF",
-  zero_line_linetype = 3,
-  point_size = 2.8,
-  line_size = 0.6
-) +
-  ggplot2::labs(
-    title = "Customized grouped forest plot",
-    x = "Effect estimate",
-    subtitle = "Clinical and tumor terms shown in separate sections"
-  ) +
-  ggplot2::scale_colour_manual(
-    values = c("Model A" = "#1D4ED8", "Model B" = "#D97706")
-  ) +
-  ggplot2::theme(
-    legend.position = "top",
-    panel.grid.major.y = ggplot2::element_blank(),
-    strip.background = ggplot2::element_rect(fill = "#E5E7EB", colour = NA),
-    strip.text.y.left = ggplot2::element_text(face = "bold"),
-    plot.title.position = "plot"
-  )
-```
-
-![](ggforestplotR-plot-customization_files/figure-html/custom-theme-1.png)

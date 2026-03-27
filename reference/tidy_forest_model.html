@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,12 +42,12 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Tidy a model object for forest plotting</h1>
-
+      <small class="dont-index">Source: <a href="https://github.com/thatoneguy006/ggforestplotR/blob/HEAD/R/tidy_forest_model.R" class="external-link"><code>R/tidy_forest_model.R</code></a></small>
       <div class="d-none name"><code>tidy_forest_model.Rd</code></div>
     </div>
 
     <div class="ref-description section level2">
-    <p>Uses <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> to convert a fitted model into forest-plot data.</p>
+    <p>Uses <code><a href="https://broom.tidymodels.org/reference/reexports.html" class="external-link">broom::tidy()</a></code> to convert a fitted model into forest-plot data.</p>
     </div>
 
     <div class="section level2">
@@ -64,24 +64,32 @@
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <p></p>
+
+
 <dl><dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
-<dd><p>A fitted model object supported by <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>.</p></dd>
+<dd><p>A fitted model object supported by <code><a href="https://broom.tidymodels.org/reference/reexports.html" class="external-link">broom::tidy()</a></code>.</p></dd>
 
-  <dt id="arg-conf-int">conf.int<a class="anchor" aria-label="anchor" href="#arg-conf-int"></a></dt>
-<dd><p>Logical; if TRUE, request confidence intervals from <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>.</p></dd>
 
-  <dt id="arg-conf-level">conf.level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
+<dt id="arg-conf-int">conf.int<a class="anchor" aria-label="anchor" href="#arg-conf-int"></a></dt>
+<dd><p>Logical; if <code>TRUE</code>, request confidence intervals from
+<code><a href="https://broom.tidymodels.org/reference/reexports.html" class="external-link">broom::tidy()</a></code>.</p></dd>
+
+
+<dt id="arg-conf-level">conf.level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
 <dd><p>Confidence level for intervals.</p></dd>
 
-  <dt id="arg-exponentiate">exponentiate<a class="anchor" aria-label="anchor" href="#arg-exponentiate"></a></dt>
-<dd><p>Logical; passed through to <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>.</p></dd>
 
-  <dt id="arg-intercept">intercept<a class="anchor" aria-label="anchor" href="#arg-intercept"></a></dt>
-<dd><p>Logical; if FALSE, drop the intercept term.</p></dd>
+<dt id="arg-exponentiate">exponentiate<a class="anchor" aria-label="anchor" href="#arg-exponentiate"></a></dt>
+<dd><p>Logical; passed through to <code><a href="https://broom.tidymodels.org/reference/reexports.html" class="external-link">broom::tidy()</a></code>.</p></dd>
 
-  <dt id="arg-sort-terms">sort_terms<a class="anchor" aria-label="anchor" href="#arg-sort-terms"></a></dt>
-<dd><p>How to sort rows: "none", "descending", or "ascending".</p></dd>
+
+<dt id="arg-intercept">intercept<a class="anchor" aria-label="anchor" href="#arg-intercept"></a></dt>
+<dd><p>Logical; if <code>FALSE</code>, drop the intercept term.</p></dd>
+
+
+<dt id="arg-sort-terms">sort_terms<a class="anchor" aria-label="anchor" href="#arg-sort-terms"></a></dt>
+<dd><p>How to sort rows: <code>"none"</code>, <code>"descending"</code>, or
+<code>"ascending"</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -91,35 +99,28 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">wt</span> <span class="op">+</span> <span class="va">hp</span> <span class="op">+</span> <span class="va">qsec</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"broom"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">wt</span> <span class="op">+</span> <span class="va">hp</span> <span class="op">+</span> <span class="va">qsec</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">tidy_forest_model</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">tidy_forest_model</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   term    estimate   conf.low   conf.high label group grouping separator_group</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   wt -4.35879720 -5.9006341 -2.81696034    wt  &lt;NA&gt;     &lt;NA&gt;            &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   hp -0.01782227 -0.0485098  0.01286526    hp  &lt;NA&gt;     &lt;NA&gt;            &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 qsec  0.51083369 -0.3888708  1.41053822  qsec  &lt;NA&gt;     &lt;NA&gt;            &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      n      p.value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 &lt;NA&gt; 3.217222e-06</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 &lt;NA&gt; 2.441762e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 &lt;NA&gt; 2.546284e-01</span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">logit_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">250</span>, mean <span class="op">=</span> <span class="fl">62</span>, sd <span class="op">=</span> <span class="fl">8</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    bmi <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">250</span>, mean <span class="op">=</span> <span class="fl">28</span>, sd <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">250</span>, <span class="fl">1</span>, <span class="fl">0.45</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Control"</span>, <span class="st">"Treatment"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">linpred</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">9</span> <span class="op">+</span> <span class="fl">0.09</span> <span class="op">*</span> <span class="va">logit_data</span><span class="op">$</span><span class="va">age</span> <span class="op">+</span> <span class="fl">0.11</span> <span class="op">*</span> <span class="va">logit_data</span><span class="op">$</span><span class="va">bmi</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>    <span class="fl">0.9</span> <span class="op">*</span> <span class="op">(</span><span class="va">logit_data</span><span class="op">$</span><span class="va">treatment</span> <span class="op">==</span> <span class="st">"Treatment"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">logit_data</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">250</span>, <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="va">linpred</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">logit_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">event</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">bmi</span> <span class="op">+</span> <span class="va">treatment</span>, data <span class="op">=</span> <span class="va">logit_data</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">logit_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">250</span>, mean <span class="op">=</span> <span class="fl">62</span>, sd <span class="op">=</span> <span class="fl">8</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  bmi <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">250</span>, mean <span class="op">=</span> <span class="fl">28</span>, sd <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">250</span>, <span class="fl">1</span>, <span class="fl">0.45</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Control"</span>, <span class="st">"Treatment"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">linpred</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">9</span> <span class="op">+</span> <span class="fl">0.09</span> <span class="op">*</span> <span class="va">logit_data</span><span class="op">$</span><span class="va">age</span> <span class="op">+</span> <span class="fl">0.11</span> <span class="op">*</span> <span class="va">logit_data</span><span class="op">$</span><span class="va">bmi</span> <span class="op">+</span></span></span>
-<span class="r-in"><span>  <span class="fl">0.9</span> <span class="op">*</span> <span class="op">(</span><span class="va">logit_data</span><span class="op">$</span><span class="va">treatment</span> <span class="op">==</span> <span class="st">"Treatment"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">logit_data</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">250</span>, <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="va">linpred</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">logit_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">event</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">bmi</span> <span class="op">+</span> <span class="va">treatment</span>, data <span class="op">=</span> <span class="va">logit_data</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">tidy_forest_model</span><span class="op">(</span><span class="va">logit_fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">tidy_forest_model</span><span class="op">(</span><span class="va">logit_fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 term estimate conf.low conf.high              label group</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                age 1.103890 1.061512  1.151411                age  &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2                bmi 1.118858 1.043220  1.204389                bmi  &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3 treatmentTreatment 3.133149 1.782915  5.613038 treatmentTreatment  &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   grouping separator_group    n      p.value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   grouping separate_groups    n      p.value</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt; 1.719452e-06</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt; 2.093412e-03</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt; 9.087778e-05</span>

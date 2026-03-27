@@ -1,9 +1,7 @@
 # Draw a ggplot2 forest plot
 
 Builds a forest plot from standardized coefficient data or directly from
-a fitted model, with optional grouped sections, striped rows, separator
-lines for labeled variable blocks, and controls for point shape and
-confidence-interval staples.
+a fitted model.
 
 ## Usage
 
@@ -18,7 +16,7 @@ ggforestplot(
   group = NULL,
   grouping = NULL,
   grouping_strip_position = c("left", "right"),
-  separator_group = NULL,
+  separate_groups = NULL,
   n = NULL,
   p.value = NULL,
   exponentiate = FALSE,
@@ -28,7 +26,7 @@ ggforestplot(
   line_size = 0.5,
   staple_width = 0.2,
   dodge_width = 0.6,
-  separator_lines = FALSE,
+  separate_lines = FALSE,
   separator_line_linetype = 2,
   separator_line_colour = "black",
   separator_line_size = 0.4,
@@ -46,21 +44,62 @@ ggforestplot(
 - data:
 
   Either a tidy coefficient data frame or a model object supported by
-  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html).
+  [`broom::tidy()`](https://broom.tidymodels.org/reference/reexports.html).
 
-- term, estimate, conf.low, conf.high, label, group, grouping,
-  grouping_strip_position, separator_group, n, p.value:
+- term:
 
-  Column names used when `data` is a data frame.
+  Column name holding the model term identifiers.
+
+- estimate:
+
+  Column name holding the point estimates.
+
+- conf.low:
+
+  Column name holding the lower confidence bounds.
+
+- conf.high:
+
+  Column name holding the upper confidence bounds.
+
+- label:
+
+  Optional column name used for the displayed row labels.
+
+- group:
+
+  Optional column name used for color-grouping estimates.
+
+- grouping:
+
+  Optional column name used to split rows into grouped plot sections.
+
+- grouping_strip_position:
+
+  Positioning for grouped section strips.
+
+- separate_groups:
+
+  Optional column name used to identify labeled variable blocks that can
+  be outlined with grid lines.
+
+- n:
+
+  Optional column name holding sample sizes or other N labels for table
+  helpers.
+
+- p.value:
+
+  Optional column name holding p-values.
 
 - exponentiate:
 
-  Logical; if TRUE, draw the estimate axis on a log scale with a null
-  line at 1.
+  Logical; if `TRUE`, transform the estimates and draw the axis on the
+  log scale with the null line at 1.
 
 - sort_terms:
 
-  How to sort rows: "none", "descending", or "ascending".
+  How to sort rows: `"none"`, `"descending"`, or `"ascending"`.
 
 - point_size:
 
@@ -82,10 +121,10 @@ ggforestplot(
 
   Horizontal dodging used for grouped estimates.
 
-- separator_lines:
+- separate_lines:
 
-  Logical; if TRUE, draw dashed separator lines around each labeled
-  block identified by `separator_group`.
+  Logical; if `TRUE`, draw grid lines around each labeled block
+  identified by `separate_groups`.
 
 - separator_line_linetype:
 
@@ -101,7 +140,7 @@ ggforestplot(
 
 - striped_rows:
 
-  Logical; if TRUE, shade alternating rows.
+  Logical; if `TRUE`, shade alternating rows.
 
 - stripe_fill:
 
@@ -113,7 +152,7 @@ ggforestplot(
 
 - zero_line:
 
-  Logical; if TRUE, draw a null reference line.
+  Logical; if `TRUE`, draw a null reference line.
 
 - zero_line_linetype:
 
@@ -126,8 +165,9 @@ ggforestplot(
 ## Value
 
 A `ggplot` object. Use standard `ggplot2` functions such as
-[`labs()`](https://ggplot2.tidyverse.org/reference/labs.html) for plot
-labels, and add composition helpers after styling the main plot.
+[`ggplot2::labs()`](https://ggplot2.tidyverse.org/reference/labs.html)
+for plot labels, and add composition helpers after styling the main
+plot.
 
 ## Examples
 
@@ -142,6 +182,5 @@ coefs <- data.frame(
 ggforestplot(coefs)
 
 
-ggforestplot(coefs, striped_rows = TRUE, point_shape = 17) +
-  ggplot2::labs(title = "Basic forest plot")
+ggforestplot(coefs, striped_rows = TRUE, point_shape = 17)
 ```

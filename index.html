@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">ggforestplotR</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,30 +65,34 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="ggforestplotr">ggforestplotR<a class="anchor" aria-label="anchor" href="#ggforestplotr"></a>
+<div class="page-header"><h1 id="ggforestplotr-">ggforestplotR <img src="reference/figures/ggforestplotR_logo.png" align="right" height="160" alt=""><a class="anchor" aria-label="anchor" href="#ggforestplotr-"></a>
 </h1></div>
+<hr>
+<!-- badges: start -->
+<div class="section level2">
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h2>
 <p><code>ggforestplotR</code> provides a <code>ggplot2</code>-first workflow for building forest plots from tidy coefficient tables or fitted model objects.</p>
+</div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>Install the current development version from GitHub.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co">#install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"thatoneguy006/ggforestplotR"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="core-workflows">Core workflows<a class="anchor" aria-label="anchor" href="#core-workflows"></a>
+<h2 id="supported-workflows">Supported workflows<a class="anchor" aria-label="anchor" href="#supported-workflows"></a>
 </h2>
-<p>The package currently supports three common workflows:</p>
+<p><code>ggforestplotR</code> currently supports two core workflows:</p>
 <ul>
-<li>Build a forest plot directly from a coefficient table</li>
-<li>Start from a fitted model and tidy it for plotting with <code>broom</code>
-</li>
-<li>Add side tables or split-table layouts for reporting-ready output</li>
+<li>Plot directly from a table of coefficient data.</li>
+<li>Plot using data from a fitted model object.</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="quick-example">Quick example<a class="anchor" aria-label="anchor" href="#quick-example"></a>
+<h2 id="basic-example">Basic example<a class="anchor" aria-label="anchor" href="#basic-example"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://thatoneguy006.github.io/ggforestplotR/">ggforestplotR</a></span><span class="op">)</span></span>
@@ -106,10 +110,34 @@
 <span>  <span class="va">sectioned_coefs</span>,</span>
 <span>  grouping <span class="op">=</span> <span class="st">"section"</span>,</span>
 <span>  striped_rows <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  stripe_fill <span class="op">=</span> <span class="st">"grey94"</span>,</span>
+<span>  grouping_strip_position <span class="op">=</span> <span class="st">"right"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-forestplot-example.png"></p>
+</div>
+<div class="section level2">
+<h2 id="add-a-summary-table">Add a summary table<a class="anchor" aria-label="anchor" href="#add-a-summary-table"></a>
+</h2>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span></span>
+<span>  <span class="va">sectioned_coefs</span>,</span>
+<span>  striped_rows <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  stripe_fill <span class="op">=</span> <span class="st">"grey94"</span></span>
 <span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Grouped forest plot with striped rows"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-forestplot-example.png"></p>
+<span>  <span class="fu"><a href="reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-forestplot-table-example.png"></p>
+</div>
+<div class="section level2">
+<h2 id="add-a-split-summary-table">Add a split summary table<a class="anchor" aria-label="anchor" href="#add-a-split-summary-table"></a>
+</h2>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span></span>
+<span>  <span class="va">sectioned_coefs</span>,</span>
+<span>  striped_rows <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  stripe_fill <span class="op">=</span> <span class="st">"grey94"</span></span>
+<span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="reference/add_split_table.html">add_split_table</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-forestplot-split-table-example.png"></p>
 </div>
 <div class="section level2">
 <h2 id="learn-more">Learn more<a class="anchor" aria-label="anchor" href="#learn-more"></a>
@@ -132,7 +160,7 @@
 <li>
 <code><a href="reference/add_forest_table.html">add_forest_table()</a></code> attaches a summary table to the left or right side of the plot.</li>
 <li>
-<code><a href="reference/add_split_table.html">add_split_table()</a></code> creates a more traditional forestplot with tables on both sides of the plot.</li>
+<code><a href="reference/add_split_table.html">add_split_table()</a></code> creates a more traditional forestplot layout with table columns on both sides of the plot.</li>
 <li>
 <code><a href="reference/as_forest_data.html">as_forest_data()</a></code> standardizes custom coefficient data.</li>
 <li>

@@ -15,7 +15,7 @@ as_forest_data(
   label = term,
   group = NULL,
   grouping = NULL,
-  separator_group = NULL,
+  separate_groups = NULL,
   n = NULL,
   p.value = NULL,
   exponentiate = FALSE,
@@ -58,7 +58,7 @@ as_forest_data(
 
   Optional column name used to split rows into grouped plot sections.
 
-- separator_group:
+- separate_groups:
 
   Optional column name used to identify labeled variable blocks that can
   be outlined with separator lines.
@@ -74,11 +74,12 @@ as_forest_data(
 
 - exponentiate:
 
-  Logical; if TRUE, require positive values for estimates and intervals.
+  Logical; if `TRUE`, require positive values for estimates and
+  intervals.
 
 - sort_terms:
 
-  How to sort rows: "none", "descending", or "ascending".
+  How to sort rows: `"none"`, `"descending"`, or `"ascending"`.
 
 ## Value
 
@@ -107,7 +108,7 @@ as_forest_data(
 #> 1       Age     0.10     0.02      0.18       Age  <NA>     <NA>
 #> 2       BMI    -0.08    -0.16      0.00       BMI  <NA>     <NA>
 #> 3 Treatment     0.34     0.12      0.56 Treatment  <NA>     <NA>
-#>   separator_group    n p.value
+#>   separate_groups    n p.value
 #> 1            <NA> <NA>      NA
 #> 2            <NA> <NA>      NA
 #> 3            <NA> <NA>      NA
