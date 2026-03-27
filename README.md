@@ -10,7 +10,12 @@ from tidy coefficient tables or fitted model objects.
 
 ## Installation
 
-Install the current development version from GitHub.
+### CRAN
+```r
+install.packages("ggforestplotR")
+```
+
+### Development
 
 ```r
 #install.packages("remotes")
