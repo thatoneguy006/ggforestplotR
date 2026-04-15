@@ -1,11 +1,11 @@
 # ggforestplotR 0.1.1
 
-## Improvements
+## Minor Changes
 
-- Added `events` column support across `ggforestplot()`, `as_forest_data()`, `add_forest_table()`, and `add_split_table()`.
-- Added table header styling controls for font size, font face, and font family in both table helpers.
+- Added `events` column support across `ggforestplot()`, `as_forest_data()`, `add_forest_table()`, and `add_split_table()`. (Thanks @sritchie73 for the suggestion)
+- Added table header styling controls for font size, font face, and font family in both table helpers. (Thanks @sritchie73 for the suggestion)
 - Split table composition code into dedicated source files to simplify maintenance of the public API.
-- Refined split-table examples and documentation to match the expanded `1:5` numeric column mapping.
+- Refined split-table examples and documentation to match the expanded numeric column mapping.
 
 # ggforestplotR 0.1.0
 
