@@ -57,15 +57,20 @@
 <span>  position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"left"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
 <span>  show_terms <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_n <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  show_events <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  show_estimate <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_p <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  columns <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  term_header <span class="op">=</span> <span class="st">"Term"</span>,</span>
 <span>  n_header <span class="op">=</span> <span class="st">"N"</span>,</span>
+<span>  events_header <span class="op">=</span> <span class="st">"Events"</span>,</span>
 <span>  estimate_label <span class="op">=</span> <span class="st">"Estimate"</span>,</span>
 <span>  p_header <span class="op">=</span> <span class="st">"P-value"</span>,</span>
 <span>  digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  text_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  header_text_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  header_fontface <span class="op">=</span> <span class="st">"bold"</span>,</span>
+<span>  header_family <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  striped_rows <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stripe_fill <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stripe_colour <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -99,6 +104,11 @@ forest plot.</p></dd>
 underlying plot data includes an <code>n</code> column.</p></dd>
 
 
+<dt id="arg-show-events">show_events<a class="anchor" aria-label="anchor" href="#arg-show-events"></a></dt>
+<dd><p>Whether to show the <code>Events</code> column. Defaults to <code>TRUE</code>
+when the underlying plot data includes an <code>events</code> column.</p></dd>
+
+
 <dt id="arg-show-estimate">show_estimate<a class="anchor" aria-label="anchor" href="#arg-show-estimate"></a></dt>
 <dd><p>Whether to show the formatted estimate and confidence
 interval column.</p></dd>
@@ -110,8 +120,9 @@ interval column.</p></dd>
 
 <dt id="arg-columns">columns<a class="anchor" aria-label="anchor" href="#arg-columns"></a></dt>
 <dd><p>Optional explicit columns to display in the side table, in
-the order they should appear. Accepts names such as <code>"n"</code> and <code>"term"</code>,
-or positions <code>1:4</code> corresponding to <code>term</code>, <code>n</code>, <code>estimate</code>, and <code>p</code>.
+the order they should appear. Accepts names such as <code>"n"</code>, <code>"events"</code>,
+and <code>"term"</code>, or positions <code>1:5</code> corresponding to <code>term</code>, <code>n</code>, <code>events</code>,
+<code>estimate</code>, and <code>p</code>.
 When supplied, this overrides the default <code>show_*</code> column selection.</p></dd>
 
 
@@ -121,6 +132,10 @@ When supplied, this overrides the default <code>show_*</code> column selection.<
 
 <dt id="arg-n-header">n_header<a class="anchor" aria-label="anchor" href="#arg-n-header"></a></dt>
 <dd><p>Header text for the <code>N</code> column.</p></dd>
+
+
+<dt id="arg-events-header">events_header<a class="anchor" aria-label="anchor" href="#arg-events-header"></a></dt>
+<dd><p>Header text for the <code>Events</code> column.</p></dd>
 
 
 <dt id="arg-estimate-label">estimate_label<a class="anchor" aria-label="anchor" href="#arg-estimate-label"></a></dt>
@@ -138,6 +153,20 @@ Defaults to <code>2</code>.</p></dd>
 
 <dt id="arg-text-size">text_size<a class="anchor" aria-label="anchor" href="#arg-text-size"></a></dt>
 <dd><p>Text size for table contents. Defaults to <code>3.2</code>.</p></dd>
+
+
+<dt id="arg-header-text-size">header_text_size<a class="anchor" aria-label="anchor" href="#arg-header-text-size"></a></dt>
+<dd><p>Header text size for table column labels. Defaults
+to <code>11</code>.</p></dd>
+
+
+<dt id="arg-header-fontface">header_fontface<a class="anchor" aria-label="anchor" href="#arg-header-fontface"></a></dt>
+<dd><p>Font face used for table column labels. Defaults to
+<code>"bold"</code>.</p></dd>
+
+
+<dt id="arg-header-family">header_family<a class="anchor" aria-label="anchor" href="#arg-header-family"></a></dt>
+<dd><p>Optional font family used for table column labels.</p></dd>
 
 
 <dt id="arg-striped-rows">striped_rows<a class="anchor" aria-label="anchor" href="#arg-striped-rows"></a></dt>

@@ -1,8 +1,8 @@
-# ggforestplotR <img src="reference/figures/ggforestplotR_logo.png" align="right" height="180">
+# ggforestplotR ![](reference/figures/ggforestplotR_logo.png)
 
--------------------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
-# Overview
+## Overview
 
 `ggforestplotR` provides a `ggplot2`-first workflow for building forest
 plots from tidy coefficient tables or fitted model objects.

@@ -10,16 +10,21 @@ add_split_table(
   plot = NULL,
   show_terms = TRUE,
   show_n = NULL,
+  show_events = NULL,
   show_estimate = TRUE,
   show_p = FALSE,
   left_columns = NULL,
   right_columns = NULL,
   term_header = "Term",
   n_header = "N",
+  events_header = "Events",
   estimate_label = "Estimate",
   p_header = "P-value",
   digits = NULL,
   text_size = NULL,
+  header_text_size = NULL,
+  header_fontface = "bold",
+  header_family = NULL,
   striped_rows = NULL,
   stripe_fill = NULL,
   stripe_colour = NULL,
@@ -48,6 +53,12 @@ add_split_table(
   when `left_columns` is not supplied. Defaults to `TRUE` when the
   underlying plot data include an `n` column.
 
+- show_events:
+
+  Whether to include the `Events` column in the default left-side
+  selection when `left_columns` is not supplied. Defaults to `TRUE` when
+  the underlying plot data include an `events` column.
+
 - show_estimate:
 
   Whether to include the formatted estimate and confidence interval
@@ -62,14 +73,15 @@ add_split_table(
 - left_columns:
 
   Optional explicit columns to place on the left side of the forest
-  plot. Accepts names such as `"term"` and `"n"`, or positions `1:4`
-  corresponding to `term`, `n`, `estimate`, and `p`.
+  plot. Accepts names such as `"term"`, `"n"`, and `"events"`, or
+  positions `1:5` corresponding to `term`, `n`, `events`, `estimate`,
+  and `p`.
 
 - right_columns:
 
   Optional explicit columns to place on the right side of the forest
-  plot. Accepts names such as `"estimate"` and `"p"`, or positions `1:4`
-  corresponding to `term`, `n`, `estimate`, and `p`.
+  plot. Accepts names such as `"estimate"` and `"p"`, or positions `1:5`
+  corresponding to `term`, `n`, `events`, `estimate`, and `p`.
 
 - term_header:
 
@@ -78,6 +90,10 @@ add_split_table(
 - n_header:
 
   Header text for the `N` column.
+
+- events_header:
+
+  Header text for the `Events` column.
 
 - estimate_label:
 
@@ -95,6 +111,18 @@ add_split_table(
 - text_size:
 
   Text size for table contents. Defaults to `3.2`.
+
+- header_text_size:
+
+  Header text size for table column labels. Defaults to `11`.
+
+- header_fontface:
+
+  Font face used for table column labels. Defaults to `"bold"`.
+
+- header_family:
+
+  Optional font family used for table column labels.
 
 - striped_rows:
 
@@ -158,7 +186,7 @@ add_split_table(
 ggforestplot(coefs, n = "sample_size", p.value = "p_value") +
   add_split_table(
     left_columns = c(1, 2),
-    right_columns = c(3, 4),
+    right_columns = c(4, 5),
     estimate_label = "HR"
   )
 ```

@@ -17,6 +17,7 @@ as_forest_data(
   grouping = NULL,
   separate_groups = NULL,
   n = NULL,
+  events = NULL,
   p.value = NULL,
   exponentiate = FALSE,
   sort_terms = c("none", "descending", "ascending")
@@ -68,6 +69,11 @@ as_forest_data(
   Optional column name holding sample sizes or other N labels for table
   helpers.
 
+- events:
+
+  Optional column name holding event counts or event labels for table
+  helpers.
+
 - p.value:
 
   Optional column name holding p-values.
@@ -108,8 +114,8 @@ as_forest_data(
 #> 1       Age     0.10     0.02      0.18       Age  <NA>     <NA>
 #> 2       BMI    -0.08    -0.16      0.00       BMI  <NA>     <NA>
 #> 3 Treatment     0.34     0.12      0.56 Treatment  <NA>     <NA>
-#>   separate_groups    n p.value
-#> 1            <NA> <NA>      NA
-#> 2            <NA> <NA>      NA
-#> 3            <NA> <NA>      NA
+#>   separate_groups    n events p.value
+#> 1            <NA> <NA>   <NA>      NA
+#> 2            <NA> <NA>   <NA>      NA
+#> 3            <NA> <NA>   <NA>      NA
 ```

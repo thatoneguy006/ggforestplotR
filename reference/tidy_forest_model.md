@@ -75,8 +75,8 @@ if (requireNamespace("broom", quietly = TRUE)) {
 #> 1                age 1.103890 1.061512  1.151411                age  <NA>
 #> 2                bmi 1.118858 1.043220  1.204389                bmi  <NA>
 #> 3 treatmentTreatment 3.133149 1.782915  5.613038 treatmentTreatment  <NA>
-#>   grouping separate_groups    n      p.value
-#> 1     <NA>            <NA> <NA> 1.719452e-06
-#> 2     <NA>            <NA> <NA> 2.093412e-03
-#> 3     <NA>            <NA> <NA> 9.087778e-05
+#>   grouping separate_groups    n events      p.value
+#> 1     <NA>            <NA> <NA>   <NA> 1.719452e-06
+#> 2     <NA>            <NA> <NA>   <NA> 2.093412e-03
+#> 3     <NA>            <NA> <NA>   <NA> 9.087778e-05
 ```

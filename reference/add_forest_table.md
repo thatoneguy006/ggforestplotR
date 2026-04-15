@@ -10,15 +10,20 @@ add_forest_table(
   position = c("left", "right"),
   show_terms = TRUE,
   show_n = NULL,
+  show_events = NULL,
   show_estimate = TRUE,
   show_p = FALSE,
   columns = NULL,
   term_header = "Term",
   n_header = "N",
+  events_header = "Events",
   estimate_label = "Estimate",
   p_header = "P-value",
   digits = NULL,
   text_size = NULL,
+  header_text_size = NULL,
+  header_fontface = "bold",
+  header_family = NULL,
   striped_rows = NULL,
   stripe_fill = NULL,
   stripe_colour = NULL,
@@ -50,6 +55,11 @@ add_forest_table(
   Whether to show the `N` column. Defaults to `TRUE` when the underlying
   plot data includes an `n` column.
 
+- show_events:
+
+  Whether to show the `Events` column. Defaults to `TRUE` when the
+  underlying plot data includes an `events` column.
+
 - show_estimate:
 
   Whether to show the formatted estimate and confidence interval column.
@@ -61,9 +71,10 @@ add_forest_table(
 - columns:
 
   Optional explicit columns to display in the side table, in the order
-  they should appear. Accepts names such as `"n"` and `"term"`, or
-  positions `1:4` corresponding to `term`, `n`, `estimate`, and `p`.
-  When supplied, this overrides the default `show_*` column selection.
+  they should appear. Accepts names such as `"n"`, `"events"`, and
+  `"term"`, or positions `1:5` corresponding to `term`, `n`, `events`,
+  `estimate`, and `p`. When supplied, this overrides the default
+  `show_*` column selection.
 
 - term_header:
 
@@ -72,6 +83,10 @@ add_forest_table(
 - n_header:
 
   Header text for the `N` column.
+
+- events_header:
+
+  Header text for the `Events` column.
 
 - estimate_label:
 
@@ -89,6 +104,18 @@ add_forest_table(
 - text_size:
 
   Text size for table contents. Defaults to `3.2`.
+
+- header_text_size:
+
+  Header text size for table column labels. Defaults to `11`.
+
+- header_fontface:
+
+  Font face used for table column labels. Defaults to `"bold"`.
+
+- header_family:
+
+  Optional font family used for table column labels.
 
 - striped_rows:
 
