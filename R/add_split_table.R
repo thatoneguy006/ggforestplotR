@@ -317,7 +317,7 @@
 #' ggforestplot(coefs, n = "sample_size", p.value = "p_value") +
 #'   add_split_table(
 #'     left_columns = c(1, 2),
-#'     right_columns = c(3, 4),
+#'     right_columns = c(4, 5),
 #'     estimate_label = "HR"
 #'   )
 add_split_table <- function(plot = NULL,
