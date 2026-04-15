@@ -493,7 +493,10 @@ build_table_line_data <- function(stripe_data, has_groupings = FALSE) {
 #' strings by splitting on newlines and returning the widest line.
 #' @keywords internal
 #' @noRd
-measure_max_grob_width <- function(text, fontsize_pt, fontface = "plain") {
+measure_max_grob_width <- function(text,
+                                   fontsize_pt,
+                                   fontface = "plain",
+                                   fontfamily = "") {
   text <- as.character(text)
   text[is.na(text)] <- ""
   
@@ -507,7 +510,14 @@ measure_max_grob_width <- function(text, fontsize_pt, fontface = "plain") {
       if (!nzchar(line)) return(0)
       grid::convertWidth(
         grid::grobWidth(
-          grid::textGrob(line, gp = grid::gpar(fontsize = fontsize_pt, fontface = fontface))
+          grid::textGrob(
+            line,
+            gp = grid::gpar(
+              fontsize = fontsize_pt,
+              fontface = fontface,
+              fontfamily = fontfamily
+            )
+          )
         ),
         "inches",
         valueOnly = TRUE
@@ -522,15 +532,23 @@ measure_max_grob_width <- function(text, fontsize_pt, fontface = "plain") {
 #' max of the header and all cell values.
 #' @keywords internal
 #' @noRd
-measure_table_text_widths <- function(table_spec, text_size = 3.2) {
+measure_table_text_widths <- function(table_spec,
+                                      text_size = 3.2,
+                                      header_text_size = 11,
+                                      header_fontface = "bold",
+                                      header_family = "") {
   text_size_pt <- text_size * (72.27 / 25.4)
-  header_size_pt <- 11
   
   stats::setNames(vapply(seq_along(table_spec$column_keys), function(i) {
     key <- table_spec$column_keys[[i]]
     values <- table_spec$table_data$text[table_spec$table_data$column_key == key]
     max(
-      measure_max_grob_width(table_spec$headers[[i]], fontsize_pt = header_size_pt, fontface = "bold"),
+      measure_max_grob_width(
+        table_spec$headers[[i]],
+        fontsize_pt = header_text_size,
+        fontface = header_fontface,
+        fontfamily = header_family
+      ),
       measure_max_grob_width(values, fontsize_pt = text_size_pt, fontface = "plain")
     )
   }, numeric(1)), table_spec$column_keys)
@@ -553,9 +571,18 @@ column_base_padding <- function(column_key) {
 #' @noRd
 estimate_split_column_widths <- function(table_spec,
                                          text_size = 3.2,
+                                         header_text_size = 11,
+                                         header_fontface = "bold",
+                                         header_family = "",
                                          alignment = c("left", "center", "right")) {
   alignment <- match.arg(alignment)
-  text_widths <- measure_table_text_widths(table_spec, text_size = text_size)
+  text_widths <- measure_table_text_widths(
+    table_spec,
+    text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family
+  )
   alignment_padding <- switch(alignment, left = 0.06, right = 0.06, center = 0.05)
   
   stats::setNames(vapply(seq_along(table_spec$column_keys), function(i) {
@@ -575,10 +602,26 @@ estimate_split_column_widths <- function(table_spec,
 #' @noRd
 layout_split_table_spec <- function(table_spec,
                                     text_size = 3.2,
+                                    header_text_size = 11,
+                                    header_fontface = "bold",
+                                    header_family = "",
                                     alignment = c("left", "right")) {
   alignment <- match.arg(alignment)
-  column_widths <- estimate_split_column_widths(table_spec, text_size = text_size, alignment = alignment)
-  text_widths <- measure_table_text_widths(table_spec, text_size = text_size)
+  column_widths <- estimate_split_column_widths(
+    table_spec,
+    text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family,
+    alignment = alignment
+  )
+  text_widths <- measure_table_text_widths(
+    table_spec,
+    text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family
+  )
   gap <- 0.2
   
   positions <- if (alignment == "left") {
@@ -601,9 +644,26 @@ layout_split_table_spec <- function(table_spec,
   table_spec
 }
 
-layout_center_table_spec <- function(table_spec, text_size = 3.2) {
-  column_widths <- estimate_split_column_widths(table_spec, text_size = text_size, alignment = "center")
-  text_widths <- measure_table_text_widths(table_spec, text_size = text_size)
+layout_center_table_spec <- function(table_spec,
+                                     text_size = 3.2,
+                                     header_text_size = 11,
+                                     header_fontface = "bold",
+                                     header_family = "") {
+  column_widths <- estimate_split_column_widths(
+    table_spec,
+    text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family,
+    alignment = "center"
+  )
+  text_widths <- measure_table_text_widths(
+    table_spec,
+    text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family
+  )
   gap <- 0.55
   left_edges <- cumsum(c(0, utils::head(column_widths + gap, -1)))
   positions <- left_edges + column_widths / 2
@@ -708,7 +768,10 @@ build_forest_table_plot <- function(table_spec,
                                     x_limits = NULL,
                                     plot_margin = ggplot2::margin(5.5, 4, 5.5, 4),
                                     text_hjust = 0.5,
-                                    header_hjust = 0.5) {
+                                    header_hjust = 0.5,
+                                    header_text_size = 11,
+                                    header_fontface = "bold",
+                                    header_family = NULL) {
   grouping_strip_position <- match.arg(grouping_strip_position)
   table_position <- match.arg(table_position)
 
@@ -770,7 +833,11 @@ build_forest_table_plot <- function(table_spec,
       axis.text.y           = ggplot2::element_blank(),
       axis.text.x.bottom    = ggplot2::element_blank(),
       axis.text.x.top       = ggplot2::element_text(
-        face = "bold", colour = "black", hjust = header_hjust,
+        face = header_fontface,
+        family = header_family,
+        size = header_text_size,
+        colour = "black",
+        hjust = header_hjust,
         margin = ggplot2::margin(b = 0)
       ),
       axis.ticks            = ggplot2::element_blank(),

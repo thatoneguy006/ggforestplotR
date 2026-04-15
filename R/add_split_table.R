@@ -13,6 +13,9 @@
                                  p_header = "P-value",
                                  digits = NULL,
                                  text_size = NULL,
+                                 header_text_size = NULL,
+                                 header_fontface = "bold",
+                                 header_family = NULL,
                                  striped_rows = NULL,
                                  stripe_fill = NULL,
                                  stripe_colour = NULL,
@@ -43,6 +46,10 @@
 
   if (is.null(text_size)) {
     text_size <- 3.2
+  }
+
+  if (is.null(header_text_size)) {
+    header_text_size <- 11
   }
 
   if (is.null(striped_rows)) {
@@ -128,8 +135,22 @@
     columns = resolved_right
   )
 
-  left_spec <- layout_split_table_spec(left_spec, text_size = text_size, alignment = "left")
-  right_spec <- layout_split_table_spec(right_spec, text_size = text_size, alignment = "right")
+  left_spec <- layout_split_table_spec(
+    left_spec,
+    text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = if (is.null(header_family)) "" else header_family,
+    alignment = "left"
+  )
+  right_spec <- layout_split_table_spec(
+    right_spec,
+    text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = if (is.null(header_family)) "" else header_family,
+    alignment = "right"
+  )
 
   if (is.null(plot_width)) {
     plot_width <- 2.5
@@ -156,7 +177,10 @@
     grid_lines = FALSE,
     plot_margin = ggplot2::margin(5.5, 0, 5.5, 5.5),
     text_hjust = 0,
-    header_hjust = 0
+    header_hjust = 0,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family
   )
 
   right_plot <- build_forest_table_plot(
@@ -172,7 +196,10 @@
     grid_lines = FALSE,
     plot_margin = ggplot2::margin(5.5, 5.5, 5.5, 0),
     text_hjust = 1,
-    header_hjust = 1
+    header_hjust = 1,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family
   )
 
   plot_theme_args <- list(
@@ -244,6 +271,11 @@
 #' @param digits Number of digits used when formatting estimates and p-values.
 #'   Defaults to `2`.
 #' @param text_size Text size for table contents. Defaults to `3.2`.
+#' @param header_text_size Header text size for table column labels. Defaults
+#'   to `11`.
+#' @param header_fontface Font face used for table column labels. Defaults to
+#'   `"bold"`.
+#' @param header_family Optional font family used for table column labels.
 #' @param striped_rows Whether to draw alternating row stripes behind the
 #'   split table layout. Defaults to the stripe setting used in
 #'   [ggforestplot()].
@@ -303,6 +335,9 @@ add_split_table <- function(plot = NULL,
                             p_header = "P-value",
                             digits = NULL,
                             text_size = NULL,
+                            header_text_size = NULL,
+                            header_fontface = "bold",
+                            header_family = NULL,
                             striped_rows = NULL,
                             stripe_fill = NULL,
                             stripe_colour = NULL,
@@ -326,6 +361,9 @@ add_split_table <- function(plot = NULL,
         p_header = p_header,
         digits = digits,
         text_size = text_size,
+        header_text_size = header_text_size,
+        header_fontface = header_fontface,
+        header_family = header_family,
         striped_rows = striped_rows,
         stripe_fill = stripe_fill,
         stripe_colour = stripe_colour,
@@ -353,6 +391,9 @@ add_split_table <- function(plot = NULL,
     p_header = p_header,
     digits = digits,
     text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family,
     striped_rows = striped_rows,
     stripe_fill = stripe_fill,
     stripe_colour = stripe_colour,

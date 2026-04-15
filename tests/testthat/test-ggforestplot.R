@@ -189,6 +189,30 @@ test_that("forest table centers the Term header and text", {
   expect_equal(table_plot$theme$axis.text.x.top$hjust, 0.5)
 })
 
+test_that("forest table supports header size and font customization", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3, -0.2),
+    conf.low = c(0.1, -0.4),
+    conf.high = c(0.5, 0.0)
+  )
+
+  p <- ggforestplot(raw)
+  out <- add_forest_table(
+    p,
+    position = "left",
+    header_text_size = 14,
+    header_fontface = "italic",
+    header_family = "mono"
+  )
+
+  table_plot <- out$patches$plots[[1]]
+
+  expect_equal(table_plot$theme$axis.text.x.top$size, 14)
+  expect_equal(table_plot$theme$axis.text.x.top$face, "italic")
+  expect_equal(table_plot$theme$axis.text.x.top$family, "mono")
+})
+
 test_that("add_forest_table supports explicit side-table column order", {
   raw <- data.frame(
     term = c("Age", "BMI", "Treatment"),
@@ -475,6 +499,66 @@ test_that("add_split_table uses split-specific alignment and no grid lines", {
   expect_equal(right_plot$theme$axis.text.x.top$hjust, 1)
   expect_length(Filter(function(x) "yintercept" %in% names(x), left_built$data), 0L)
   expect_length(Filter(function(x) "yintercept" %in% names(x), right_built$data), 0L)
+})
+
+test_that("add_split_table supports header size and font customization", {
+  raw <- data.frame(
+    term = c("Age", "BMI", "Treatment"),
+    estimate = c(0.3, -0.2, 0.4),
+    conf.low = c(0.1, -0.4, 0.2),
+    conf.high = c(0.5, 0.0, 0.6),
+    sample_size = c(120, 115, 98),
+    event_count = c(42, 39, 31),
+    p_value = c(0.012, 0.031, 0.004)
+  )
+
+  p <- ggforestplot(raw, n = "sample_size", events = "event_count", p.value = "p_value")
+  state <- p$ggforestplotR_state
+  left_spec <- build_forest_table_data(state$forest_data, columns = c("term", "n", "events"))
+  right_spec <- build_forest_table_data(state$forest_data, columns = c("estimate", "p"))
+  left_spec <- layout_split_table_spec(
+    left_spec,
+    text_size = 3.2,
+    header_text_size = 13,
+    header_fontface = "plain",
+    header_family = "serif",
+    alignment = "left"
+  )
+  right_spec <- layout_split_table_spec(
+    right_spec,
+    text_size = 3.2,
+    header_text_size = 13,
+    header_fontface = "plain",
+    header_family = "serif",
+    alignment = "right"
+  )
+  left_plot <- build_forest_table_plot(
+    table_spec = left_spec,
+    stripe_data = state$stripe_data,
+    has_groupings = state$has_groupings,
+    grouping_strip_position = state$grouping_strip_position,
+    table_position = "left",
+    header_text_size = 13,
+    header_fontface = "plain",
+    header_family = "serif"
+  )
+  right_plot <- build_forest_table_plot(
+    table_spec = right_spec,
+    stripe_data = state$stripe_data,
+    has_groupings = state$has_groupings,
+    grouping_strip_position = state$grouping_strip_position,
+    table_position = "right",
+    header_text_size = 13,
+    header_fontface = "plain",
+    header_family = "serif"
+  )
+
+  expect_equal(left_plot$theme$axis.text.x.top$size, 13)
+  expect_equal(left_plot$theme$axis.text.x.top$face, "plain")
+  expect_equal(left_plot$theme$axis.text.x.top$family, "serif")
+  expect_equal(right_plot$theme$axis.text.x.top$size, 13)
+  expect_equal(right_plot$theme$axis.text.x.top$face, "plain")
+  expect_equal(right_plot$theme$axis.text.x.top$family, "serif")
 })
 
 

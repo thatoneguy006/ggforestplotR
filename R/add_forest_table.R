@@ -13,6 +13,9 @@
                                   p_header = "P-value",
                                   digits = NULL,
                                   text_size = NULL,
+                                  header_text_size = NULL,
+                                  header_fontface = "bold",
+                                  header_family = NULL,
                                   striped_rows = NULL,
                                   stripe_fill = NULL,
                                   stripe_colour = NULL,
@@ -46,6 +49,10 @@
 
   if (is.null(text_size)) {
     text_size <- 3.2
+  }
+
+  if (is.null(header_text_size)) {
+    header_text_size <- 11
   }
 
   if (is.null(striped_rows)) {
@@ -96,7 +103,13 @@
     digits = digits,
     columns = columns
   )
-  table_spec <- layout_center_table_spec(table_spec, text_size = text_size)
+  table_spec <- layout_center_table_spec(
+    table_spec,
+    text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = if (is.null(header_family)) "" else header_family
+  )
   table_width <- max(2.4, table_spec$content_width + 0.15)
 
   table_plot <- build_forest_table_plot(
@@ -115,7 +128,10 @@
     grid_line_linetype = grid_line_linetype,
     x_expand = ggplot2::expansion(mult = 0.08),
     text_hjust = 0.5,
-    header_hjust = 0.5
+    header_hjust = 0.5,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family
   )
 
   combine_forest_plot_and_table(
@@ -155,6 +171,11 @@
 #' @param digits Number of digits used when formatting estimates and p-values.
 #'   Defaults to `2`.
 #' @param text_size Text size for table contents. Defaults to `3.2`.
+#' @param header_text_size Header text size for table column labels. Defaults
+#'   to `11`.
+#' @param header_fontface Font face used for table column labels. Defaults to
+#'   `"bold"`.
+#' @param header_family Optional font family used for table column labels.
 #' @param striped_rows Whether to draw alternating row stripes behind the
 #'   table. Defaults to the stripe setting used in [ggforestplot()].
 #' @param stripe_fill Fill colour used for striped rows. Defaults to the
@@ -211,6 +232,9 @@ add_forest_table <- function(plot = NULL,
                              p_header = "P-value",
                              digits = NULL,
                              text_size = NULL,
+                             header_text_size = NULL,
+                             header_fontface = "bold",
+                             header_family = NULL,
                              striped_rows = NULL,
                              stripe_fill = NULL,
                              stripe_colour = NULL,
@@ -237,6 +261,9 @@ add_forest_table <- function(plot = NULL,
         p_header = p_header,
         digits = digits,
         text_size = text_size,
+        header_text_size = header_text_size,
+        header_fontface = header_fontface,
+        header_family = header_family,
         striped_rows = striped_rows,
         stripe_fill = stripe_fill,
         stripe_colour = stripe_colour,
@@ -265,6 +292,9 @@ add_forest_table <- function(plot = NULL,
     p_header = p_header,
     digits = digits,
     text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family,
     striped_rows = striped_rows,
     stripe_fill = stripe_fill,
     stripe_colour = stripe_colour,

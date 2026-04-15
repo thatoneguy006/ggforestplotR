@@ -20,6 +20,9 @@ add_forest_table(
   p_header = "P-value",
   digits = NULL,
   text_size = NULL,
+  header_text_size = NULL,
+  header_fontface = "bold",
+  header_family = NULL,
   striped_rows = NULL,
   stripe_fill = NULL,
   stripe_colour = NULL,
@@ -69,6 +72,14 @@ When supplied, this overrides the default \verb{show_*} column selection.}
 Defaults to \code{2}.}
 
 \item{text_size}{Text size for table contents. Defaults to \code{3.2}.}
+
+\item{header_text_size}{Header text size for table column labels. Defaults
+to \code{11}.}
+
+\item{header_fontface}{Font face used for table column labels. Defaults to
+\code{"bold"}.}
+
+\item{header_family}{Optional font family used for table column labels.}
 
 \item{striped_rows}{Whether to draw alternating row stripes behind the
 table. Defaults to the stripe setting used in \code{\link[=ggforestplot]{ggforestplot()}}.}
