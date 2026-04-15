@@ -1,12 +1,14 @@
 .compose_split_table <- function(plot,
                                  show_terms = TRUE,
                                  show_n = NULL,
+                                 show_events = NULL,
                                  show_estimate = TRUE,
                                  show_p = FALSE,
                                  left_columns = NULL,
-                                 right_columns = NULL,
+                                  right_columns = NULL,
                                  term_header = "Term",
                                  n_header = "N",
+                                 events_header = "Events",
                                  estimate_label = "Estimate",
                                  p_header = "P-value",
                                  digits = NULL,
@@ -31,6 +33,10 @@
     show_n <- any(!is.na(state$forest_data$n) & nzchar(state$forest_data$n))
   }
 
+  if (is.null(show_events)) {
+    show_events <- any(!is.na(state$forest_data$events) & nzchar(state$forest_data$events))
+  }
+
   if (is.null(digits)) {
     digits <- 2
   }
@@ -51,7 +57,7 @@
     stripe_colour <- state$defaults$stripe_colour
   }
 
-  default_left <- c(if (isTRUE(show_terms)) "term", if (isTRUE(show_n)) "n")
+  default_left <- c(if (isTRUE(show_terms)) "term", if (isTRUE(show_n)) "n", if (isTRUE(show_events)) "events")
   default_right <- c(if (isTRUE(show_estimate)) "estimate", if (isTRUE(show_p)) "p")
   resolved_left <- if (is.null(left_columns)) default_left else normalize_table_columns(left_columns)
   resolved_right <- if (is.null(right_columns)) default_right else normalize_table_columns(right_columns)
@@ -83,6 +89,11 @@
     stop("An `n` column is required when split table columns include `n`.", call. = FALSE)
   }
 
+  if ("events" %in% c(resolved_left, resolved_right) &&
+      all(is.na(state$forest_data$events) | !nzchar(state$forest_data$events))) {
+    stop("An `events` column is required when split table columns include `events`.", call. = FALSE)
+  }
+
   if ("p" %in% c(resolved_left, resolved_right) && all(is.na(state$forest_data$p.value))) {
     stop("A `p.value` column is required when split table columns include `p`.", call. = FALSE)
   }
@@ -95,6 +106,7 @@
     show_p = FALSE,
     term_header = term_header,
     n_header = n_header,
+    events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
     digits = digits,
@@ -109,6 +121,7 @@
     show_p = FALSE,
     term_header = term_header,
     n_header = n_header,
+    events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
     digits = digits,
@@ -207,19 +220,25 @@
 #' @param show_n Whether to include the `N` column in the default left-side
 #'   selection when `left_columns` is not supplied. Defaults to `TRUE` when
 #'   the underlying plot data include an `n` column.
+#' @param show_events Whether to include the `Events` column in the default
+#'   left-side selection when `left_columns` is not supplied. Defaults to
+#'   `TRUE` when the underlying plot data include an `events` column.
 #' @param show_estimate Whether to include the formatted estimate and
 #'   confidence interval column in the default right-side selection when
 #'   `right_columns` is not supplied.
 #' @param show_p Whether to include the p-value column in the default
 #'   right-side selection when `right_columns` is not supplied.
 #' @param left_columns Optional explicit columns to place on the left side of
-#'   the forest plot. Accepts names such as `"term"` and `"n"`, or positions
-#'   `1:4` corresponding to `term`, `n`, `estimate`, and `p`.
+#'   the forest plot. Accepts names such as `"term"`, `"n"`, and `"events"`,
+#'   or positions `1:5` corresponding to `term`, `n`, `events`, `estimate`,
+#'   and `p`.
 #' @param right_columns Optional explicit columns to place on the right side
 #'   of the forest plot. Accepts names such as `"estimate"` and `"p"`, or
-#'   positions `1:4` corresponding to `term`, `n`, `estimate`, and `p`.
+#'   positions `1:5` corresponding to `term`, `n`, `events`, `estimate`,
+#'   and `p`.
 #' @param term_header Header text for the term column.
 #' @param n_header Header text for the `N` column.
+#' @param events_header Header text for the `Events` column.
 #' @param estimate_label Header label for the estimate column.
 #' @param p_header Header text for the p-value column.
 #' @param digits Number of digits used when formatting estimates and p-values.
@@ -272,12 +291,14 @@
 add_split_table <- function(plot = NULL,
                             show_terms = TRUE,
                             show_n = NULL,
+                            show_events = NULL,
                             show_estimate = TRUE,
                             show_p = FALSE,
                             left_columns = NULL,
                             right_columns = NULL,
                             term_header = "Term",
                             n_header = "N",
+                            events_header = "Events",
                             estimate_label = "Estimate",
                             p_header = "P-value",
                             digits = NULL,
@@ -293,12 +314,14 @@ add_split_table <- function(plot = NULL,
       list(
         show_terms = show_terms,
         show_n = show_n,
+        show_events = show_events,
         show_estimate = show_estimate,
         show_p = show_p,
         left_columns = left_columns,
         right_columns = right_columns,
         term_header = term_header,
         n_header = n_header,
+        events_header = events_header,
         estimate_label = estimate_label,
         p_header = p_header,
         digits = digits,
@@ -318,12 +341,14 @@ add_split_table <- function(plot = NULL,
     plot = plot,
     show_terms = show_terms,
     show_n = show_n,
+    show_events = show_events,
     show_estimate = show_estimate,
     show_p = show_p,
     left_columns = left_columns,
     right_columns = right_columns,
     term_header = term_header,
     n_header = n_header,
+    events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
     digits = digits,

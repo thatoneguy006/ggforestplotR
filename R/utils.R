@@ -24,7 +24,7 @@ resolve_column <- function(data, column, arg, required = TRUE) {
 validate_forest_data <- function(data, exponentiate = FALSE) {
   required <- c(
     "term", "estimate", "conf.low", "conf.high",
-    "label", "group", "grouping", "separate_groups", "n", "p.value"
+    "label", "group", "grouping", "separate_groups", "n", "events", "p.value"
   )
   missing <- setdiff(required, names(data))
   
@@ -60,7 +60,7 @@ validate_forest_data <- function(data, exponentiate = FALSE) {
 # ─── Column normalisation ────────────────────────────────────────────────────
 
 normalize_table_columns <- function(columns) {
-  default_order <- c("term", "n", "estimate", "p")
+  default_order <- c("term", "n", "events", "estimate", "p")
   
   if (is.null(columns)) {
     return(NULL)
@@ -84,6 +84,7 @@ normalize_table_columns <- function(columns) {
     term = "term", terms = "term", label = "term", labels = "term",
     subgroup = "term", subgroups = "term",
     n = "n", samplesize = "n", sample_size = "n",
+    events = "events", event = "events", cases = "events", count = "events",
     estimate = "estimate", estimates = "estimate",
     effect = "estimate", effects = "estimate",
     p = "p", pvalue = "p", p.value = "p", p_value = "p", pvalues = "p"
@@ -356,10 +357,12 @@ build_forest_plot_data <- function(data) {
 build_forest_table_data <- function(data,
                                     show_terms = TRUE,
                                     show_n = FALSE,
+                                    show_events = FALSE,
                                     show_estimate = TRUE,
                                     show_p = FALSE,
                                     term_header = "Term",
                                     n_header = "N",
+                                    events_header = "Events",
                                     estimate_label = "Estimate",
                                     p_header = "P-value",
                                     digits = 2,
@@ -379,6 +382,7 @@ build_forest_table_data <- function(data,
       grouping_panel = rd$grouping_panel[1L],
       term_text = rd$label[1L],
       n_text = format_forest_table_values(rd$n, rd$group),
+      events_text = format_forest_table_values(rd$events, rd$group),
       estimate_text = format_forest_estimates(
         rd$estimate, rd$conf.low, rd$conf.high, rd$group, digits = digits
       ),
@@ -395,6 +399,7 @@ build_forest_table_data <- function(data,
     column_keys <- character()
     if (isTRUE(show_terms))    column_keys <- c(column_keys, "term")
     if (isTRUE(show_n))        column_keys <- c(column_keys, "n")
+    if (isTRUE(show_events))   column_keys <- c(column_keys, "events")
     if (isTRUE(show_estimate)) column_keys <- c(column_keys, "estimate")
     if (isTRUE(show_p))        column_keys <- c(column_keys, "p")
   } else {
@@ -408,12 +413,14 @@ build_forest_table_data <- function(data,
   column_field_lookup <- c(
     term = "term_text",
     n = "n_text",
+    events = "events_text",
     estimate = "estimate_text",
     p = "p_text"
   )
   header_lookup <- c(
     term = term_header,
     n = n_header,
+    events = events_header,
     estimate = sprintf("%s (95%% CI)", estimate_label),
     p = p_header
   )
@@ -536,7 +543,7 @@ measure_table_text_widths <- function(table_spec, text_size = 3.2) {
 #' @keywords internal
 #' @noRd
 column_base_padding <- function(column_key) {
-  known <- c(term = 0.16, n = 0.10, estimate = 0.18, p = 0.12)
+  known <- c(term = 0.16, n = 0.10, events = 0.12, estimate = 0.18, p = 0.12)
   pad <- known[[column_key]]
   if (is.null(pad)) 0.14 else unname(pad)
 }

@@ -15,6 +15,7 @@ as_forest_data(
   grouping = NULL,
   separate_groups = NULL,
   n = NULL,
+  events = NULL,
   p.value = NULL,
   exponentiate = FALSE,
   sort_terms = c("none", "descending", "ascending")
@@ -43,6 +44,9 @@ sections.}
 variable blocks that can be outlined with separator lines.}
 
 \item{n}{Optional column name holding sample sizes or other N labels for
+table helpers.}
+
+\item{events}{Optional column name holding event counts or event labels for
 table helpers.}
 
 \item{p.value}{Optional column name holding p-values.}

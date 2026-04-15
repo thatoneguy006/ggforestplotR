@@ -2,11 +2,13 @@
                                   position = c("left", "right"),
                                   show_terms = TRUE,
                                   show_n = NULL,
+                                  show_events = NULL,
                                   show_estimate = TRUE,
                                   show_p = FALSE,
                                   columns = NULL,
                                   term_header = "Term",
                                   n_header = "N",
+                                  events_header = "Events",
                                   estimate_label = "Estimate",
                                   p_header = "P-value",
                                   digits = NULL,
@@ -34,6 +36,10 @@
     show_n <- any(!is.na(state$forest_data$n) & nzchar(state$forest_data$n))
   }
 
+  if (is.null(show_events)) {
+    show_events <- any(!is.na(state$forest_data$events) & nzchar(state$forest_data$events))
+  }
+
   if (is.null(digits)) {
     digits <- 2
   }
@@ -58,6 +64,10 @@
     stop("`show_n = TRUE` requires an `n` column in the underlying forest data.", call. = FALSE)
   }
 
+  if (isTRUE(show_events) && all(is.na(state$forest_data$events) | !nzchar(state$forest_data$events))) {
+    stop("`show_events = TRUE` requires an `events` column in the underlying forest data.", call. = FALSE)
+  }
+
   if (isTRUE(show_p) && all(is.na(state$forest_data$p.value))) {
     stop("`show_p = TRUE` requires a `p.value` column in the underlying forest data.", call. = FALSE)
   }
@@ -75,10 +85,12 @@
     state$forest_data,
     show_terms = show_terms,
     show_n = show_n,
+    show_events = show_events,
     show_estimate = show_estimate,
     show_p = show_p,
     term_header = term_header,
     n_header = n_header,
+    events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
     digits = digits,
@@ -125,15 +137,19 @@
 #' @param show_terms Whether to show the term column in the table.
 #' @param show_n Whether to show the `N` column. Defaults to `TRUE` when the
 #'   underlying plot data includes an `n` column.
+#' @param show_events Whether to show the `Events` column. Defaults to `TRUE`
+#'   when the underlying plot data includes an `events` column.
 #' @param show_estimate Whether to show the formatted estimate and confidence
 #'   interval column.
 #' @param show_p Whether to display the p-value column.
 #' @param columns Optional explicit columns to display in the side table, in
-#'   the order they should appear. Accepts names such as `"n"` and `"term"`,
-#'   or positions `1:4` corresponding to `term`, `n`, `estimate`, and `p`.
+#'   the order they should appear. Accepts names such as `"n"`, `"events"`,
+#'   and `"term"`, or positions `1:5` corresponding to `term`, `n`, `events`,
+#'   `estimate`, and `p`.
 #'   When supplied, this overrides the default `show_*` column selection.
 #' @param term_header Header text for the term column.
 #' @param n_header Header text for the `N` column.
+#' @param events_header Header text for the `Events` column.
 #' @param estimate_label Header label for the estimate column.
 #' @param p_header Header text for the p-value column.
 #' @param digits Number of digits used when formatting estimates and p-values.
@@ -184,11 +200,13 @@ add_forest_table <- function(plot = NULL,
                              position = c("left", "right"),
                              show_terms = TRUE,
                              show_n = NULL,
+                             show_events = NULL,
                              show_estimate = TRUE,
                              show_p = FALSE,
                              columns = NULL,
                              term_header = "Term",
                              n_header = "N",
+                             events_header = "Events",
                              estimate_label = "Estimate",
                              p_header = "P-value",
                              digits = NULL,
@@ -208,11 +226,13 @@ add_forest_table <- function(plot = NULL,
         position = position,
         show_terms = show_terms,
         show_n = show_n,
+        show_events = show_events,
         show_estimate = show_estimate,
         show_p = show_p,
         columns = columns,
         term_header = term_header,
         n_header = n_header,
+        events_header = events_header,
         estimate_label = estimate_label,
         p_header = p_header,
         digits = digits,
@@ -234,11 +254,13 @@ add_forest_table <- function(plot = NULL,
     position = position,
     show_terms = show_terms,
     show_n = show_n,
+    show_events = show_events,
     show_estimate = show_estimate,
     show_p = show_p,
     columns = columns,
     term_header = term_header,
     n_header = n_header,
+    events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
     digits = digits,
