@@ -8,16 +8,21 @@ add_split_table(
   plot = NULL,
   show_terms = TRUE,
   show_n = NULL,
+  show_events = NULL,
   show_estimate = TRUE,
   show_p = FALSE,
   left_columns = NULL,
   right_columns = NULL,
   term_header = "Term",
   n_header = "N",
+  events_header = "Events",
   estimate_label = "Estimate",
   p_header = "P-value",
   digits = NULL,
   text_size = NULL,
+  header_text_size = NULL,
+  header_fontface = "bold",
+  header_family = NULL,
   striped_rows = NULL,
   stripe_fill = NULL,
   stripe_colour = NULL,
@@ -37,6 +42,10 @@ left-side selection when \code{left_columns} is not supplied.}
 selection when \code{left_columns} is not supplied. Defaults to \code{TRUE} when
 the underlying plot data include an \code{n} column.}
 
+\item{show_events}{Whether to include the \code{Events} column in the default
+left-side selection when \code{left_columns} is not supplied. Defaults to
+\code{TRUE} when the underlying plot data include an \code{events} column.}
+
 \item{show_estimate}{Whether to include the formatted estimate and
 confidence interval column in the default right-side selection when
 \code{right_columns} is not supplied.}
@@ -45,16 +54,20 @@ confidence interval column in the default right-side selection when
 right-side selection when \code{right_columns} is not supplied.}
 
 \item{left_columns}{Optional explicit columns to place on the left side of
-the forest plot. Accepts names such as \code{"term"} and \code{"n"}, or positions
-\code{1:4} corresponding to \code{term}, \code{n}, \code{estimate}, and \code{p}.}
+the forest plot. Accepts names such as \code{"term"}, \code{"n"}, and \code{"events"},
+or positions \code{1:5} corresponding to \code{term}, \code{n}, \code{events}, \code{estimate},
+and \code{p}.}
 
 \item{right_columns}{Optional explicit columns to place on the right side
 of the forest plot. Accepts names such as \code{"estimate"} and \code{"p"}, or
-positions \code{1:4} corresponding to \code{term}, \code{n}, \code{estimate}, and \code{p}.}
+positions \code{1:5} corresponding to \code{term}, \code{n}, \code{events}, \code{estimate},
+and \code{p}.}
 
 \item{term_header}{Header text for the term column.}
 
 \item{n_header}{Header text for the \code{N} column.}
+
+\item{events_header}{Header text for the \code{Events} column.}
 
 \item{estimate_label}{Header label for the estimate column.}
 
@@ -64,6 +77,14 @@ positions \code{1:4} corresponding to \code{term}, \code{n}, \code{estimate}, an
 Defaults to \code{2}.}
 
 \item{text_size}{Text size for table contents. Defaults to \code{3.2}.}
+
+\item{header_text_size}{Header text size for table column labels. Defaults
+to \code{11}.}
+
+\item{header_fontface}{Font face used for table column labels. Defaults to
+\code{"bold"}.}
+
+\item{header_family}{Optional font family used for table column labels.}
 
 \item{striped_rows}{Whether to draw alternating row stripes behind the
 split table layout. Defaults to the stripe setting used in
@@ -115,7 +136,7 @@ add_split_table(
 ggforestplot(coefs, n = "sample_size", p.value = "p_value") +
   add_split_table(
     left_columns = c(1, 2),
-    right_columns = c(3, 4),
+    right_columns = c(4, 5),
     estimate_label = "HR"
   )
 }

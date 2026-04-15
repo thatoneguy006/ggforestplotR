@@ -1,16 +1,21 @@
 .compose_split_table <- function(plot,
                                  show_terms = TRUE,
                                  show_n = NULL,
+                                 show_events = NULL,
                                  show_estimate = TRUE,
                                  show_p = FALSE,
                                  left_columns = NULL,
-                                 right_columns = NULL,
+                                  right_columns = NULL,
                                  term_header = "Term",
                                  n_header = "N",
+                                 events_header = "Events",
                                  estimate_label = "Estimate",
                                  p_header = "P-value",
                                  digits = NULL,
                                  text_size = NULL,
+                                 header_text_size = NULL,
+                                 header_fontface = "bold",
+                                 header_family = NULL,
                                  striped_rows = NULL,
                                  stripe_fill = NULL,
                                  stripe_colour = NULL,
@@ -31,12 +36,20 @@
     show_n <- any(!is.na(state$forest_data$n) & nzchar(state$forest_data$n))
   }
 
+  if (is.null(show_events)) {
+    show_events <- any(!is.na(state$forest_data$events) & nzchar(state$forest_data$events))
+  }
+
   if (is.null(digits)) {
     digits <- 2
   }
 
   if (is.null(text_size)) {
     text_size <- 3.2
+  }
+
+  if (is.null(header_text_size)) {
+    header_text_size <- 11
   }
 
   if (is.null(striped_rows)) {
@@ -51,7 +64,7 @@
     stripe_colour <- state$defaults$stripe_colour
   }
 
-  default_left <- c(if (isTRUE(show_terms)) "term", if (isTRUE(show_n)) "n")
+  default_left <- c(if (isTRUE(show_terms)) "term", if (isTRUE(show_n)) "n", if (isTRUE(show_events)) "events")
   default_right <- c(if (isTRUE(show_estimate)) "estimate", if (isTRUE(show_p)) "p")
   resolved_left <- if (is.null(left_columns)) default_left else normalize_table_columns(left_columns)
   resolved_right <- if (is.null(right_columns)) default_right else normalize_table_columns(right_columns)
@@ -83,6 +96,11 @@
     stop("An `n` column is required when split table columns include `n`.", call. = FALSE)
   }
 
+  if ("events" %in% c(resolved_left, resolved_right) &&
+      all(is.na(state$forest_data$events) | !nzchar(state$forest_data$events))) {
+    stop("An `events` column is required when split table columns include `events`.", call. = FALSE)
+  }
+
   if ("p" %in% c(resolved_left, resolved_right) && all(is.na(state$forest_data$p.value))) {
     stop("A `p.value` column is required when split table columns include `p`.", call. = FALSE)
   }
@@ -95,6 +113,7 @@
     show_p = FALSE,
     term_header = term_header,
     n_header = n_header,
+    events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
     digits = digits,
@@ -109,14 +128,29 @@
     show_p = FALSE,
     term_header = term_header,
     n_header = n_header,
+    events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
     digits = digits,
     columns = resolved_right
   )
 
-  left_spec <- layout_split_table_spec(left_spec, text_size = text_size, alignment = "left")
-  right_spec <- layout_split_table_spec(right_spec, text_size = text_size, alignment = "right")
+  left_spec <- layout_split_table_spec(
+    left_spec,
+    text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = if (is.null(header_family)) "" else header_family,
+    alignment = "left"
+  )
+  right_spec <- layout_split_table_spec(
+    right_spec,
+    text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = if (is.null(header_family)) "" else header_family,
+    alignment = "right"
+  )
 
   if (is.null(plot_width)) {
     plot_width <- 2.5
@@ -143,7 +177,10 @@
     grid_lines = FALSE,
     plot_margin = ggplot2::margin(5.5, 0, 5.5, 5.5),
     text_hjust = 0,
-    header_hjust = 0
+    header_hjust = 0,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family
   )
 
   right_plot <- build_forest_table_plot(
@@ -159,7 +196,10 @@
     grid_lines = FALSE,
     plot_margin = ggplot2::margin(5.5, 5.5, 5.5, 0),
     text_hjust = 1,
-    header_hjust = 1
+    header_hjust = 1,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family
   )
 
   plot_theme_args <- list(
@@ -207,24 +247,35 @@
 #' @param show_n Whether to include the `N` column in the default left-side
 #'   selection when `left_columns` is not supplied. Defaults to `TRUE` when
 #'   the underlying plot data include an `n` column.
+#' @param show_events Whether to include the `Events` column in the default
+#'   left-side selection when `left_columns` is not supplied. Defaults to
+#'   `TRUE` when the underlying plot data include an `events` column.
 #' @param show_estimate Whether to include the formatted estimate and
 #'   confidence interval column in the default right-side selection when
 #'   `right_columns` is not supplied.
 #' @param show_p Whether to include the p-value column in the default
 #'   right-side selection when `right_columns` is not supplied.
 #' @param left_columns Optional explicit columns to place on the left side of
-#'   the forest plot. Accepts names such as `"term"` and `"n"`, or positions
-#'   `1:4` corresponding to `term`, `n`, `estimate`, and `p`.
+#'   the forest plot. Accepts names such as `"term"`, `"n"`, and `"events"`,
+#'   or positions `1:5` corresponding to `term`, `n`, `events`, `estimate`,
+#'   and `p`.
 #' @param right_columns Optional explicit columns to place on the right side
 #'   of the forest plot. Accepts names such as `"estimate"` and `"p"`, or
-#'   positions `1:4` corresponding to `term`, `n`, `estimate`, and `p`.
+#'   positions `1:5` corresponding to `term`, `n`, `events`, `estimate`,
+#'   and `p`.
 #' @param term_header Header text for the term column.
 #' @param n_header Header text for the `N` column.
+#' @param events_header Header text for the `Events` column.
 #' @param estimate_label Header label for the estimate column.
 #' @param p_header Header text for the p-value column.
 #' @param digits Number of digits used when formatting estimates and p-values.
 #'   Defaults to `2`.
 #' @param text_size Text size for table contents. Defaults to `3.2`.
+#' @param header_text_size Header text size for table column labels. Defaults
+#'   to `11`.
+#' @param header_fontface Font face used for table column labels. Defaults to
+#'   `"bold"`.
+#' @param header_family Optional font family used for table column labels.
 #' @param striped_rows Whether to draw alternating row stripes behind the
 #'   split table layout. Defaults to the stripe setting used in
 #'   [ggforestplot()].
@@ -266,22 +317,27 @@
 #' ggforestplot(coefs, n = "sample_size", p.value = "p_value") +
 #'   add_split_table(
 #'     left_columns = c(1, 2),
-#'     right_columns = c(3, 4),
+#'     right_columns = c(4, 5),
 #'     estimate_label = "HR"
 #'   )
 add_split_table <- function(plot = NULL,
                             show_terms = TRUE,
                             show_n = NULL,
+                            show_events = NULL,
                             show_estimate = TRUE,
                             show_p = FALSE,
                             left_columns = NULL,
                             right_columns = NULL,
                             term_header = "Term",
                             n_header = "N",
+                            events_header = "Events",
                             estimate_label = "Estimate",
                             p_header = "P-value",
                             digits = NULL,
                             text_size = NULL,
+                            header_text_size = NULL,
+                            header_fontface = "bold",
+                            header_family = NULL,
                             striped_rows = NULL,
                             stripe_fill = NULL,
                             stripe_colour = NULL,
@@ -293,16 +349,21 @@ add_split_table <- function(plot = NULL,
       list(
         show_terms = show_terms,
         show_n = show_n,
+        show_events = show_events,
         show_estimate = show_estimate,
         show_p = show_p,
         left_columns = left_columns,
         right_columns = right_columns,
         term_header = term_header,
         n_header = n_header,
+        events_header = events_header,
         estimate_label = estimate_label,
         p_header = p_header,
         digits = digits,
         text_size = text_size,
+        header_text_size = header_text_size,
+        header_fontface = header_fontface,
+        header_family = header_family,
         striped_rows = striped_rows,
         stripe_fill = stripe_fill,
         stripe_colour = stripe_colour,
@@ -318,16 +379,21 @@ add_split_table <- function(plot = NULL,
     plot = plot,
     show_terms = show_terms,
     show_n = show_n,
+    show_events = show_events,
     show_estimate = show_estimate,
     show_p = show_p,
     left_columns = left_columns,
     right_columns = right_columns,
     term_header = term_header,
     n_header = n_header,
+    events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
     digits = digits,
     text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family,
     striped_rows = striped_rows,
     stripe_fill = stripe_fill,
     stripe_colour = stripe_colour,

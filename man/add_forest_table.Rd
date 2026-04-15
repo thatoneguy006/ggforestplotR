@@ -9,15 +9,20 @@ add_forest_table(
   position = c("left", "right"),
   show_terms = TRUE,
   show_n = NULL,
+  show_events = NULL,
   show_estimate = TRUE,
   show_p = FALSE,
   columns = NULL,
   term_header = "Term",
   n_header = "N",
+  events_header = "Events",
   estimate_label = "Estimate",
   p_header = "P-value",
   digits = NULL,
   text_size = NULL,
+  header_text_size = NULL,
+  header_fontface = "bold",
+  header_family = NULL,
   striped_rows = NULL,
   stripe_fill = NULL,
   stripe_colour = NULL,
@@ -39,19 +44,25 @@ forest plot.}
 \item{show_n}{Whether to show the \code{N} column. Defaults to \code{TRUE} when the
 underlying plot data includes an \code{n} column.}
 
+\item{show_events}{Whether to show the \code{Events} column. Defaults to \code{TRUE}
+when the underlying plot data includes an \code{events} column.}
+
 \item{show_estimate}{Whether to show the formatted estimate and confidence
 interval column.}
 
 \item{show_p}{Whether to display the p-value column.}
 
 \item{columns}{Optional explicit columns to display in the side table, in
-the order they should appear. Accepts names such as \code{"n"} and \code{"term"},
-or positions \code{1:4} corresponding to \code{term}, \code{n}, \code{estimate}, and \code{p}.
+the order they should appear. Accepts names such as \code{"n"}, \code{"events"},
+and \code{"term"}, or positions \code{1:5} corresponding to \code{term}, \code{n}, \code{events},
+\code{estimate}, and \code{p}.
 When supplied, this overrides the default \verb{show_*} column selection.}
 
 \item{term_header}{Header text for the term column.}
 
 \item{n_header}{Header text for the \code{N} column.}
+
+\item{events_header}{Header text for the \code{Events} column.}
 
 \item{estimate_label}{Header label for the estimate column.}
 
@@ -61,6 +72,14 @@ When supplied, this overrides the default \verb{show_*} column selection.}
 Defaults to \code{2}.}
 
 \item{text_size}{Text size for table contents. Defaults to \code{3.2}.}
+
+\item{header_text_size}{Header text size for table column labels. Defaults
+to \code{11}.}
+
+\item{header_fontface}{Font face used for table column labels. Defaults to
+\code{"bold"}.}
+
+\item{header_family}{Optional font family used for table column labels.}
 
 \item{striped_rows}{Whether to draw alternating row stripes behind the
 table. Defaults to the stripe setting used in \code{\link[=ggforestplot]{ggforestplot()}}.}

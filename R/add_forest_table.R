@@ -2,15 +2,20 @@
                                   position = c("left", "right"),
                                   show_terms = TRUE,
                                   show_n = NULL,
+                                  show_events = NULL,
                                   show_estimate = TRUE,
                                   show_p = FALSE,
                                   columns = NULL,
                                   term_header = "Term",
                                   n_header = "N",
+                                  events_header = "Events",
                                   estimate_label = "Estimate",
                                   p_header = "P-value",
                                   digits = NULL,
                                   text_size = NULL,
+                                  header_text_size = NULL,
+                                  header_fontface = "bold",
+                                  header_family = NULL,
                                   striped_rows = NULL,
                                   stripe_fill = NULL,
                                   stripe_colour = NULL,
@@ -34,12 +39,20 @@
     show_n <- any(!is.na(state$forest_data$n) & nzchar(state$forest_data$n))
   }
 
+  if (is.null(show_events)) {
+    show_events <- any(!is.na(state$forest_data$events) & nzchar(state$forest_data$events))
+  }
+
   if (is.null(digits)) {
     digits <- 2
   }
 
   if (is.null(text_size)) {
     text_size <- 3.2
+  }
+
+  if (is.null(header_text_size)) {
+    header_text_size <- 11
   }
 
   if (is.null(striped_rows)) {
@@ -56,6 +69,10 @@
 
   if (isTRUE(show_n) && all(is.na(state$forest_data$n) | !nzchar(state$forest_data$n))) {
     stop("`show_n = TRUE` requires an `n` column in the underlying forest data.", call. = FALSE)
+  }
+
+  if (isTRUE(show_events) && all(is.na(state$forest_data$events) | !nzchar(state$forest_data$events))) {
+    stop("`show_events = TRUE` requires an `events` column in the underlying forest data.", call. = FALSE)
   }
 
   if (isTRUE(show_p) && all(is.na(state$forest_data$p.value))) {
@@ -75,16 +92,24 @@
     state$forest_data,
     show_terms = show_terms,
     show_n = show_n,
+    show_events = show_events,
     show_estimate = show_estimate,
     show_p = show_p,
     term_header = term_header,
     n_header = n_header,
+    events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
     digits = digits,
     columns = columns
   )
-  table_spec <- layout_center_table_spec(table_spec, text_size = text_size)
+  table_spec <- layout_center_table_spec(
+    table_spec,
+    text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = if (is.null(header_family)) "" else header_family
+  )
   table_width <- max(2.4, table_spec$content_width + 0.15)
 
   table_plot <- build_forest_table_plot(
@@ -103,7 +128,10 @@
     grid_line_linetype = grid_line_linetype,
     x_expand = ggplot2::expansion(mult = 0.08),
     text_hjust = 0.5,
-    header_hjust = 0.5
+    header_hjust = 0.5,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family
   )
 
   combine_forest_plot_and_table(
@@ -125,20 +153,29 @@
 #' @param show_terms Whether to show the term column in the table.
 #' @param show_n Whether to show the `N` column. Defaults to `TRUE` when the
 #'   underlying plot data includes an `n` column.
+#' @param show_events Whether to show the `Events` column. Defaults to `TRUE`
+#'   when the underlying plot data includes an `events` column.
 #' @param show_estimate Whether to show the formatted estimate and confidence
 #'   interval column.
 #' @param show_p Whether to display the p-value column.
 #' @param columns Optional explicit columns to display in the side table, in
-#'   the order they should appear. Accepts names such as `"n"` and `"term"`,
-#'   or positions `1:4` corresponding to `term`, `n`, `estimate`, and `p`.
+#'   the order they should appear. Accepts names such as `"n"`, `"events"`,
+#'   and `"term"`, or positions `1:5` corresponding to `term`, `n`, `events`,
+#'   `estimate`, and `p`.
 #'   When supplied, this overrides the default `show_*` column selection.
 #' @param term_header Header text for the term column.
 #' @param n_header Header text for the `N` column.
+#' @param events_header Header text for the `Events` column.
 #' @param estimate_label Header label for the estimate column.
 #' @param p_header Header text for the p-value column.
 #' @param digits Number of digits used when formatting estimates and p-values.
 #'   Defaults to `2`.
 #' @param text_size Text size for table contents. Defaults to `3.2`.
+#' @param header_text_size Header text size for table column labels. Defaults
+#'   to `11`.
+#' @param header_fontface Font face used for table column labels. Defaults to
+#'   `"bold"`.
+#' @param header_family Optional font family used for table column labels.
 #' @param striped_rows Whether to draw alternating row stripes behind the
 #'   table. Defaults to the stripe setting used in [ggforestplot()].
 #' @param stripe_fill Fill colour used for striped rows. Defaults to the
@@ -184,15 +221,20 @@ add_forest_table <- function(plot = NULL,
                              position = c("left", "right"),
                              show_terms = TRUE,
                              show_n = NULL,
+                             show_events = NULL,
                              show_estimate = TRUE,
                              show_p = FALSE,
                              columns = NULL,
                              term_header = "Term",
                              n_header = "N",
+                             events_header = "Events",
                              estimate_label = "Estimate",
                              p_header = "P-value",
                              digits = NULL,
                              text_size = NULL,
+                             header_text_size = NULL,
+                             header_fontface = "bold",
+                             header_family = NULL,
                              striped_rows = NULL,
                              stripe_fill = NULL,
                              stripe_colour = NULL,
@@ -208,15 +250,20 @@ add_forest_table <- function(plot = NULL,
         position = position,
         show_terms = show_terms,
         show_n = show_n,
+        show_events = show_events,
         show_estimate = show_estimate,
         show_p = show_p,
         columns = columns,
         term_header = term_header,
         n_header = n_header,
+        events_header = events_header,
         estimate_label = estimate_label,
         p_header = p_header,
         digits = digits,
         text_size = text_size,
+        header_text_size = header_text_size,
+        header_fontface = header_fontface,
+        header_family = header_family,
         striped_rows = striped_rows,
         stripe_fill = stripe_fill,
         stripe_colour = stripe_colour,
@@ -234,15 +281,20 @@ add_forest_table <- function(plot = NULL,
     position = position,
     show_terms = show_terms,
     show_n = show_n,
+    show_events = show_events,
     show_estimate = show_estimate,
     show_p = show_p,
     columns = columns,
     term_header = term_header,
     n_header = n_header,
+    events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
     digits = digits,
     text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family,
     striped_rows = striped_rows,
     stripe_fill = stripe_fill,
     stripe_colour = stripe_colour,

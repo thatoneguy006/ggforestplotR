@@ -7,7 +7,8 @@ test_that("as_forest_data standardizes coefficient columns", {
     cohort = c("A", "A"),
     section = c("Clinical", "Clinical"),
     block = c("Anthropometrics", "Anthropometrics"),
-    sample_size = c(120, 120)
+    sample_size = c(120, 120),
+    event_count = c(32, 28)
   )
 
   out <- as_forest_data(
@@ -19,18 +20,20 @@ test_that("as_forest_data standardizes coefficient columns", {
     group = "cohort",
     grouping = "section",
     separate_groups = "block",
-    n = "sample_size"
+    n = "sample_size",
+    events = "event_count"
   )
 
   expect_equal(
     names(out),
-    c("term", "estimate", "conf.low", "conf.high", "label", "group", "grouping", "separate_groups", "n", "p.value")
+    c("term", "estimate", "conf.low", "conf.high", "label", "group", "grouping", "separate_groups", "n", "events", "p.value")
   )
   expect_equal(as.character(out$term), c("Age", "BMI"))
   expect_equal(as.character(out$group), c("A", "A"))
   expect_equal(as.character(out$grouping), c("Clinical", "Clinical"))
   expect_equal(as.character(out$separate_groups), c("Anthropometrics", "Anthropometrics"))
   expect_equal(as.character(out$n), c("120", "120"))
+  expect_equal(as.character(out$events), c("32", "28"))
 })
 
 test_that("as_forest_data rejects reversed confidence intervals", {

@@ -18,6 +18,8 @@
 #'   variable blocks that can be outlined with grid lines.
 #' @param n Optional column name holding sample sizes or other N labels for
 #'   table helpers.
+#' @param events Optional column name holding event counts or event labels for
+#'   table helpers.
 #' @param p.value Optional column name holding p-values.
 #' @param exponentiate Logical; if `TRUE`, transform the estimates and draw the
 #'   axis on the log scale with the null line at 1.
@@ -68,6 +70,7 @@ ggforestplot <- function(data,
                          grouping_strip_position = c("left", "right"),
                          separate_groups = NULL,
                          n = NULL,
+                         events = NULL,
                          p.value = NULL,
                          exponentiate = FALSE,
                          sort_terms = c("none", "descending", "ascending"),
@@ -101,6 +104,7 @@ ggforestplot <- function(data,
       grouping = grouping,
       separate_groups = separate_groups,
       n = n,
+      events = events,
       p.value = p.value,
       exponentiate = exponentiate,
       sort_terms = sort_terms
