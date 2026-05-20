@@ -9,6 +9,9 @@
 #' @param conf.low Column name holding the lower confidence bound.
 #' @param conf.high Column name holding the upper confidence bound.
 #' @param label Optional column name used for the displayed row label.
+#' @param term_labels Optional named vector used to relabel displayed terms.
+#'   Names should match values in the term column and values are the labels to
+#'   display.
 #' @param group Optional column name used for color-grouping multiple
 #'   estimates per row.
 #' @param grouping Optional column name used to split rows into grouped plot
@@ -26,7 +29,8 @@
 #'   `"ascending"`.
 #'
 #' @return A standardized data frame ready for [ggforestplot()] and the table
-#'   composition helpers.
+#'   composition helpers. Original dataframe columns are retained for table
+#'   helpers so they can be displayed with `add_forest_table(columns = ...)`.
 #' @export
 #'
 #' @examples
@@ -50,6 +54,7 @@ as_forest_data <- function(data,
                            conf.low,
                            conf.high,
                            label = term,
+                           term_labels = NULL,
                            group = NULL,
                            grouping = NULL,
                            separate_groups = NULL,
@@ -91,6 +96,7 @@ as_forest_data <- function(data,
   } else {
     as.character(data[[cols$label]])
   }
+  out$label <- apply_term_labels(out$term, out$label, term_labels)
 
   out$group <- if (is.null(cols$group)) {
     NA_character_
@@ -128,23 +134,23 @@ as_forest_data <- function(data,
     as.numeric(data[[cols$p.value]])
   }
 
-  validate_forest_data(out, exponentiate = exponentiate)
+  extra_cols <- setdiff(names(data), names(out))
 
-  if (sort_terms == "descending") {
-    if (any(!is.na(out$grouping))) {
-      out <- out[order(out$grouping, out$estimate, decreasing = c(FALSE, TRUE)), , drop = FALSE]
-    } else {
-      out <- out[order(out$estimate, decreasing = TRUE), , drop = FALSE]
-    }
-  } else if (sort_terms == "ascending") {
-    if (any(!is.na(out$grouping))) {
-      out <- out[order(out$grouping, out$estimate, decreasing = c(FALSE, FALSE)), , drop = FALSE]
-    } else {
-      out <- out[order(out$estimate, decreasing = FALSE), , drop = FALSE]
-    }
+  for (extra in extra_cols) {
+    out[[extra]] <- data[[extra]]
   }
 
+  out$.source_row <- seq_len(nrow(out))
+
+  validate_forest_data(out, exponentiate = exponentiate)
+
+  out <- sort_forest_data(out, sort_terms = sort_terms)
+  source_columns <- data[out$.source_row, , drop = FALSE]
+  out$.source_row <- NULL
+
   rownames(out) <- NULL
+  attr(out, "exponentiate") <- isTRUE(exponentiate)
+  attr(out, "source_columns") <- source_columns
 
   out
 }

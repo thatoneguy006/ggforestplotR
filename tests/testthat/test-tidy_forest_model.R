@@ -50,6 +50,36 @@ test_that("ggforestplot supports exponentiated logistic regression models", {
   expect_true(all(p$ggforestplotR_state$forest_data$conf.high > 0))
 })
 
+test_that("ggforestplot uses canonical labels for model objects", {
+  fit <- glm(
+    event ~ age + bmi + treatment,
+    data = make_logistic_example_data(),
+    family = binomial()
+  )
+
+  p <- ggforestplot(fit)
+
+  expect_equal(p$labels$x, "OR (95% CI)")
+  expect_equal(p$ggforestplotR_state$defaults$estimate_label, "OR")
+  expect_true(all(p$ggforestplotR_state$forest_data$estimate > 0))
+})
+
+test_that("ggforestplot labels Cox models as hazard ratios", {
+  skip_if_not_installed("survival")
+
+  fit <- survival::coxph(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung
+  )
+
+  p <- ggforestplot(fit)
+
+  expect_equal(p$labels$x, "HR (95% CI)")
+  expect_equal(p$ggforestplotR_state$defaults$estimate_label, "HR")
+  expect_equal(p$ggforestplotR_state$defaults$ref_line_value, 1)
+  expect_true(all(p$ggforestplotR_state$forest_data$estimate > 0))
+})
+
 test_that("add_forest_table works for exponentiated logistic regression output", {
   fit <- glm(
     event ~ age + bmi + treatment,

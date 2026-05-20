@@ -8,22 +8,26 @@ tidy_forest_model(
   model,
   conf.int = TRUE,
   conf.level = 0.95,
-  exponentiate = FALSE,
+  exponentiate = NULL,
   intercept = FALSE,
+  term_labels = NULL,
   sort_terms = c("none", "descending", "ascending")
 )
 }
 \arguments{
-\item{model}{A fitted model object supported by \code{\link[broom:reexports]{broom::tidy()}}.}
+\item{model}{A fitted model object supported by \code{\link[broom:tidy]{broom::tidy()}}.}
 
 \item{conf.int}{Logical; if \code{TRUE}, request confidence intervals from
-\code{\link[broom:reexports]{broom::tidy()}}.}
+\code{\link[broom:tidy]{broom::tidy()}}.}
 
 \item{conf.level}{Confidence level for intervals.}
 
-\item{exponentiate}{Logical; passed through to \code{\link[broom:reexports]{broom::tidy()}}.}
+\item{exponentiate}{Logical; passed through to \code{\link[broom:tidy]{broom::tidy()}}.}
 
 \item{intercept}{Logical; if \code{FALSE}, drop the intercept term.}
+
+\item{term_labels}{Optional named vector used to relabel displayed terms.
+Names should match model term names and values are the labels to display.}
 
 \item{sort_terms}{How to sort rows: \code{"none"}, \code{"descending"}, or
 \code{"ascending"}.}
@@ -32,7 +36,7 @@ tidy_forest_model(
 A standardized coefficient data frame ready for \code{\link[=ggforestplot]{ggforestplot()}}.
 }
 \description{
-Uses \code{\link[broom:reexports]{broom::tidy()}} to convert a fitted model into forest-plot data.
+Uses \code{\link[broom:tidy]{broom::tidy()}} to convert a fitted model into forest-plot data.
 }
 \examples{
 if (requireNamespace("broom", quietly = TRUE)) {

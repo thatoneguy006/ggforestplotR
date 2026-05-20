@@ -5,13 +5,19 @@
                                  show_estimate = TRUE,
                                  show_p = FALSE,
                                  left_columns = NULL,
-                                  right_columns = NULL,
+                                 right_columns = NULL,
                                  term_header = "Term",
                                  n_header = "N",
                                  events_header = "Events",
-                                 estimate_label = "Estimate",
+                                 estimate_label = NULL,
                                  p_header = "P-value",
+                                 column_labels = NULL,
                                  digits = NULL,
+                                 estimate_digits = NULL,
+                                 interval_digits = NULL,
+                                 p_digits = NULL,
+                                 estimate_fmt = NULL,
+                                 ci_fmt = NULL,
                                  text_size = NULL,
                                  header_text_size = NULL,
                                  header_fontface = "bold",
@@ -44,6 +50,21 @@
     digits <- 2
   }
 
+  digits <- resolve_table_digits(
+    digits = digits,
+    estimate_digits = estimate_digits,
+    interval_digits = interval_digits,
+    p_digits = p_digits
+  )
+
+  if (is.null(estimate_label)) {
+    estimate_label <- state$defaults$estimate_label
+  }
+
+  if (is.null(estimate_label)) {
+    estimate_label <- "Estimate"
+  }
+
   if (is.null(text_size)) {
     text_size <- 3.2
   }
@@ -66,8 +87,8 @@
 
   default_left <- c(if (isTRUE(show_terms)) "term", if (isTRUE(show_n)) "n", if (isTRUE(show_events)) "events")
   default_right <- c(if (isTRUE(show_estimate)) "estimate", if (isTRUE(show_p)) "p")
-  resolved_left <- if (is.null(left_columns)) default_left else normalize_table_columns(left_columns)
-  resolved_right <- if (is.null(right_columns)) default_right else normalize_table_columns(right_columns)
+  resolved_left <- if (is.null(left_columns)) default_left else normalize_table_columns(left_columns, data = state$forest_data)
+  resolved_right <- if (is.null(right_columns)) default_right else normalize_table_columns(right_columns, data = state$forest_data)
 
   if (length(resolved_left) == 0L) {
     stop(
@@ -116,7 +137,12 @@
     events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
-    digits = digits,
+    column_labels = column_labels,
+    estimate_digits = digits$estimate_digits,
+    interval_digits = digits$interval_digits,
+    p_digits = digits$p_digits,
+    estimate_fmt = estimate_fmt,
+    ci_fmt = ci_fmt,
     columns = resolved_left
   )
 
@@ -131,7 +157,12 @@
     events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
-    digits = digits,
+    column_labels = column_labels,
+    estimate_digits = digits$estimate_digits,
+    interval_digits = digits$interval_digits,
+    p_digits = digits$p_digits,
+    estimate_fmt = estimate_fmt,
+    ci_fmt = ci_fmt,
     columns = resolved_right
   )
 
@@ -256,20 +287,40 @@
 #' @param show_p Whether to include the p-value column in the default
 #'   right-side selection when `right_columns` is not supplied.
 #' @param left_columns Optional explicit columns to place on the left side of
-#'   the forest plot. Accepts names such as `"term"`, `"n"`, and `"events"`,
-#'   or positions `1:5` corresponding to `term`, `n`, `events`, `estimate`,
-#'   and `p`.
+#'   the forest plot. Accepts built-in names such as `"term"`, `"n"`,
+#'   `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
+#'   dataframe columns, or positions corresponding to the built-in columns.
+#'   `"conf.low"` and `"conf.high"` are accepted as aliases for `"ci"`.
 #' @param right_columns Optional explicit columns to place on the right side
-#'   of the forest plot. Accepts names such as `"estimate"` and `"p"`, or
-#'   positions `1:5` corresponding to `term`, `n`, `events`, `estimate`,
-#'   and `p`.
+#'   of the forest plot. Accepts built-in names such as `"estimate"`, `"ci"`,
+#'   and `"p"`, arbitrary original dataframe columns, or positions
+#'   corresponding to the built-in columns. `"conf.low"` and `"conf.high"` are
+#'   accepted as aliases for `"ci"`.
 #' @param term_header Header text for the term column.
 #' @param n_header Header text for the `N` column.
 #' @param events_header Header text for the `Events` column.
-#' @param estimate_label Header label for the estimate column.
+#' @param estimate_label Header label for the estimate column. Defaults to the
+#'   model-derived label when available.
 #' @param p_header Header text for the p-value column.
+#' @param column_labels Optional named vector used to relabel table column
+#'   headers. Names should match values supplied to `left_columns` or
+#'   `right_columns` after column resolution, such as `"term"`, `"estimate"`,
+#'   `"ci"`, `"p"`, or an arbitrary original dataframe column.
 #' @param digits Number of digits used when formatting estimates and p-values.
-#'   Defaults to `2`.
+#'   Defaults to `2`. Superseded by `estimate_digits`, `interval_digits`, and
+#'   `p_digits` for separate control.
+#' @param estimate_digits Number of digits used for point estimates.
+#' @param interval_digits Number of digits used for confidence interval bounds.
+#' @param p_digits Number of digits used for p-values.
+#' @param estimate_fmt Format string for the estimate column. Use
+#'   `{estimate}`, `{conf.low}`, and `{conf.high}` as placeholders. The
+#'   shorthand `{conf.low, conf.high}` is also supported. Defaults to
+#'   `"{estimate} ({conf.low}, {conf.high})"`, or `"{estimate}"` when table
+#'   columns include `"ci"`.
+#' @param ci_fmt Format string for the confidence interval column when
+#'   table columns include `"ci"`. Use `{conf.low}` and `{conf.high}` as
+#'   placeholders. The shorthand `{conf.low, conf.high}` is also supported.
+#'   Defaults to `"({conf.low}, {conf.high})"`.
 #' @param text_size Text size for table contents. Defaults to `3.2`.
 #' @param header_text_size Header text size for table column labels. Defaults
 #'   to `11`.
@@ -331,9 +382,15 @@ add_split_table <- function(plot = NULL,
                             term_header = "Term",
                             n_header = "N",
                             events_header = "Events",
-                            estimate_label = "Estimate",
+                            estimate_label = NULL,
                             p_header = "P-value",
+                            column_labels = NULL,
                             digits = NULL,
+                            estimate_digits = NULL,
+                            interval_digits = NULL,
+                            p_digits = NULL,
+                            estimate_fmt = NULL,
+                            ci_fmt = NULL,
                             text_size = NULL,
                             header_text_size = NULL,
                             header_fontface = "bold",
@@ -359,7 +416,13 @@ add_split_table <- function(plot = NULL,
         events_header = events_header,
         estimate_label = estimate_label,
         p_header = p_header,
+        column_labels = column_labels,
         digits = digits,
+        estimate_digits = estimate_digits,
+        interval_digits = interval_digits,
+        p_digits = p_digits,
+        estimate_fmt = estimate_fmt,
+        ci_fmt = ci_fmt,
         text_size = text_size,
         header_text_size = header_text_size,
         header_fontface = header_fontface,
@@ -389,7 +452,13 @@ add_split_table <- function(plot = NULL,
     events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
+    column_labels = column_labels,
     digits = digits,
+    estimate_digits = estimate_digits,
+    interval_digits = interval_digits,
+    p_digits = p_digits,
+    estimate_fmt = estimate_fmt,
+    ci_fmt = ci_fmt,
     text_size = text_size,
     header_text_size = header_text_size,
     header_fontface = header_fontface,

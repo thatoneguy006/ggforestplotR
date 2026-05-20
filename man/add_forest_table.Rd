@@ -16,9 +16,15 @@ add_forest_table(
   term_header = "Term",
   n_header = "N",
   events_header = "Events",
-  estimate_label = "Estimate",
+  estimate_label = NULL,
   p_header = "P-value",
+  column_labels = NULL,
   digits = NULL,
+  estimate_digits = NULL,
+  interval_digits = NULL,
+  p_digits = NULL,
+  estimate_fmt = NULL,
+  ci_fmt = NULL,
   text_size = NULL,
   header_text_size = NULL,
   header_fontface = "bold",
@@ -39,24 +45,27 @@ add_forest_table(
 \item{position}{Whether to place the table on the left or right of the
 forest plot.}
 
-\item{show_terms}{Whether to show the term column in the table.}
+\item{show_terms}{Whether to show the term column in the table. Soft-
+deprecated; use \code{columns} instead.}
 
-\item{show_n}{Whether to show the \code{N} column. Defaults to \code{TRUE} when the
-underlying plot data includes an \code{n} column.}
+\item{show_n}{Whether to show the \code{N} column. Soft-deprecated; use
+\code{columns} instead.}
 
-\item{show_events}{Whether to show the \code{Events} column. Defaults to \code{TRUE}
-when the underlying plot data includes an \code{events} column.}
+\item{show_events}{Whether to show the \code{Events} column. Soft-deprecated;
+use \code{columns} instead.}
 
 \item{show_estimate}{Whether to show the formatted estimate and confidence
-interval column.}
+interval column. Soft-deprecated; use \code{columns} instead.}
 
-\item{show_p}{Whether to display the p-value column.}
+\item{show_p}{Whether to display the p-value column. Soft-deprecated; use
+\code{columns} instead.}
 
 \item{columns}{Optional explicit columns to display in the side table, in
-the order they should appear. Accepts names such as \code{"n"}, \code{"events"},
-and \code{"term"}, or positions \code{1:5} corresponding to \code{term}, \code{n}, \code{events},
-\code{estimate}, and \code{p}.
-When supplied, this overrides the default \verb{show_*} column selection.}
+the order they should appear. Accepts built-in names such as \code{"term"},
+\code{"n"}, \code{"events"}, \code{"estimate"}, \code{"ci"}, and \code{"p"}, arbitrary original
+dataframe columns, or positions corresponding to the built-in columns. \code{"conf.low"}
+and \code{"conf.high"} are accepted as aliases for \code{"ci"}. When supplied, this
+overrides the default \verb{show_*} column selection.}
 
 \item{term_header}{Header text for the term column.}
 
@@ -64,12 +73,36 @@ When supplied, this overrides the default \verb{show_*} column selection.}
 
 \item{events_header}{Header text for the \code{Events} column.}
 
-\item{estimate_label}{Header label for the estimate column.}
+\item{estimate_label}{Header label for the estimate column. Defaults to the
+model-derived label when available.}
 
 \item{p_header}{Header text for the p-value column.}
 
+\item{column_labels}{Optional named vector used to relabel table column
+headers. Names should match values supplied to \code{columns} after column
+resolution, such as \code{"term"}, \code{"estimate"}, \code{"ci"}, \code{"p"}, or an arbitrary
+original dataframe column.}
+
 \item{digits}{Number of digits used when formatting estimates and p-values.
-Defaults to \code{2}.}
+Defaults to \code{2}. Superseded by \code{estimate_digits}, \code{interval_digits}, and
+\code{p_digits} for separate control.}
+
+\item{estimate_digits}{Number of digits used for point estimates.}
+
+\item{interval_digits}{Number of digits used for confidence interval bounds.}
+
+\item{p_digits}{Number of digits used for p-values.}
+
+\item{estimate_fmt}{Format string for the estimate column. Use
+\code{\{estimate\}}, \code{\{conf.low\}}, and \code{\{conf.high\}} as placeholders. The
+shorthand \code{\{conf.low, conf.high\}} is also supported. Defaults to
+\code{"\{estimate\} (\{conf.low\}, \{conf.high\})"}, or \code{"\{estimate\}"} when
+\code{columns} includes \code{"ci"}.}
+
+\item{ci_fmt}{Format string for the confidence interval column when
+\code{columns} includes \code{"ci"}. Use \code{\{conf.low\}} and \code{\{conf.high\}} as
+placeholders. The shorthand \code{\{conf.low, conf.high\}} is also supported.
+Defaults to \code{"(\{conf.low\}, \{conf.high\})"}.}
 
 \item{text_size}{Text size for table contents. Defaults to \code{3.2}.}
 
@@ -119,16 +152,14 @@ p <- ggforestplot(coefs, n = "sample_size", p.value = "p_value")
 add_forest_table(
   p,
   position = "left",
-  show_n = TRUE,
-  show_p = TRUE,
+  columns = c("term", "n", "estimate", "p"),
   estimate_label = "Beta"
 )
 
 ggforestplot(coefs, n = "sample_size", p.value = "p_value") +
   add_forest_table(
     position = "right",
-    show_n = TRUE,
-    show_p = TRUE,
+    columns = c("term", "n", "estimate", "p"),
     estimate_label = "Beta"
   )
 }

@@ -11,6 +11,7 @@ ggforestplot(
   conf.low = "conf.low",
   conf.high = "conf.high",
   label = term,
+  term_labels = NULL,
   group = NULL,
   grouping = NULL,
   grouping_strip_position = c("left", "right"),
@@ -18,7 +19,7 @@ ggforestplot(
   n = NULL,
   events = NULL,
   p.value = NULL,
-  exponentiate = FALSE,
+  exponentiate = NULL,
   sort_terms = c("none", "descending", "ascending"),
   point_size = 2.3,
   point_shape = 19,
@@ -34,12 +35,17 @@ ggforestplot(
   stripe_colour = NA,
   zero_line = TRUE,
   zero_line_linetype = 2,
-  zero_line_colour = "grey60"
+  zero_line_colour = "grey60",
+  ref_line = NULL,
+  ref_line_value = NULL,
+  ref_line_label = NULL,
+  ref_line_linetype = NULL,
+  ref_line_colour = NULL
 )
 }
 \arguments{
 \item{data}{Either a tidy coefficient data frame or a model object
-supported by \code{\link[broom:reexports]{broom::tidy()}}.}
+supported by \code{\link[broom:tidy]{broom::tidy()}}.}
 
 \item{term}{Column name holding the model term identifiers.}
 
@@ -50,6 +56,10 @@ supported by \code{\link[broom:reexports]{broom::tidy()}}.}
 \item{conf.high}{Column name holding the upper confidence bounds.}
 
 \item{label}{Optional column name used for the displayed row labels.}
+
+\item{term_labels}{Optional named vector used to relabel displayed terms.
+Names should match values in the term column and values are the labels to
+display.}
 
 \item{group}{Optional column name used for color-grouping estimates.}
 
@@ -70,7 +80,9 @@ table helpers.}
 \item{p.value}{Optional column name holding p-values.}
 
 \item{exponentiate}{Logical; if \code{TRUE}, transform the estimates and draw the
-axis on the log scale with the null line at 1.}
+axis on the log scale with the reference line at 1. For model objects,
+\code{NULL} uses the canonical scale when it can be inferred, such as hazard
+ratios for Cox models.}
 
 \item{sort_terms}{How to sort rows: \code{"none"}, \code{"descending"}, or
 \code{"ascending"}.}
@@ -101,11 +113,26 @@ around each labeled block identified by \code{separate_groups}.}
 
 \item{stripe_colour}{Border color for shaded rows.}
 
-\item{zero_line}{Logical; if \code{TRUE}, draw a null reference line.}
+\item{zero_line}{Logical; if \code{TRUE}, draw a null reference line. Superseded
+by \code{ref_line}.}
 
-\item{zero_line_linetype}{Line type for the null reference line.}
+\item{zero_line_linetype}{Line type for the null reference line. Superseded
+by \code{ref_line_linetype}.}
 
-\item{zero_line_colour}{Color for the null reference line.}
+\item{zero_line_colour}{Color for the null reference line. Superseded by
+\code{ref_line_colour}.}
+
+\item{ref_line}{Logical; if \code{TRUE}, draw a reference line. Defaults to
+\code{zero_line} for backward compatibility.}
+
+\item{ref_line_value}{Numeric x-value where the reference line is drawn.
+Defaults to \code{0} for additive effects and \code{1} for exponentiated effects.}
+
+\item{ref_line_label}{Optional label drawn alongside the reference line.}
+
+\item{ref_line_linetype}{Line type for the reference line.}
+
+\item{ref_line_colour}{Color for the reference line.}
 }
 \value{
 A \code{ggplot} object. Use standard \code{ggplot2} functions such as

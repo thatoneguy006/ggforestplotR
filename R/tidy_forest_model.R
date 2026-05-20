@@ -8,6 +8,8 @@
 #' @param conf.level Confidence level for intervals.
 #' @param exponentiate Logical; passed through to [broom::tidy()].
 #' @param intercept Logical; if `FALSE`, drop the intercept term.
+#' @param term_labels Optional named vector used to relabel displayed terms.
+#'   Names should match model term names and values are the labels to display.
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
 #'   `"ascending"`.
 #'
@@ -35,10 +37,16 @@
 tidy_forest_model <- function(model,
                               conf.int = TRUE,
                               conf.level = 0.95,
-                              exponentiate = FALSE,
+                              exponentiate = NULL,
                               intercept = FALSE,
+                              term_labels = NULL,
                               sort_terms = c("none", "descending", "ascending")) {
   sort_terms <- match.arg(sort_terms)
+  estimate_info <- infer_model_estimate_info(
+    model,
+    exponentiate = exponentiate,
+    conf.level = conf.level
+  )
 
   if (!requireNamespace("broom", quietly = TRUE)) {
     stop(
@@ -52,7 +60,7 @@ tidy_forest_model <- function(model,
     x = model,
     conf.int = conf.int,
     conf.level = conf.level,
-    exponentiate = exponentiate
+    exponentiate = estimate_info$exponentiate
   )
 
   if (!"term" %in% names(out) || !"estimate" %in% names(out)) {
@@ -74,15 +82,20 @@ tidy_forest_model <- function(model,
     out <- out[out$term != "(Intercept)", , drop = FALSE]
   }
 
-  as_forest_data(
+  out <- as_forest_data(
     data = out,
     term = "term",
     estimate = "estimate",
     conf.low = "conf.low",
     conf.high = "conf.high",
+    term_labels = term_labels,
     n = NULL,
     p.value = if ("p.value" %in% names(out)) "p.value" else NULL,
-    exponentiate = exponentiate,
+    exponentiate = estimate_info$exponentiate,
     sort_terms = sort_terms
   )
+  attr(out, "estimate_label") <- estimate_info$estimate_label
+  attr(out, "axis_label") <- estimate_info$axis_label
+  attr(out, "conf.level") <- conf.level
+  out
 }
