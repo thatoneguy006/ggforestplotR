@@ -19,9 +19,8 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-#library(ggforestplotR)
+library(ggforestplotR)
 library(ggplot2)
-miceadds::source.all("D:/ggforestplotR/R")
 ```
 
 `ggforestplotR` is built for coefficient-driven forest plots that stay inside a
