@@ -7,15 +7,15 @@ resolve_column <- function(data, column, arg, required = TRUE) {
     }
     return(NULL)
   }
-  
+
   if (!is.character(column) || length(column) != 1L) {
     stop(sprintf("`%s` must be a single column name (string).", arg), call. = FALSE)
   }
-  
+
   if (!column %in% names(data)) {
     stop(sprintf("Column `%s` was not found in `data`.", column), call. = FALSE)
   }
-  
+
   column
 }
 
@@ -27,21 +27,21 @@ validate_forest_data <- function(data, exponentiate = FALSE) {
     "label", "group", "grouping", "separate_groups", "n", "events", "p.value"
   )
   missing <- setdiff(required, names(data))
-  
+
   if (length(missing) > 0L) {
     stop(
       sprintf("Missing required forest data columns: %s", paste(missing, collapse = ", ")),
       call. = FALSE
     )
   }
-  
+
   numeric_cols <- c("estimate", "conf.low", "conf.high")
-  
+
   for (col in numeric_cols) {
     if (anyNA(data[[col]])) {
       stop(sprintf("Column `%s` cannot contain missing values.", col), call. = FALSE)
     }
-    
+
     if (isTRUE(exponentiate) && any(data[[col]] <= 0)) {
       stop(
         "Exponentiated forest plots require strictly positive `estimate`, `conf.low`, and `conf.high` values.",
@@ -49,37 +49,37 @@ validate_forest_data <- function(data, exponentiate = FALSE) {
       )
     }
   }
-  
+
   if (any(data$conf.low > data$conf.high)) {
     stop("`conf.low` cannot be greater than `conf.high`.", call. = FALSE)
   }
-  
+
   invisible(data)
 }
 
 # ─── Column normalisation ────────────────────────────────────────────────────
 
-normalize_table_columns <- function(columns) {
-  default_order <- c("term", "n", "events", "estimate", "p")
-  
+normalize_table_columns <- function(columns, data = NULL) {
+  default_order <- c("term", "n", "events", "estimate", "p", "ci")
+
   if (is.null(columns)) {
     return(NULL)
   }
-  
+
   if (is.numeric(columns)) {
     idx <- as.integer(columns)
-    
+
     if (anyNA(idx) || any(idx < 1L | idx > length(default_order))) {
-      stop("Numeric table columns must be between 1 and 4.", call. = FALSE)
+      stop("Numeric table columns must be between 1 and 6.", call. = FALSE)
     }
-    
+
     return(unique(default_order[idx]))
   }
-  
+
   if (!is.character(columns)) {
     stop("Table columns must be specified by name or position.", call. = FALSE)
   }
-  
+
   aliases <- c(
     term = "term", terms = "term", label = "term", labels = "term",
     subgroup = "term", subgroups = "term",
@@ -87,12 +87,24 @@ normalize_table_columns <- function(columns) {
     events = "events", event = "events", cases = "events", count = "events",
     estimate = "estimate", estimates = "estimate",
     effect = "estimate", effects = "estimate",
+    ci = "ci", cis = "ci", interval = "ci", intervals = "ci",
+    confidenceinterval = "ci", confidenceintervals = "ci",
+    "conf.low" = "ci", conflow = "ci",
+    "conf.high" = "ci", confhigh = "ci",
     p = "p", pvalue = "p", p.value = "p", p_value = "p", pvalues = "p"
   )
-  
+
+  if (!is.null(data)) {
+    exact <- columns %in% names(data)
+  } else {
+    exact <- rep(FALSE, length(columns))
+  }
+
   normalized <- gsub("\\s+", "", tolower(columns))
   resolved <- unname(aliases[normalized])
-  
+  interval_alias <- normalized %in% c("conf.low", "conflow", "conf.high", "confhigh")
+  resolved[exact & !interval_alias] <- columns[exact & !interval_alias]
+
   if (anyNA(resolved)) {
     bad <- unique(columns[is.na(resolved)])
     stop(
@@ -100,8 +112,146 @@ normalize_table_columns <- function(columns) {
       call. = FALSE
     )
   }
-  
+
   unique(resolved)
+}
+
+normalize_column_labels <- function(column_labels, data = NULL) {
+  if (is.null(column_labels)) {
+    return(NULL)
+  }
+
+  if (!is.atomic(column_labels) || is.null(names(column_labels)) || any(!nzchar(names(column_labels)))) {
+    stop("`column_labels` must be a named vector.", call. = FALSE)
+  }
+
+  label_keys <- vapply(
+    names(column_labels),
+    function(label_name) normalize_table_columns(label_name, data = data),
+    character(1)
+  )
+  out <- stats::setNames(as.character(column_labels), label_keys)
+  out[!duplicated(names(out), fromLast = TRUE)]
+}
+
+normalize_digits <- function(value, arg) {
+  if (is.null(value)) {
+    return(NULL)
+  }
+
+  if (!is.numeric(value) || length(value) != 1L || is.na(value) || value < 0 || value != floor(value)) {
+    stop(sprintf("`%s` must be a single non-negative whole number.", arg), call. = FALSE)
+  }
+
+  as.integer(value)
+}
+
+resolve_table_digits <- function(digits = NULL,
+                                 estimate_digits = NULL,
+                                 interval_digits = NULL,
+                                 p_digits = NULL) {
+  digits <- normalize_digits(if (is.null(digits)) 2 else digits, "digits")
+  estimate_digits <- normalize_digits(estimate_digits, "estimate_digits")
+  interval_digits <- normalize_digits(interval_digits, "interval_digits")
+  p_digits <- normalize_digits(p_digits, "p_digits")
+
+  list(
+    estimate_digits = if (is.null(estimate_digits)) digits else estimate_digits,
+    interval_digits = if (is.null(interval_digits)) digits else interval_digits,
+    p_digits = if (is.null(p_digits)) digits else p_digits
+  )
+}
+
+apply_term_labels <- function(term, label, term_labels = NULL) {
+  if (is.null(term_labels)) {
+    return(label)
+  }
+
+  if (!is.atomic(term_labels) || is.null(names(term_labels)) || any(!nzchar(names(term_labels)))) {
+    stop("`term_labels` must be a named vector.", call. = FALSE)
+  }
+
+  term_labels <- stats::setNames(as.character(term_labels), names(term_labels))
+  matched <- match(term, names(term_labels))
+  replace <- !is.na(matched)
+  label[replace] <- unname(term_labels[matched[replace]])
+  label
+}
+
+sort_forest_data <- function(data, sort_terms = c("none", "descending", "ascending")) {
+  sort_terms <- match.arg(sort_terms)
+
+  if (sort_terms == "none") {
+    return(data)
+  }
+
+  decreasing <- sort_terms == "descending"
+  has_grouping <- any(!is.na(data$grouping) & nzchar(data$grouping))
+
+  if (!isTRUE(has_grouping)) {
+    return(data[order(data$estimate, decreasing = decreasing), , drop = FALSE])
+  }
+
+  group_key <- ifelse(
+    is.na(data$grouping) | !nzchar(data$grouping),
+    "(Ungrouped)",
+    data$grouping
+  )
+  group_levels <- unique(group_key)
+  row_order <- unlist(lapply(group_levels, function(level) {
+    idx <- which(group_key == level)
+    idx[order(data$estimate[idx], decreasing = decreasing)]
+  }), use.names = FALSE)
+
+  data[row_order, , drop = FALSE]
+}
+
+format_conf_level_label <- function(conf.level = 0.95) {
+  pct <- conf.level * 100
+  if (isTRUE(all.equal(pct, round(pct)))) {
+    paste0(as.integer(round(pct)), "%")
+  } else {
+    paste0(format(pct, trim = TRUE, scientific = FALSE), "%")
+  }
+}
+
+infer_model_estimate_info <- function(model,
+                                      exponentiate = NULL,
+                                      conf.level = 0.95) {
+  auto_exponentiate <- FALSE
+  estimate_label <- "Estimate"
+
+  if (inherits(model, "coxph")) {
+    auto_exponentiate <- TRUE
+    estimate_label <- "HR"
+  } else if (inherits(model, "glm") && !is.null(model$family)) {
+    family <- model$family$family
+    link <- model$family$link
+
+    if (identical(family, "binomial") && identical(link, "logit")) {
+      auto_exponentiate <- TRUE
+      estimate_label <- "OR"
+    } else if (link == "log") {
+      auto_exponentiate <- TRUE
+      estimate_label <- if (family %in% c("poisson", "quasipoisson")) "IRR" else "RR"
+    }
+  }
+
+  resolved_exponentiate <- if (is.null(exponentiate)) auto_exponentiate else isTRUE(exponentiate)
+
+  if (isTRUE(resolved_exponentiate)) {
+    if (identical(estimate_label, "Estimate")) {
+      estimate_label <- "Ratio"
+    }
+  } else {
+    estimate_label <- "Estimate"
+  }
+
+  list(
+    exponentiate = resolved_exponentiate,
+    estimate_label = estimate_label,
+    axis_label = sprintf("%s (%s CI)", estimate_label, format_conf_level_label(conf.level))
+  )
 }
 
 # ─── Formatting helpers ──────────────────────────────────────────────────────
@@ -116,21 +266,21 @@ normalize_table_columns <- function(columns) {
 #' @noRd
 collapse_grouped_values <- function(formatted, group = NULL) {
   keep <- !is.na(formatted) & nzchar(formatted)
-  
+
   if (!any(keep)) {
     return("")
   }
-  
+
   non_empty <- formatted[keep]
-  
+
   if (length(unique(non_empty)) == 1L) {
     return(non_empty[1L])
   }
-  
+
   if (all(is.na(group) | !nzchar(group))) {
     return(paste(non_empty, collapse = "\n"))
   }
-  
+
   group_labels <- ifelse(
     is.na(group) | !nzchar(group),
     paste0("Series ", seq_along(formatted)),
@@ -139,17 +289,89 @@ collapse_grouped_values <- function(formatted, group = NULL) {
   paste(paste0(group_labels[keep], ": ", formatted[keep]), collapse = "\n")
 }
 
-format_forest_p_values <- function(values, group = NULL, digits = 2) {
-  d <- max(3L, digits)
+format_forest_p_values <- function(values, group = NULL, digits = 2, p_digits = digits) {
+  p_digits <- resolve_table_digits(digits = digits, p_digits = p_digits)$p_digits
+  d <- max(3L, p_digits)
   values <- as.numeric(values)
   formatted <- ifelse(is.na(values), "", format.pval(values, digits = d, eps = 10^(-d)))
   collapse_grouped_values(formatted, group)
 }
 
 format_forest_estimates <- function(estimate, conf.low, conf.high,
-                                    group = NULL, digits = 2) {
-  fmt <- paste0("%.", digits, "f (%.", digits, "f, %.", digits, "f)")
-  formatted <- sprintf(fmt, estimate, conf.low, conf.high)
+                                    group = NULL, digits = 2,
+                                    estimate_digits = digits,
+                                    interval_digits = digits,
+                                    estimate_fmt = NULL) {
+  digits <- resolve_table_digits(
+    digits = digits,
+    estimate_digits = estimate_digits,
+    interval_digits = interval_digits
+  )
+  if (is.null(estimate_fmt)) {
+    estimate_fmt <- "{estimate} ({conf.low}, {conf.high})"
+  }
+  if (!is.character(estimate_fmt) || length(estimate_fmt) != 1L || is.na(estimate_fmt)) {
+    stop("`estimate_fmt` must be a single character string.", call. = FALSE)
+  }
+
+  estimate_text <- sprintf(paste0("%.", digits$estimate_digits, "f"), estimate)
+  conf_low_text <- sprintf(paste0("%.", digits$interval_digits, "f"), conf.low)
+  conf_high_text <- sprintf(paste0("%.", digits$interval_digits, "f"), conf.high)
+
+  formatted <- vapply(
+    seq_along(estimate_text),
+    function(i) {
+      value <- estimate_fmt
+      value <- gsub(
+        "{conf.low, conf.high}",
+        paste0(conf_low_text[[i]], ", ", conf_high_text[[i]]),
+        value,
+        fixed = TRUE
+      )
+      value <- gsub("{estimate}", estimate_text[[i]], value, fixed = TRUE)
+      value <- gsub("{conf.low}", conf_low_text[[i]], value, fixed = TRUE)
+      value <- gsub("{conf.high}", conf_high_text[[i]], value, fixed = TRUE)
+      value
+    },
+    character(1)
+  )
+  collapse_grouped_values(formatted, group)
+}
+
+format_forest_intervals <- function(conf.low, conf.high,
+                                    group = NULL, digits = 2,
+                                    interval_digits = digits,
+                                    ci_fmt = NULL) {
+  digits <- resolve_table_digits(
+    digits = digits,
+    interval_digits = interval_digits
+  )
+  if (is.null(ci_fmt)) {
+    ci_fmt <- "({conf.low}, {conf.high})"
+  }
+  if (!is.character(ci_fmt) || length(ci_fmt) != 1L || is.na(ci_fmt)) {
+    stop("`ci_fmt` must be a single character string.", call. = FALSE)
+  }
+
+  conf_low_text <- sprintf(paste0("%.", digits$interval_digits, "f"), conf.low)
+  conf_high_text <- sprintf(paste0("%.", digits$interval_digits, "f"), conf.high)
+
+  formatted <- vapply(
+    seq_along(conf_low_text),
+    function(i) {
+      value <- ci_fmt
+      value <- gsub(
+        "{conf.low, conf.high}",
+        paste0(conf_low_text[[i]], ", ", conf_high_text[[i]]),
+        value,
+        fixed = TRUE
+      )
+      value <- gsub("{conf.low}", conf_low_text[[i]], value, fixed = TRUE)
+      value <- gsub("{conf.high}", conf_high_text[[i]], value, fixed = TRUE)
+      value
+    },
+    character(1)
+  )
   collapse_grouped_values(formatted, group)
 }
 
@@ -180,19 +402,19 @@ assign_grouping_panels <- function(data, has_groupings) {
 #' @noRd
 prefix_ambiguous_labels <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
-  
+
   for (pv in panel_values) {
     idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
     sep_vals <- data$separate_groups[idx]
     counts <- table(sep_vals[!is.na(sep_vals) & nzchar(sep_vals)])
     prefix_groups <- names(counts[counts > 1L])
-    
+
     if (length(prefix_groups) > 0L) {
       prefix_idx <- idx[!is.na(sep_vals) & sep_vals %in% prefix_groups]
       data$label[prefix_idx] <- paste0(data$separate_groups[prefix_idx], ": ", data$label[prefix_idx])
     }
   }
-  
+
   data
 }
 
@@ -204,18 +426,18 @@ assign_row_keys <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
   data$row_key <- NA_character_
   all_levels <- character()
-  
+
   for (pv in panel_values) {
     idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
     panel_labels <- unique(data$label[idx])
-    
+
     keys <- if (has_groupings) paste(pv, panel_labels, sep = "___") else panel_labels
     row_map <- stats::setNames(keys, panel_labels)
-    
+
     data$row_key[idx] <- unname(row_map[data$label[idx]])
     all_levels <- c(all_levels, keys)
   }
-  
+
   data$row_key <- factor(data$row_key, levels = all_levels)
   data
 }
@@ -226,14 +448,14 @@ assign_row_keys <- function(data, has_groupings) {
 build_axis_labels <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
   labels <- character()
-  
+
   for (pv in panel_values) {
     idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
     panel_labels <- unique(data$label[idx])
     keys <- if (has_groupings) paste(pv, panel_labels, sep = "___") else panel_labels
     labels <- c(labels, stats::setNames(panel_labels, keys))
   }
-  
+
   labels
 }
 
@@ -243,12 +465,12 @@ build_axis_labels <- function(data, has_groupings) {
 build_stripe_rectangles <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
   parts <- vector("list", length(panel_values))
-  
+
   for (i in seq_along(panel_values)) {
     pv <- panel_values[[i]]
     idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
     n_rows <- length(unique(data$row_key[idx]))
-    
+
     parts[[i]] <- data.frame(
       grouping_panel = if (has_groupings) pv else NA_character_,
       stripe_id = seq_len(n_rows),
@@ -259,7 +481,7 @@ build_stripe_rectangles <- function(data, has_groupings) {
       stringsAsFactors = FALSE
     )
   }
-  
+
   stripe_data <- do.call(rbind, parts)
   stripe_data$fill_key <- ifelse(stripe_data$stripe_id %% 2 == 1, "stripe", "base")
   stripe_data
@@ -272,13 +494,13 @@ build_stripe_rectangles <- function(data, has_groupings) {
 build_separate_lines <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
   parts <- vector("list", length(panel_values))
-  
+
   for (i in seq_along(panel_values)) {
     pv <- panel_values[[i]]
     idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
-    
+
     row_keys <- levels(data$row_key)[levels(data$row_key) %in% data$row_key[idx]]
-    
+
     # Map each row_key to its separate_groups value
     sep_groups <- vapply(row_keys, function(rk) {
       row_idx <- idx[as.character(data$row_key[idx]) == rk]
@@ -286,21 +508,21 @@ build_separate_lines <- function(data, has_groupings) {
       vals <- vals[!is.na(vals) & nzchar(vals)]
       if (length(vals) == 0L) NA_character_ else vals[1L]
     }, character(1))
-    
+
     separator_rows <- list()
     run_start <- 1L
-    
+
     while (run_start <= length(sep_groups)) {
       current <- sep_groups[run_start]
       run_end <- run_start
-      
+
       if (!is.na(current) && nzchar(current)) {
         while (run_end < length(sep_groups) &&
                !is.na(sep_groups[run_end + 1L]) &&
                sep_groups[run_end + 1L] == current) {
           run_end <- run_end + 1L
         }
-        
+
         separator_rows[[length(separator_rows) + 1L]] <- data.frame(
           grouping_panel = if (has_groupings) pv else NA_character_,
           separate_groups = unname(current),
@@ -308,15 +530,15 @@ build_separate_lines <- function(data, has_groupings) {
           stringsAsFactors = FALSE
         )
       }
-      
+
       run_start <- run_end + 1L
     }
-    
+
     parts[[i]] <- if (length(separator_rows) > 0L) do.call(rbind, separator_rows) else NULL
   }
-  
+
   separator_data <- do.call(rbind, parts)
-  
+
   if (is.null(separator_data)) {
     data.frame(
       grouping_panel = character(),
@@ -334,15 +556,18 @@ build_separate_lines <- function(data, has_groupings) {
 build_forest_plot_data <- function(data) {
   has_groupings <- any(!is.na(data$grouping) & nzchar(data$grouping))
   plot_data <- data
+  attr(plot_data, "source_columns") <- attr(data, "source_columns")
   plot_data$grouping_panel <- assign_grouping_panels(plot_data, has_groupings)
-  
+
   plot_data <- prefix_ambiguous_labels(plot_data, has_groupings)
+  attr(plot_data, "source_columns") <- attr(data, "source_columns")
   plot_data <- assign_row_keys(plot_data, has_groupings)
-  
+  attr(plot_data, "source_columns") <- attr(data, "source_columns")
+
   stripe_data <- build_stripe_rectangles(plot_data, has_groupings)
   separator_data <- build_separate_lines(plot_data, has_groupings)
   axis_labels <- build_axis_labels(plot_data, has_groupings)
-  
+
   list(
     plot_data = plot_data,
     stripe_data = stripe_data,
@@ -366,16 +591,32 @@ build_forest_table_data <- function(data,
                                     estimate_label = "Estimate",
                                     p_header = "P-value",
                                     digits = 2,
+                                    estimate_digits = NULL,
+                                    interval_digits = NULL,
+                                    p_digits = NULL,
+                                    estimate_fmt = NULL,
+                                    ci_fmt = NULL,
+                                    column_labels = NULL,
                                     columns = NULL) {
+  digits <- resolve_table_digits(
+    digits = digits,
+    estimate_digits = estimate_digits,
+    interval_digits = interval_digits,
+    p_digits = p_digits
+  )
+  source_columns <- attr(data, "source_columns")
+  if (is.null(source_columns)) {
+    source_columns <- data
+  }
   row_levels <- levels(data$row_key)
   row_parts <- vector("list", length(row_levels))
-  
+
   for (i in seq_along(row_levels)) {
     row_key <- row_levels[[i]]
     idx <- which(as.character(data$row_key) == row_key)
-    
+
     if (length(idx) == 0L) next
-    
+
     rd <- data[idx, , drop = FALSE]
     row_parts[[i]] <- data.frame(
       row_key = row_key,
@@ -384,16 +625,53 @@ build_forest_table_data <- function(data,
       n_text = format_forest_table_values(rd$n, rd$group),
       events_text = format_forest_table_values(rd$events, rd$group),
       estimate_text = format_forest_estimates(
-        rd$estimate, rd$conf.low, rd$conf.high, rd$group, digits = digits
+        rd$estimate,
+        rd$conf.low,
+        rd$conf.high,
+        rd$group,
+        estimate_digits = digits$estimate_digits,
+        interval_digits = digits$interval_digits,
+        estimate_fmt = estimate_fmt
       ),
-      p_text = format_forest_p_values(rd$p.value, rd$group, digits = digits),
+      estimate_value_text = format_forest_estimates(
+        rd$estimate,
+        rd$conf.low,
+        rd$conf.high,
+        rd$group,
+        estimate_digits = digits$estimate_digits,
+        interval_digits = digits$interval_digits,
+        estimate_fmt = if (is.null(estimate_fmt)) "{estimate}" else estimate_fmt
+      ),
+      ci_text = format_forest_intervals(
+        rd$conf.low,
+        rd$conf.high,
+        rd$group,
+        interval_digits = digits$interval_digits,
+        ci_fmt = ci_fmt
+      ),
+      p_text = format_forest_p_values(rd$p.value, rd$group, p_digits = digits$p_digits),
       stringsAsFactors = FALSE
     )
+
+    extra_columns <- setdiff(unique(c(names(data), names(source_columns))), names(row_parts[[i]]))
+    extra_columns <- setdiff(
+      extra_columns,
+      c("row_key", "grouping_panel")
+    )
+
+    for (extra in extra_columns) {
+      values <- if (extra %in% names(source_columns)) {
+        source_columns[[extra]][idx]
+      } else {
+        rd[[extra]]
+      }
+      row_parts[[i]][[extra]] <- format_forest_table_values(values, rd$group)
+    }
   }
-  
+
   table_rows <- do.call(rbind, row_parts)
   table_rows$row_key <- factor(table_rows$row_key, levels = row_levels)
-  
+
   # Determine which columns to show
   if (is.null(columns)) {
     column_keys <- character()
@@ -403,34 +681,45 @@ build_forest_table_data <- function(data,
     if (isTRUE(show_estimate)) column_keys <- c(column_keys, "estimate")
     if (isTRUE(show_p))        column_keys <- c(column_keys, "p")
   } else {
-    column_keys <- normalize_table_columns(columns)
+    column_keys <- normalize_table_columns(columns, data = table_rows)
   }
-  
+
   if (length(column_keys) == 0L) {
     stop("Select at least one table column to display.", call. = FALSE)
   }
-  
+
   column_field_lookup <- c(
     term = "term_text",
     n = "n_text",
     events = "events_text",
-    estimate = "estimate_text",
+    estimate = if ("ci" %in% column_keys) "estimate_value_text" else "estimate_text",
+    ci = "ci_text",
     p = "p_text"
   )
   header_lookup <- c(
     term = term_header,
     n = n_header,
     events = events_header,
-    estimate = sprintf("%s (95%% CI)", estimate_label),
+    estimate = if ("ci" %in% column_keys) estimate_label else sprintf("%s (95%% CI)", estimate_label),
+    ci = "95% CI",
     p = p_header
   )
-  
+  extra_column_keys <- setdiff(column_keys, names(column_field_lookup))
+  extra_field_lookup <- stats::setNames(extra_column_keys, extra_column_keys)
+  column_field_lookup <- c(column_field_lookup, extra_field_lookup)
+  header_lookup <- c(header_lookup, stats::setNames(extra_column_keys, extra_column_keys))
+
+  resolved_column_labels <- normalize_column_labels(column_labels, data = table_rows)
+  if (!is.null(resolved_column_labels)) {
+    header_lookup[names(resolved_column_labels)] <- unname(resolved_column_labels)
+  }
+
   # Build long-format table.  column_position is left as NA — the layout
-  
+
   # functions (layout_split_table_spec / layout_center_table_spec) are
   # responsible for setting real positions.
   long_parts <- vector("list", length(column_keys))
-  
+
   for (i in seq_along(column_keys)) {
     key <- column_keys[[i]]
     long_parts[[i]] <- data.frame(
@@ -442,10 +731,10 @@ build_forest_table_data <- function(data,
       stringsAsFactors = FALSE
     )
   }
-  
+
   table_data <- do.call(rbind, long_parts)
   table_data$row_key <- factor(table_data$row_key, levels = row_levels)
-  
+
   list(
     table_data = table_data,
     positions = rep(NA_real_, length(column_keys)),
@@ -499,13 +788,13 @@ measure_max_grob_width <- function(text,
                                    fontfamily = "") {
   text <- as.character(text)
   text[is.na(text)] <- ""
-  
+
   if (length(text) == 0L) return(0)
-  
+
   widths <- vapply(text, function(value) {
     lines <- strsplit(value, "\n", fixed = TRUE)[[1L]]
     if (length(lines) == 0L) return(0)
-    
+
     max(vapply(lines, function(line) {
       if (!nzchar(line)) return(0)
       grid::convertWidth(
@@ -524,7 +813,7 @@ measure_max_grob_width <- function(text,
       )
     }, numeric(1)), 0)
   }, numeric(1))
-  
+
   max(widths, 0)
 }
 
@@ -538,7 +827,7 @@ measure_table_text_widths <- function(table_spec,
                                       header_fontface = "bold",
                                       header_family = "") {
   text_size_pt <- text_size * (72.27 / 25.4)
-  
+
   stats::setNames(vapply(seq_along(table_spec$column_keys), function(i) {
     key <- table_spec$column_keys[[i]]
     values <- table_spec$table_data$text[table_spec$table_data$column_key == key]
@@ -561,9 +850,9 @@ measure_table_text_widths <- function(table_spec,
 #' @keywords internal
 #' @noRd
 column_base_padding <- function(column_key) {
-  known <- c(term = 0.16, n = 0.10, events = 0.12, estimate = 0.18, p = 0.12)
-  pad <- known[[column_key]]
-  if (is.null(pad)) 0.14 else unname(pad)
+  known <- c(term = 0.16, n = 0.10, events = 0.12, estimate = 0.18, ci = 0.14, p = 0.12)
+  pad <- unname(known[column_key])
+  if (is.na(pad)) 0.14 else pad
 }
 
 #' Total column width = measured text width + base padding + alignment padding.
@@ -584,7 +873,7 @@ estimate_split_column_widths <- function(table_spec,
     header_family = header_family
   )
   alignment_padding <- switch(alignment, left = 0.06, right = 0.06, center = 0.05)
-  
+
   stats::setNames(vapply(seq_along(table_spec$column_keys), function(i) {
     key <- table_spec$column_keys[[i]]
     unname(text_widths[[key]]) + column_base_padding(key) + alignment_padding
@@ -623,14 +912,14 @@ layout_split_table_spec <- function(table_spec,
     header_family = header_family
   )
   gap <- 0.2
-  
+
   positions <- if (alignment == "left") {
     starts <- c(0, utils::head(cumsum(column_widths + gap), -1))
     starts + 0.02
   } else {
     cumsum(column_widths + c(rep(gap, length(column_widths) - 1L), 0))
   }
-  
+
   table_spec$table_data$column_position <- unname(
     positions[match(table_spec$table_data$column_key, table_spec$column_keys)]
   )
@@ -667,7 +956,7 @@ layout_center_table_spec <- function(table_spec,
   gap <- 0.55
   left_edges <- cumsum(c(0, utils::head(column_widths + gap, -1)))
   positions <- left_edges + column_widths / 2
-  
+
   table_spec$table_data$column_position <- unname(
     positions[match(table_spec$table_data$column_key, table_spec$column_keys)]
   )
@@ -721,16 +1010,21 @@ split_table_width_multiplier <- function(n_columns) {
 
 default_plot_background_limits <- function(forest_data,
                                            exponentiate = FALSE,
-                                           include_zero = TRUE) {
+                                           include_zero = TRUE,
+                                           ref_line_value = NULL) {
   xmin <- min(forest_data$conf.low, na.rm = TRUE)
   xmax <- max(forest_data$conf.high, na.rm = TRUE)
-  
+
   if (isTRUE(include_zero)) {
-    null_value <- if (isTRUE(exponentiate)) 1 else 0
+    null_value <- if (is.null(ref_line_value)) {
+      if (isTRUE(exponentiate)) 1 else 0
+    } else {
+      ref_line_value
+    }
     xmin <- min(xmin, null_value)
     xmax <- max(xmax, null_value)
   }
-  
+
   if (isTRUE(exponentiate)) {
     pad_mult <- 1.08
     c(xmin / pad_mult, xmax * pad_mult)
@@ -778,7 +1072,7 @@ build_forest_table_plot <- function(table_spec,
   if (all(is.na(table_spec$positions))) {
     table_spec <- layout_center_table_spec(table_spec, text_size = text_size)
   }
-  
+
   p <- ggplot2::ggplot(
     table_spec$table_data,
     ggplot2::aes(x = .data$column_position, y = .data$row_key, label = .data$text)
@@ -787,7 +1081,7 @@ build_forest_table_plot <- function(table_spec,
   if (is.null(x_limits)) {
     x_limits <- compute_table_x_limits(table_spec)
   }
-  
+
   if (isTRUE(striped_rows)) {
     p <- p + ggplot2::geom_rect(
       data = stripe_data[stripe_data$fill_key == "stripe", , drop = FALSE],
@@ -800,10 +1094,10 @@ build_forest_table_plot <- function(table_spec,
       colour = stripe_colour
     )
   }
-  
+
   if (isTRUE(grid_lines)) {
     line_data <- build_table_line_data(stripe_data, has_groupings = has_groupings)
-    
+
     if (nrow(line_data) > 0L) {
       p <- p + ggplot2::geom_hline(
         data = line_data,
@@ -815,7 +1109,7 @@ build_forest_table_plot <- function(table_spec,
       )
     }
   }
-  
+
   p <- p +
     ggplot2::geom_text(hjust = text_hjust, size = text_size, lineheight = 0.95) +
     ggplot2::scale_x_continuous(
@@ -851,7 +1145,7 @@ build_forest_table_plot <- function(table_spec,
       strip.placement       = "outside",
       plot.margin           = plot_margin
     )
-  
+
   if (isTRUE(has_groupings)) {
     p <- p + ggplot2::facet_wrap(
       ggplot2::vars(grouping_panel),
@@ -859,7 +1153,7 @@ build_forest_table_plot <- function(table_spec,
       strip.position = grouping_strip_position
     )
   }
-  
+
   p
 }
 
@@ -887,23 +1181,23 @@ combine_split_forest_plot <- function(plot,
                                       plot_width = 2.5) {
   left_w  <- if (!is.null(left_spec))  left_spec$content_width  else 0
   right_w <- if (!is.null(right_spec)) right_spec$content_width else 0
-  
+
   panels <- list()
   widths <- numeric()
-  
+
   if (!is.null(left_table)) {
     panels <- c(panels, list(left_table))
     widths <- c(widths, left_w)
   }
-  
+
   panels <- c(panels, list(plot))
   widths <- c(widths, plot_width)
-  
+
   if (!is.null(right_table)) {
     panels <- c(panels, list(right_table))
     widths <- c(widths, right_w)
   }
-  
+
   patchwork::wrap_plots(panels, nrow = 1, widths = widths)
 }
 
@@ -916,7 +1210,7 @@ combine_forest_plot_and_table <- function(plot, table_plot,
                                           plot_width = 2.4) {
   table_position <- match.arg(table_position)
   widths <- c(table_width, plot_width)
-  
+
   if (table_position == "left") {
     patchwork::wrap_plots(table_plot, plot, nrow = 1, widths = widths)
   } else {

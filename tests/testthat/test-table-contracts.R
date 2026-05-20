@@ -47,7 +47,8 @@ test_that("add_split_table returns left plot right panels in order", {
     p,
     left_columns = c("term", "n", "events"),
     right_columns = c("estimate", "p"),
-    estimate_label = "HR"
+    estimate_label = "HR",
+    estimate_fmt = "{estimate} [{conf.low}, {conf.high}]"
   )
 
   expect_s3_class(out, "patchwork")

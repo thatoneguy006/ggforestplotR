@@ -9,9 +9,15 @@
                                   term_header = "Term",
                                   n_header = "N",
                                   events_header = "Events",
-                                  estimate_label = "Estimate",
+                                  estimate_label = NULL,
                                   p_header = "P-value",
+                                  column_labels = NULL,
                                   digits = NULL,
+                                  estimate_digits = NULL,
+                                  interval_digits = NULL,
+                                  p_digits = NULL,
+                                  estimate_fmt = NULL,
+                                  ci_fmt = NULL,
                                   text_size = NULL,
                                   header_text_size = NULL,
                                   header_fontface = "bold",
@@ -47,6 +53,21 @@
     digits <- 2
   }
 
+  digits <- resolve_table_digits(
+    digits = digits,
+    estimate_digits = estimate_digits,
+    interval_digits = interval_digits,
+    p_digits = p_digits
+  )
+
+  if (is.null(estimate_label)) {
+    estimate_label <- state$defaults$estimate_label
+  }
+
+  if (is.null(estimate_label)) {
+    estimate_label <- "Estimate"
+  }
+
   if (is.null(text_size)) {
     text_size <- 3.2
   }
@@ -67,21 +88,33 @@
     stripe_colour <- state$defaults$stripe_colour
   }
 
-  if (isTRUE(show_n) && all(is.na(state$forest_data$n) | !nzchar(state$forest_data$n))) {
+  table_columns <- if (is.null(columns)) {
+    c(
+      if (isTRUE(show_terms)) "term",
+      if (isTRUE(show_n)) "n",
+      if (isTRUE(show_events)) "events",
+      if (isTRUE(show_estimate)) "estimate",
+      if (isTRUE(show_p)) "p"
+    )
+  } else {
+    normalize_table_columns(columns, data = state$forest_data)
+  }
+
+  if ("n" %in% table_columns && all(is.na(state$forest_data$n) | !nzchar(state$forest_data$n))) {
     stop("`show_n = TRUE` requires an `n` column in the underlying forest data.", call. = FALSE)
   }
 
-  if (isTRUE(show_events) && all(is.na(state$forest_data$events) | !nzchar(state$forest_data$events))) {
+  if ("events" %in% table_columns && all(is.na(state$forest_data$events) | !nzchar(state$forest_data$events))) {
     stop("`show_events = TRUE` requires an `events` column in the underlying forest data.", call. = FALSE)
   }
 
-  if (isTRUE(show_p) && all(is.na(state$forest_data$p.value))) {
+  if ("p" %in% table_columns && all(is.na(state$forest_data$p.value))) {
     stop("`show_p = TRUE` requires a `p.value` column in the underlying forest data.", call. = FALSE)
   }
 
   plot_out <- plot
 
-  if (isTRUE(show_terms)) {
+  if ("term" %in% table_columns) {
     plot_out <- plot_out + ggplot2::theme(
       axis.text.y = ggplot2::element_blank(),
       axis.ticks.y = ggplot2::element_blank()
@@ -100,8 +133,13 @@
     events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
-    digits = digits,
-    columns = columns
+    column_labels = column_labels,
+    estimate_digits = digits$estimate_digits,
+    interval_digits = digits$interval_digits,
+    p_digits = digits$p_digits,
+    estimate_fmt = estimate_fmt,
+    ci_fmt = ci_fmt,
+    columns = table_columns
   )
   table_spec <- layout_center_table_spec(
     table_spec,
@@ -150,26 +188,47 @@
 #'   `+ add_forest_table(...)` syntax.
 #' @param position Whether to place the table on the left or right of the
 #'   forest plot.
-#' @param show_terms Whether to show the term column in the table.
-#' @param show_n Whether to show the `N` column. Defaults to `TRUE` when the
-#'   underlying plot data includes an `n` column.
-#' @param show_events Whether to show the `Events` column. Defaults to `TRUE`
-#'   when the underlying plot data includes an `events` column.
+#' @param show_terms Whether to show the term column in the table. Soft-
+#'   deprecated; use `columns` instead.
+#' @param show_n Whether to show the `N` column. Soft-deprecated; use
+#'   `columns` instead.
+#' @param show_events Whether to show the `Events` column. Soft-deprecated;
+#'   use `columns` instead.
 #' @param show_estimate Whether to show the formatted estimate and confidence
-#'   interval column.
-#' @param show_p Whether to display the p-value column.
+#'   interval column. Soft-deprecated; use `columns` instead.
+#' @param show_p Whether to display the p-value column. Soft-deprecated; use
+#'   `columns` instead.
 #' @param columns Optional explicit columns to display in the side table, in
-#'   the order they should appear. Accepts names such as `"n"`, `"events"`,
-#'   and `"term"`, or positions `1:5` corresponding to `term`, `n`, `events`,
-#'   `estimate`, and `p`.
-#'   When supplied, this overrides the default `show_*` column selection.
+#'   the order they should appear. Accepts built-in names such as `"term"`,
+#'   `"n"`, `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original dataframe
+#'   columns, or positions corresponding to the built-in columns. `"conf.low"`
+#'   and `"conf.high"` are accepted as aliases for `"ci"`. When supplied, this
+#'   overrides the default `show_*` column selection.
 #' @param term_header Header text for the term column.
 #' @param n_header Header text for the `N` column.
 #' @param events_header Header text for the `Events` column.
-#' @param estimate_label Header label for the estimate column.
+#' @param estimate_label Header label for the estimate column. Defaults to the
+#'   model-derived label when available.
 #' @param p_header Header text for the p-value column.
+#' @param column_labels Optional named vector used to relabel table column
+#'   headers. Names should match values supplied to `columns` after column
+#'   resolution, such as `"term"`, `"estimate"`, `"ci"`, `"p"`, or an arbitrary
+#'   original dataframe column.
 #' @param digits Number of digits used when formatting estimates and p-values.
-#'   Defaults to `2`.
+#'   Defaults to `2`. Superseded by `estimate_digits`, `interval_digits`, and
+#'   `p_digits` for separate control.
+#' @param estimate_digits Number of digits used for point estimates.
+#' @param interval_digits Number of digits used for confidence interval bounds.
+#' @param p_digits Number of digits used for p-values.
+#' @param estimate_fmt Format string for the estimate column. Use
+#'   `{estimate}`, `{conf.low}`, and `{conf.high}` as placeholders. The
+#'   shorthand `{conf.low, conf.high}` is also supported. Defaults to
+#'   `"{estimate} ({conf.low}, {conf.high})"`, or `"{estimate}"` when
+#'   `columns` includes `"ci"`.
+#' @param ci_fmt Format string for the confidence interval column when
+#'   `columns` includes `"ci"`. Use `{conf.low}` and `{conf.high}` as
+#'   placeholders. The shorthand `{conf.low, conf.high}` is also supported.
+#'   Defaults to `"({conf.low}, {conf.high})"`.
 #' @param text_size Text size for table contents. Defaults to `3.2`.
 #' @param header_text_size Header text size for table column labels. Defaults
 #'   to `11`.
@@ -205,16 +264,14 @@
 #' add_forest_table(
 #'   p,
 #'   position = "left",
-#'   show_n = TRUE,
-#'   show_p = TRUE,
+#'   columns = c("term", "n", "estimate", "p"),
 #'   estimate_label = "Beta"
 #' )
 #'
 #' ggforestplot(coefs, n = "sample_size", p.value = "p_value") +
 #'   add_forest_table(
 #'     position = "right",
-#'     show_n = TRUE,
-#'     show_p = TRUE,
+#'     columns = c("term", "n", "estimate", "p"),
 #'     estimate_label = "Beta"
 #'   )
 add_forest_table <- function(plot = NULL,
@@ -228,9 +285,15 @@ add_forest_table <- function(plot = NULL,
                              term_header = "Term",
                              n_header = "N",
                              events_header = "Events",
-                             estimate_label = "Estimate",
+                             estimate_label = NULL,
                              p_header = "P-value",
+                             column_labels = NULL,
                              digits = NULL,
+                             estimate_digits = NULL,
+                             interval_digits = NULL,
+                             p_digits = NULL,
+                             estimate_fmt = NULL,
+                             ci_fmt = NULL,
                              text_size = NULL,
                              header_text_size = NULL,
                              header_fontface = "bold",
@@ -259,7 +322,13 @@ add_forest_table <- function(plot = NULL,
         events_header = events_header,
         estimate_label = estimate_label,
         p_header = p_header,
+        column_labels = column_labels,
         digits = digits,
+        estimate_digits = estimate_digits,
+        interval_digits = interval_digits,
+        p_digits = p_digits,
+        estimate_fmt = estimate_fmt,
+        ci_fmt = ci_fmt,
         text_size = text_size,
         header_text_size = header_text_size,
         header_fontface = header_fontface,
@@ -290,7 +359,13 @@ add_forest_table <- function(plot = NULL,
     events_header = events_header,
     estimate_label = estimate_label,
     p_header = p_header,
+    column_labels = column_labels,
     digits = digits,
+    estimate_digits = estimate_digits,
+    interval_digits = interval_digits,
+    p_digits = p_digits,
+    estimate_fmt = estimate_fmt,
+    ci_fmt = ci_fmt,
     text_size = text_size,
     header_text_size = header_text_size,
     header_fontface = header_fontface,

@@ -11,6 +11,7 @@ as_forest_data(
   conf.low,
   conf.high,
   label = term,
+  term_labels = NULL,
   group = NULL,
   grouping = NULL,
   separate_groups = NULL,
@@ -33,6 +34,10 @@ as_forest_data(
 \item{conf.high}{Column name holding the upper confidence bound.}
 
 \item{label}{Optional column name used for the displayed row label.}
+
+\item{term_labels}{Optional named vector used to relabel displayed terms.
+Names should match values in the term column and values are the labels to
+display.}
 
 \item{group}{Optional column name used for color-grouping multiple
 estimates per row.}
@@ -59,7 +64,8 @@ estimates and intervals.}
 }
 \value{
 A standardized data frame ready for \code{\link[=ggforestplot]{ggforestplot()}} and the table
-composition helpers.
+composition helpers. Original dataframe columns are retained for table
+helpers so they can be displayed with \code{add_forest_table(columns = ...)}.
 }
 \description{
 Standardizes a coefficient table into the internal forest-plot data

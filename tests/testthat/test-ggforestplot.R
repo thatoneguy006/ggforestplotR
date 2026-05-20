@@ -169,6 +169,32 @@ test_that("ggforestplot allows grouping strip labels on the right", {
   expect_equal(table_plot$facet$params$strip.position, "right")
 })
 
+test_that("ggforestplot can sort terms with grouped sections", {
+  raw <- data.frame(
+    term = c("Age", "BMI", "Stage II", "Stage III"),
+    estimate = c(0.3, -0.2, 0.5, 0.8),
+    conf.low = c(0.1, -0.4, 0.2, 0.4),
+    conf.high = c(0.5, 0.0, 0.8, 1.2),
+    section = c("Clinical", "Clinical", "Tumor", "Tumor")
+  )
+
+  p <- ggforestplot(
+    raw,
+    grouping = "section",
+    striped_rows = TRUE,
+    stripe_fill = "grey94",
+    grouping_strip_position = "right",
+    sort_terms = "descending"
+  )
+
+  expect_s3_class(p, "ggplot")
+  expect_equal(
+    as.character(p$ggforestplotR_state$forest_data$term),
+    c("Age", "BMI", "Stage III", "Stage II")
+  )
+  expect_equal(p$facet$params$strip.position, "right")
+})
+
 test_that("forest table centers the Term header and text", {
   raw <- data.frame(
     term = c("Age", "BMI"),
@@ -244,6 +270,337 @@ test_that("add_forest_table supports explicit side-table column order", {
       columns = c("n", "events", "term", "estimate", "p")
     ),
     "patchwork"
+  )
+})
+
+test_that("ggforestplot relabels terms with a named vector", {
+  raw <- data.frame(
+    term = c("age", "bmi", "treatment"),
+    estimate = c(0.3, -0.2, 0.4),
+    conf.low = c(0.1, -0.4, 0.2),
+    conf.high = c(0.5, 0.0, 0.6)
+  )
+
+  p <- ggforestplot(
+    raw,
+    term_labels = c(age = "Age, years", treatment = "Treatment arm")
+  )
+
+  expect_equal(
+    as.character(p$ggforestplotR_state$forest_data$label),
+    c("Age, years", "bmi", "Treatment arm")
+  )
+})
+
+test_that("ggforestplot supports reference line naming and values", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3, -0.2),
+    conf.low = c(0.1, -0.4),
+    conf.high = c(0.5, 0.0)
+  )
+
+  p <- ggforestplot(
+    raw,
+    ref_line = TRUE,
+    ref_line_value = 0.25,
+    ref_line_label = "Null",
+    ref_line_linetype = 3,
+    ref_line_colour = "red"
+  )
+  built <- ggplot2::ggplot_build(p)
+  vline_layers <- Filter(function(x) "xintercept" %in% names(x), built$data)
+  label_layers <- Filter(function(x) "label" %in% names(x) && any(x$label == "Null"), built$data)
+
+  expect_equal(vline_layers[[1]]$xintercept, 0.25)
+  expect_equal(vline_layers[[1]]$linetype, 3)
+  expect_equal(vline_layers[[1]]$colour, "red")
+  expect_equal(label_layers[[1]]$label, "Null")
+  expect_equal(p$ggforestplotR_state$defaults$ref_line_value, 0.25)
+})
+
+test_that("add_forest_table supports arbitrary preserved columns", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.345, -0.234),
+    conf.low = c(0.12, -0.43),
+    conf.high = c(0.57, -0.04),
+    upper_bound = c(0.57, -0.04),
+    adjustment = c("Clinical", "Clinical")
+  )
+
+  p <- ggforestplot(raw)
+  table_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = c("term", "adjustment", "upper_bound", "estimate")
+  )
+
+  expect_equal(table_spec$column_keys, c("term", "adjustment", "upper_bound", "estimate"))
+  expect_equal(table_spec$headers, c("Term", "adjustment", "upper_bound", "Estimate (95% CI)"))
+  expect_true(any(table_spec$table_data$column_key == "adjustment"))
+  expect_true(any(table_spec$table_data$text == "Clinical"))
+  expect_true(any(table_spec$table_data$column_key == "upper_bound"))
+  expect_true(any(table_spec$table_data$text == "0.57"))
+  expect_s3_class(
+    add_forest_table(p, columns = c("term", "upper_bound", "adjustment")),
+    "patchwork"
+  )
+})
+
+test_that("forest table supports custom column labels", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.345, -0.234),
+    conf.low = c(0.12, -0.43),
+    conf.high = c(0.57, -0.04),
+    adjustment = c("Clinical", "Demographic"),
+    p_value = c(0.012, 0.031)
+  )
+
+  p <- ggforestplot(raw, p.value = "p_value")
+  table_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = c("term", "adjustment", "estimate", "p"),
+    column_labels = c(
+      term = "Variable",
+      adjustment = "Adjusted for",
+      estimate = "Beta (95% CI)",
+      p = "P"
+    )
+  )
+
+  expect_equal(table_spec$headers, c("Variable", "Adjusted for", "Beta (95% CI)", "P"))
+  expect_s3_class(
+    add_forest_table(
+      p,
+      columns = c("term", "adjustment", "estimate", "p"),
+      column_labels = c(adjustment = "Adjusted for", estimate = "Beta (95% CI)")
+    ),
+    "patchwork"
+  )
+})
+
+test_that("forest table validates column labels", {
+  raw <- data.frame(
+    term = "Age",
+    estimate = 0.345,
+    conf.low = 0.12,
+    conf.high = 0.57
+  )
+
+  p <- ggforestplot(raw)
+
+  expect_error(
+    build_forest_table_data(
+      p$ggforestplotR_state$forest_data,
+      columns = "term",
+      column_labels = c("Variable")
+    ),
+    "`column_labels` must be a named vector."
+  )
+  expect_error(
+    build_forest_table_data(
+      p$ggforestplotR_state$forest_data,
+      columns = "term",
+      column_labels = c(missing_column = "Missing")
+    ),
+    "Unsupported table columns"
+  )
+})
+
+test_that("forest table columns can use original dataframe vectors", {
+  raw <- data.frame(
+    variable = c("Age", "BMI"),
+    beta = c(0.345, -0.234),
+    lower = c(0.12, -0.43),
+    upper = c(0.57, -0.04),
+    adjustment = factor(c("Clinical", "Demographic")),
+    review_date = as.Date(c("2026-01-15", "2026-02-20")),
+    selected = c(TRUE, FALSE),
+    group = c("Reviewer A", "Reviewer B")
+  )
+
+  p <- ggforestplot(
+    raw,
+    term = "variable",
+    estimate = "beta",
+    conf.low = "lower",
+    conf.high = "upper"
+  )
+  table_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = c("variable", "beta", "lower", "upper", "adjustment", "review_date", "selected", "group")
+  )
+
+  expect_equal(
+    table_spec$column_keys,
+    c("variable", "beta", "lower", "upper", "adjustment", "review_date", "selected", "group")
+  )
+  expect_true(any(table_spec$table_data$text == "Age"))
+  expect_true(any(table_spec$table_data$text == "0.345"))
+  expect_true(any(table_spec$table_data$text == "0.12"))
+  expect_true(any(table_spec$table_data$text == "0.57"))
+  expect_true(any(table_spec$table_data$text == "Clinical"))
+  expect_true(any(table_spec$table_data$text == "2026-01-15"))
+  expect_true(any(table_spec$table_data$text == "TRUE"))
+  expect_true(any(table_spec$table_data$text == "Reviewer A"))
+  expect_s3_class(
+    add_forest_table(
+      p,
+      columns = c("variable", "beta", "lower", "upper", "adjustment", "review_date", "selected", "group")
+    ),
+    "patchwork"
+  )
+})
+
+test_that("forest table formats estimates, intervals, and p-values separately", {
+  raw <- data.frame(
+    term = "Age",
+    estimate = 0.3456,
+    conf.low = 0.1234,
+    conf.high = 0.5678,
+    p_value = 0.01234
+  )
+
+  p <- ggforestplot(raw, p.value = "p_value")
+  table_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = c("estimate", "p"),
+    estimate_digits = 1,
+    interval_digits = 3,
+    p_digits = 4
+  )
+
+  expect_true(any(table_spec$table_data$text == "0.3 (0.123, 0.568)"))
+  expect_true(any(table_spec$table_data$text == "0.01234"))
+})
+
+test_that("forest table supports custom estimate format strings", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3456, -0.2345),
+    conf.low = c(0.1234, -0.4321),
+    conf.high = c(0.5678, -0.0432)
+  )
+
+  p <- ggforestplot(raw)
+  table_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = "estimate",
+    estimate_digits = 1,
+    interval_digits = 3,
+    estimate_fmt = "{estimate} [{conf.low}, {conf.high}]"
+  )
+  shorthand_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = "estimate",
+    estimate_digits = 1,
+    interval_digits = 3,
+    estimate_fmt = "{estimate} ({conf.low, conf.high})"
+  )
+
+  expect_true(any(table_spec$table_data$text == "0.3 [0.123, 0.568]"))
+  expect_true(any(shorthand_spec$table_data$text == "0.3 (0.123, 0.568)"))
+  expect_s3_class(
+    add_forest_table(
+      p,
+      columns = "estimate",
+      estimate_digits = 1,
+      interval_digits = 3,
+      estimate_fmt = "{estimate} [{conf.low}, {conf.high}]"
+    ),
+    "patchwork"
+  )
+})
+
+test_that("forest table can split estimates and confidence intervals", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3456, -0.2345),
+    conf.low = c(0.1234, -0.4321),
+    conf.high = c(0.5678, -0.0432)
+  )
+
+  p <- ggforestplot(raw)
+  table_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = c("estimate", "ci"),
+    estimate_digits = 1,
+    interval_digits = 3
+  )
+  custom_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = c("estimate", "ci"),
+    estimate_digits = 1,
+    interval_digits = 3,
+    ci_fmt = "{conf.low} to {conf.high}"
+  )
+
+  expect_equal(table_spec$column_keys, c("estimate", "ci"))
+  expect_equal(table_spec$headers, c("Estimate", "95% CI"))
+  expect_true(any(table_spec$table_data$column_key == "estimate" & table_spec$table_data$text == "0.3"))
+  expect_true(any(table_spec$table_data$column_key == "ci" & table_spec$table_data$text == "(0.123, 0.568)"))
+  expect_true(any(custom_spec$table_data$column_key == "ci" & custom_spec$table_data$text == "0.123 to 0.568"))
+  expect_s3_class(
+    add_forest_table(
+      p,
+      columns = c("term", "estimate", "ci"),
+      estimate_digits = 1,
+      interval_digits = 3,
+      column_labels = c(estimate = "Beta", ci = "95% CI")
+    ),
+    "patchwork"
+  )
+})
+
+test_that("confidence bound column names alias to the CI table column", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3456, -0.2345),
+    conf.low = c(0.1234, -0.4321),
+    conf.high = c(0.5678, -0.0432)
+  )
+
+  p <- ggforestplot(raw)
+  table_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = c("estimate", "conf.low", "conf.high"),
+    estimate_digits = 1,
+    interval_digits = 3,
+    column_labels = c(conf.high = "CI")
+  )
+
+  expect_equal(table_spec$column_keys, c("estimate", "ci"))
+  expect_equal(table_spec$headers, c("Estimate", "CI"))
+  expect_true(any(table_spec$table_data$column_key == "estimate" & table_spec$table_data$text == "0.3"))
+  expect_true(any(table_spec$table_data$column_key == "ci" & table_spec$table_data$text == "(0.123, 0.568)"))
+  expect_s3_class(
+    add_forest_table(
+      p,
+      columns = c("term", "estimate", "conf.low", "conf.high"),
+      column_labels = c(conf.high = "CI")
+    ),
+    "patchwork"
+  )
+})
+
+test_that("forest table validates confidence interval format strings", {
+  raw <- data.frame(
+    term = "Age",
+    estimate = 0.345,
+    conf.low = 0.12,
+    conf.high = 0.57
+  )
+
+  p <- ggforestplot(raw)
+
+  expect_error(
+    build_forest_table_data(
+      p$ggforestplotR_state$forest_data,
+      columns = "ci",
+      ci_fmt = c("{conf.low}", "{conf.high}")
+    ),
+    "`ci_fmt` must be a single character string."
   )
 })
 
@@ -397,6 +754,109 @@ test_that("add_split_table accepts explicit left and right columns by name", {
 
   expect_s3_class(out, "patchwork")
   expect_s3_class(out, "ggplot")
+})
+
+test_that("add_split_table supports custom column labels", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3, -0.2),
+    conf.low = c(0.1, -0.4),
+    conf.high = c(0.5, 0.0),
+    sample_size = c(120, 115),
+    adjustment = c("Clinical", "Demographic")
+  )
+
+  p <- ggforestplot(raw, n = "sample_size")
+  state <- p$ggforestplotR_state
+  left_spec <- build_forest_table_data(
+    state$forest_data,
+    columns = c("term", "adjustment"),
+    column_labels = c(term = "Variable", adjustment = "Adjusted for")
+  )
+  right_spec <- build_forest_table_data(
+    state$forest_data,
+    columns = "estimate",
+    column_labels = c(estimate = "Beta (95% CI)")
+  )
+
+  expect_equal(left_spec$headers, c("Variable", "Adjusted for"))
+  expect_equal(right_spec$headers, "Beta (95% CI)")
+  expect_s3_class(
+    add_split_table(
+      p,
+      left_columns = c("term", "adjustment"),
+      right_columns = "estimate",
+      column_labels = c(term = "Variable", adjustment = "Adjusted for", estimate = "Beta (95% CI)")
+    ),
+    "patchwork"
+  )
+})
+
+test_that("add_split_table can split estimates and confidence intervals", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3456, -0.2345),
+    conf.low = c(0.1234, -0.4321),
+    conf.high = c(0.5678, -0.0432),
+    sample_size = c(120, 115)
+  )
+
+  p <- ggforestplot(raw, n = "sample_size")
+  state <- p$ggforestplotR_state
+  right_spec <- build_forest_table_data(
+    state$forest_data,
+    columns = c("estimate", "ci"),
+    estimate_digits = 1,
+    interval_digits = 3,
+    ci_fmt = "{conf.low} to {conf.high}"
+  )
+
+  expect_equal(right_spec$headers, c("Estimate", "95% CI"))
+  expect_true(any(right_spec$table_data$column_key == "estimate" & right_spec$table_data$text == "0.3"))
+  expect_true(any(right_spec$table_data$column_key == "ci" & right_spec$table_data$text == "0.123 to 0.568"))
+  expect_s3_class(
+    add_split_table(
+      p,
+      left_columns = c("term", "n"),
+      right_columns = c("estimate", "ci"),
+      estimate_digits = 1,
+      interval_digits = 3,
+      ci_fmt = "{conf.low} to {conf.high}",
+      column_labels = c(estimate = "Beta", ci = "95% CI")
+    ),
+    "patchwork"
+  )
+})
+
+test_that("add_split_table accepts confidence bound names as CI aliases", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3456, -0.2345),
+    conf.low = c(0.1234, -0.4321),
+    conf.high = c(0.5678, -0.0432),
+    sample_size = c(120, 115)
+  )
+
+  p <- ggforestplot(raw, n = "sample_size")
+  right_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = c("estimate", "conf.low", "conf.high"),
+    estimate_digits = 1,
+    interval_digits = 3
+  )
+
+  expect_equal(right_spec$column_keys, c("estimate", "ci"))
+  expect_true(any(right_spec$table_data$column_key == "ci" & right_spec$table_data$text == "(0.123, 0.568)"))
+  expect_s3_class(
+    add_split_table(
+      p,
+      left_columns = c("term", "n"),
+      right_columns = c("estimate", "conf.low", "conf.high"),
+      estimate_digits = 1,
+      interval_digits = 3
+    ),
+    "patchwork"
+  )
 })
 
 test_that("add_split_table accepts explicit left and right columns by position", {
