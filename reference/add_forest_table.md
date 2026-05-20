@@ -17,9 +17,15 @@ add_forest_table(
   term_header = "Term",
   n_header = "N",
   events_header = "Events",
-  estimate_label = "Estimate",
+  estimate_label = NULL,
   p_header = "P-value",
+  column_labels = NULL,
   digits = NULL,
+  estimate_digits = NULL,
+  interval_digits = NULL,
+  p_digits = NULL,
+  estimate_fmt = NULL,
+  ci_fmt = NULL,
   text_size = NULL,
   header_text_size = NULL,
   header_fontface = "bold",
@@ -48,33 +54,37 @@ add_forest_table(
 
 - show_terms:
 
-  Whether to show the term column in the table.
+  Whether to show the term column in the table. Soft- deprecated; use
+  `columns` instead.
 
 - show_n:
 
-  Whether to show the `N` column. Defaults to `TRUE` when the underlying
-  plot data includes an `n` column.
+  Whether to show the `N` column. Soft-deprecated; use `columns`
+  instead.
 
 - show_events:
 
-  Whether to show the `Events` column. Defaults to `TRUE` when the
-  underlying plot data includes an `events` column.
+  Whether to show the `Events` column. Soft-deprecated; use `columns`
+  instead.
 
 - show_estimate:
 
   Whether to show the formatted estimate and confidence interval column.
+  Soft-deprecated; use `columns` instead.
 
 - show_p:
 
-  Whether to display the p-value column.
+  Whether to display the p-value column. Soft-deprecated; use `columns`
+  instead.
 
 - columns:
 
   Optional explicit columns to display in the side table, in the order
-  they should appear. Accepts names such as `"n"`, `"events"`, and
-  `"term"`, or positions `1:5` corresponding to `term`, `n`, `events`,
-  `estimate`, and `p`. When supplied, this overrides the default
-  `show_*` column selection.
+  they should appear. Accepts built-in names such as `"term"`, `"n"`,
+  `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
+  dataframe columns, or positions corresponding to the built-in columns.
+  `"conf.low"` and `"conf.high"` are accepted as aliases for `"ci"`.
+  When supplied, this overrides the default `show_*` column selection.
 
 - term_header:
 
@@ -90,16 +100,52 @@ add_forest_table(
 
 - estimate_label:
 
-  Header label for the estimate column.
+  Header label for the estimate column. Defaults to the model-derived
+  label when available.
 
 - p_header:
 
   Header text for the p-value column.
 
+- column_labels:
+
+  Optional named vector used to relabel table column headers. Names
+  should match values supplied to `columns` after column resolution,
+  such as `"term"`, `"estimate"`, `"ci"`, `"p"`, or an arbitrary
+  original dataframe column.
+
 - digits:
 
   Number of digits used when formatting estimates and p-values. Defaults
-  to `2`.
+  to `2`. Superseded by `estimate_digits`, `interval_digits`, and
+  `p_digits` for separate control.
+
+- estimate_digits:
+
+  Number of digits used for point estimates.
+
+- interval_digits:
+
+  Number of digits used for confidence interval bounds.
+
+- p_digits:
+
+  Number of digits used for p-values.
+
+- estimate_fmt:
+
+  Format string for the estimate column. Use `{estimate}`, `{conf.low}`,
+  and `{conf.high}` as placeholders. The shorthand
+  `{conf.low, conf.high}` is also supported. Defaults to
+  `"{estimate} ({conf.low}, {conf.high})"`, or `"{estimate}"` when
+  `columns` includes `"ci"`.
+
+- ci_fmt:
+
+  Format string for the confidence interval column when `columns`
+  includes `"ci"`. Use `{conf.low}` and `{conf.high}` as placeholders.
+  The shorthand `{conf.low, conf.high}` is also supported. Defaults to
+  `"({conf.low}, {conf.high})"`.
 
 - text_size:
 
@@ -171,8 +217,7 @@ p <- ggforestplot(coefs, n = "sample_size", p.value = "p_value")
 add_forest_table(
   p,
   position = "left",
-  show_n = TRUE,
-  show_p = TRUE,
+  columns = c("term", "n", "estimate", "p"),
   estimate_label = "Beta"
 )
 
@@ -180,8 +225,7 @@ add_forest_table(
 ggforestplot(coefs, n = "sample_size", p.value = "p_value") +
   add_forest_table(
     position = "right",
-    show_n = TRUE,
-    show_p = TRUE,
+    columns = c("term", "n", "estimate", "p"),
     estimate_label = "Beta"
   )
 ```

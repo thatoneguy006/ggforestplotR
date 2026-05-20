@@ -12,12 +12,14 @@ plots from tidy coefficient tables or fitted model objects.
 ### CRAN
 
 ``` r
+
 install.packages("ggforestplotR")
 ```
 
 ### Development
 
 ``` r
+
 #install.packages("remotes")
 remotes::install_github("thatoneguy006/ggforestplotR")
 ```
@@ -32,6 +34,7 @@ remotes::install_github("thatoneguy006/ggforestplotR")
 ## Basic example
 
 ``` r
+
 library(ggforestplotR)
 library(ggplot2)
 
@@ -57,6 +60,7 @@ ggforestplot(
 ## Add a summary table
 
 ``` r
+
 ggforestplot(
   sectioned_coefs,
   striped_rows = TRUE,
@@ -70,6 +74,7 @@ ggforestplot(
 ## Add a split summary table
 
 ``` r
+
 ggforestplot(
   sectioned_coefs,
   striped_rows = TRUE,

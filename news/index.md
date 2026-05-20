@@ -1,6 +1,34 @@
 # Changelog
 
+## ggforestplotR 0.2.0
+
+### Major Changes
+
+- Added separate table formatting controls for point estimates,
+  confidence interval bounds, and p-values via `estimate_digits`,
+  `interval_digits`, and `p_digits`.
+- Added `ref_line`, `ref_line_value`, and `ref_line_label` to
+  standardize reference-line naming while keeping `zero_line` arguments
+  backward compatible.
+- Added `term_labels`, a named-vector relabeling helper for displayed
+  model terms.
+- Expanded `add_forest_table(columns = ...)` and split-table column
+  selection to support arbitrary preserved data columns in addition to
+  built-in columns.
+- Added `column_labels`, a named-vector helper for relabeling displayed
+  table column headers.
+- Added a built-in `ci` table column and `ci_fmt` so users can display
+  point estimates and confidence intervals in separate columns.
+  `conf.low` and `conf.high` are accepted as aliases for `ci`.
+
+### Minor Changes
+
+- Added model-aware default effect labels and scales, including odds
+  ratios for binomial logit models and hazard ratios for Cox models.
+
 ## ggforestplotR 0.1.1
+
+CRAN release: 2026-04-22
 
 ### Minor Changes
 
@@ -24,7 +52,7 @@
 
 CRAN release: 2026-03-25
 
-### Major changes
+### Major Changes
 
 - Refined split-table layout logic, including dynamic panel widths from
   column counts, alignment controls, and cleaner stripe/background

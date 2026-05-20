@@ -1,6 +1,7 @@
 # Get Started with ggforestplotR
 
 ``` r
+
 library(ggforestplotR)
 library(ggplot2)
 ```
@@ -10,31 +11,31 @@ inside a normal `ggplot2` workflow.
 
 ## Choose a workflow
 
-Use the package in one of three ways:
+Use the package in one of two ways:
 
-1.  Start from a coefficient table and map the required columns
-    directly.
+1.  Start from a coefficient table and map the required columns directly
+    to the plot.
 2.  Start from a fitted model and let
     [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
     or
     [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md)
     call
-    [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html).
-3.  Add
-    [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_forest_table.md)
-    or
-    [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_split_table.md)
-    after styling the main plot.
+    [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
+    and create the plot.
 
-This article covers the basic entry points and the minimum data you
-need.
+This article covers some basic examples and the minimum data you need.
 
 ## Start from a coefficient table
 
-The simplest input is a data frame with a term, estimate, and confidence
-limits. If your columns use different names, map them explicitly.
+The simplest input is a data frame with a column for terms, estimates,
+and confidence limits. If your columns use different names, you can map
+them explicitly.
+
+There is also functionality to rename term labels and sort terms to your
+liking, among other things.
 
 ``` r
+
 basic_coefs <- data.frame(
   term = c("Age", "BMI", "Treatment"),
   estimate = c(0.10, -0.08, 0.34),
@@ -42,7 +43,9 @@ basic_coefs <- data.frame(
   conf.high = c(0.18, 0.00, 0.56)
 )
 
-ggforestplot(basic_coefs)
+ggforestplot(basic_coefs,
+             term_labels = c("Age" = "age", "BMI" = "bmi", "Treatment" = "trt"),
+             sort_terms = "descending")
 ```
 
 ![](ggforestplotR-get-started_files/figure-html/basic-plot-1.png)
@@ -53,6 +56,7 @@ Use `grouping` when you want related variables separated into labeled
 panels. Add `striped_rows = TRUE` to color alternating rows in the plot.
 
 ``` r
+
 sectioned_coefs <- data.frame(
   term = c("Age", "BMI", "Smoking", "Stage II", "Stage III", "Nodes"),
   estimate = c(0.10, -0.08, 0.20, 0.34, 0.52, 0.28),
@@ -65,7 +69,9 @@ ggforestplot(
   sectioned_coefs,
   grouping = "section",
   striped_rows = TRUE,
-  stripe_fill = "grey94"
+  stripe_fill = "grey94",
+  grouping_strip_position = "right",
+  sort_terms = "ascending"
 )
 ```
 
@@ -78,6 +84,7 @@ Use
 to add a summary table to your forest plot.
 
 ``` r
+
 tabled_coefs <- data.frame(
   term = c("Age", "BMI", "Smoking", "Stage II", "Stage III"),
   estimate = c(0.12, -0.10, 0.18, 0.30, 0.46),
@@ -86,11 +93,13 @@ tabled_coefs <- data.frame(
   sample_size = c(120, 115, 98, 87, 83)
 )
 
-ggforestplot(tabled_coefs, n = "sample_size", striped_rows = TRUE) +
+ggforestplot(tabled_coefs, striped_rows = TRUE) +
   add_forest_table(
     position = "left",
-    show_n = TRUE,
-    estimate_label = "Beta"
+    column_labels = c("term" = "Variable", "sample_size" = "N", "estimate" = "Beta (95% CI)"),
+    columns = c("term", "sample_size", "estimate"),
+    estimate_digits = 2,
+    interval_digits = 3
   )
 ```
 
@@ -104,10 +113,12 @@ to create a more traditional looking forest plot, with summary data on
 either side of the plot.
 
 ``` r
+
 ggforestplot(tabled_coefs, n = "sample_size", striped_rows = T) +
   add_split_table(
     left_columns = c("term", "n"),
-    right_columns = c("estimate")
+    right_columns = c("estimate"),
+    column_labels = c("term" = "Variable", "estimate" = "Beta (95% CI)")
   )
 ```
 
@@ -120,9 +131,14 @@ If `broom` is installed,
 can work directly from a fitted model.
 
 ``` r
+
 fit <- lm(mpg ~ wt + hp + qsec, data = mtcars)
 
-ggforestplot(fit, sort_terms = "descending")
+ggforestplot(fit, sort_terms = "descending",
+             term_labels = c("wt" = "Weight"),
+             striped_rows = T) +
+  scale_x_continuous(breaks = seq(-6,2,1)) +
+  add_forest_table()
 ```
 
 ![](ggforestplotR-get-started_files/figure-html/model-plot-1.png)

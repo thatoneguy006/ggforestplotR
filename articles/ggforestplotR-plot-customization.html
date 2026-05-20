@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Customize Forest Plots and Tables • ggforestplotR</title>
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Customize Forest Plots and Tables">
@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -83,27 +83,24 @@
 <p>This article focuses on utility and enhanced customization of forest
 plots and accompanied tables.</p>
 <div class="section level2">
-<h2 id="base-plotting-data">Base plotting data<a class="anchor" aria-label="anchor" href="#base-plotting-data"></a>
-</h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  term <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Age"</span>, <span class="st">"BMI"</span>, <span class="st">"Smoking"</span>, <span class="st">"Stage II"</span>, <span class="st">"Stage III"</span><span class="op">)</span>,</span>
-<span>  estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.12</span>, <span class="op">-</span><span class="fl">0.10</span>, <span class="fl">0.18</span>, <span class="fl">0.30</span>, <span class="fl">0.46</span><span class="op">)</span>,</span>
-<span>  conf.low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.03</span>, <span class="op">-</span><span class="fl">0.18</span>, <span class="fl">0.04</span>, <span class="fl">0.10</span>, <span class="fl">0.18</span><span class="op">)</span>,</span>
-<span>  conf.high <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.21</span>, <span class="op">-</span><span class="fl">0.02</span>, <span class="fl">0.32</span>, <span class="fl">0.50</span>, <span class="fl">0.74</span><span class="op">)</span>,</span>
-<span>  sample_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">115</span>, <span class="fl">98</span>, <span class="fl">87</span>, <span class="fl">83</span><span class="op">)</span>,</span>
-<span>  p_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.04</span>, <span class="fl">0.15</span>, <span class="fl">0.29</span>, <span class="fl">0.001</span>, <span class="fl">0.75</span><span class="op">)</span>,</span>
-<span>  section <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Clinical"</span>, <span class="st">"Clinical"</span>, <span class="st">"Clinical"</span>, <span class="st">"Tumor"</span>, <span class="st">"Tumor"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
 <h2 id="group-rows-and-control-strip-placement">Group rows and control strip placement<a class="anchor" aria-label="anchor" href="#group-rows-and-control-strip-placement"></a>
 </h2>
 <p><code>grouping</code> creates section panels, and
 <code>grouping_strip_position</code> controls which side gets the strip
 labels.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  term <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Age"</span>, <span class="st">"BMI"</span>, <span class="st">"Smoking"</span>, <span class="st">"Stage II"</span>, <span class="st">"Stage III"</span><span class="op">)</span>,</span>
+<span>  estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.12</span>, <span class="op">-</span><span class="fl">0.10</span>, <span class="fl">0.18</span>, <span class="fl">0.30</span>, <span class="fl">0.46</span><span class="op">)</span>,</span>
+<span>  conf.low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.03</span>, <span class="op">-</span><span class="fl">0.18</span>, <span class="fl">0.04</span>, <span class="fl">0.10</span>, <span class="fl">0.18</span><span class="op">)</span>,</span>
+<span>  conf.high <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.21</span>, <span class="fl">0.02</span>, <span class="fl">0.32</span>, <span class="fl">0.50</span>, <span class="fl">0.74</span><span class="op">)</span>,</span>
+<span>  sample_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">115</span>, <span class="fl">98</span>, <span class="fl">87</span>, <span class="fl">83</span><span class="op">)</span>,</span>
+<span>  p_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.04</span>, <span class="fl">0.15</span>, <span class="fl">0.29</span>, <span class="fl">0.001</span>, <span class="fl">0.075</span><span class="op">)</span>,</span>
+<span>  section <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Clinical"</span>, <span class="st">"Clinical"</span>, <span class="st">"Clinical"</span>, <span class="st">"Tumor"</span>, <span class="st">"Tumor"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span></span>
 <span>  <span class="va">coefs</span>,</span>
 <span>  grouping <span class="op">=</span> <span class="st">"section"</span>,</span>
 <span>  grouping_strip_position <span class="op">=</span> <span class="st">"right"</span>,</span>
@@ -119,7 +116,7 @@ you want a more distinct visual separation between variables. This is
 especially useful for categorical variables with many levels.
 <code>separate_groups</code> automatically appends the variable name to
 the level.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">block_coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  term <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"race_black"</span>, <span class="st">"race_white"</span>, <span class="st">"race_other"</span>, <span class="st">"age"</span>, <span class="st">"bmi"</span><span class="op">)</span>,</span>
 <span>  label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Black"</span>, <span class="st">"White"</span>, <span class="st">"Other"</span>, <span class="st">"Age"</span>, <span class="st">"BMI"</span><span class="op">)</span>,</span>
@@ -152,19 +149,30 @@ the left or right side and allows for some customization. You should
 styling your plot because the function calls on <code>patchwork</code>
 internally. <code>patchwork</code> requires specific syntax to customize
 plots and is generally more difficult to get working correctly.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>You can choose which columns from your dataframe to include in the
+table using the <code>columns</code> argument, and can change the labels
+using <code>column_labels</code>. If some of the term labels need to be
+changed, use <code>term_labels</code> to assign them new values. Some of
+the column labels are automatically assigned if no value is
+provided.</p>
+<p>Notice how we are explicitly naming the <em>n</em> and
+<em>p.value</em> columns? This is necessary in most cases because
+aliases are not yet incorporated (but they will be…I promise I’m getting
+to it).</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span></span>
 <span>  <span class="va">coefs</span>,</span>
 <span>  grouping <span class="op">=</span> <span class="st">"section"</span>,</span>
 <span>  grouping_strip_position <span class="op">=</span> <span class="st">"right"</span>,</span>
 <span>  n <span class="op">=</span> <span class="st">"sample_size"</span>,</span>
 <span>  p.value <span class="op">=</span> <span class="st">"p_value"</span>,</span>
-<span>  striped_rows <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  striped_rows <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smoking"</span> <span class="op">=</span> <span class="st">"Smoking status"</span><span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span></span>
-<span>    show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    show_p <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    estimate_label <span class="op">=</span> <span class="st">"Beta"</span></span>
+<span>    columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"sample_size"</span>, <span class="st">"estimate"</span>, <span class="st">"p_value"</span><span class="op">)</span>,</span>
+<span>    column_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span> <span class="op">=</span> <span class="st">"Variable"</span>, <span class="st">"sample_size"</span> <span class="op">=</span> <span class="st">"N"</span>,</span>
+<span>                      <span class="st">"estimate"</span> <span class="op">=</span> <span class="st">"Beta (95% CI)"</span>, <span class="st">"p_value"</span> <span class="op">=</span> <span class="st">"P-value"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <p><img src="ggforestplotR-plot-customization_files/figure-html/left-side-table-1.png" class="r-plt" alt="" width="816"></p>
 </div>
@@ -173,7 +181,7 @@ plots and is generally more difficult to get working correctly.</p>
 </h2>
 <p><code>add_forest_table</code> also lets you change some minor styling
 elements of the forest table.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span></span>
 <span>  <span class="va">coefs</span>,</span>
 <span>  n <span class="op">=</span> <span class="st">"sample_size"</span>,</span>
@@ -182,9 +190,6 @@ elements of the forest table.</p>
 <span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span></span>
 <span>    position <span class="op">=</span> <span class="st">"left"</span>,</span>
-<span>    show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    show_p <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    estimate_label <span class="op">=</span> <span class="st">"Beta"</span>,</span>
 <span>    grid_lines <span class="op">=</span> <span class="cn">T</span>,</span>
 <span>    grid_line_linetype <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>    grid_line_colour <span class="op">=</span> <span class="st">"red"</span></span>
@@ -198,7 +203,10 @@ elements of the forest table.</p>
 looking forest plots. You can choose which summary information goes to
 which side. Like <code><a href="../reference/add_forest_table.html">add_forest_table()</a></code>, it should be added
 after any plot-level styling.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p>Use the <code>estimate_fmt</code> argument to change how your
+estimates are displayed. You can also control digits via
+<code>estimate_digits</code> and <code>interval_digits</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span></span>
 <span>  <span class="va">coefs</span>,</span>
 <span>  n <span class="op">=</span> <span class="st">"sample_size"</span>,</span>
@@ -209,7 +217,10 @@ after any plot-level styling.</p>
 <span>  <span class="fu"><a href="../reference/add_split_table.html">add_split_table</a></span><span class="op">(</span></span>
 <span>    left_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>,<span class="st">"n"</span><span class="op">)</span>,</span>
 <span>    right_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"estimate"</span>,<span class="st">"p"</span><span class="op">)</span>,</span>
-<span>    estimate_label <span class="op">=</span> <span class="st">"Beta"</span></span>
+<span>    column_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"estimate"</span> <span class="op">=</span> <span class="st">"Beta [95% CI]"</span><span class="op">)</span>,</span>
+<span>    estimate_fmt <span class="op">=</span> <span class="st">"{estimate} [{conf.low}, {conf.high}]"</span>,</span>
+<span>    estimate_digits <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>    interval_digits <span class="op">=</span> <span class="fl">3</span></span>
 <span>  <span class="op">)</span> </span></code></pre></div>
 <p><img src="ggforestplotR-plot-customization_files/figure-html/split-table-1.png" class="r-plt" alt="" width="816"></p>
 </div>
@@ -218,20 +229,19 @@ after any plot-level styling.</p>
 </h2>
 <p>You can use <code>exponentiate = TRUE</code> for models on the
 log-odds scale (or similar).</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">CO2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">Treatment</span> <span class="op">~</span> <span class="va">conc</span> <span class="op">+</span> <span class="va">uptake</span> <span class="op">+</span> <span class="va">Type</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span>link <span class="op">=</span> <span class="st">"logit"</span><span class="op">)</span>, </span>
 <span>    data <span class="op">=</span> <span class="va">CO2</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">l1</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, striped_rows <span class="op">=</span> <span class="cn">T</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">l1</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, striped_rows <span class="op">=</span> <span class="cn">T</span>, term_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"TypeMississippi"</span> <span class="op">=</span> <span class="st">"Mississippi"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span>position <span class="op">=</span> <span class="st">"left"</span>, </span>
-<span>                   estimate_label <span class="op">=</span> <span class="st">"OR"</span>, </span>
 <span>                   show_p <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span></code></pre></div>
 <p><img src="ggforestplotR-plot-customization_files/figure-html/logistic-regression-1.png" class="r-plt" alt="" width="816"></p>
 <p>We can do this for survival models as well.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lung</span> <span class="op">&lt;-</span> <span class="fu">survival</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/survival/man/lung.html" class="external-link">lung</a></span></span>
 <span></span>
 <span><span class="va">lung</span> <span class="op">&lt;-</span> <span class="va">lung</span> <span class="op">|&gt;</span>  </span>
@@ -240,9 +250,9 @@ log-odds scale (or similar).</p>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">s1</span> <span class="op">&lt;-</span> <span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">ph.karno</span> <span class="op">+</span> <span class="va">pat.karno</span>, data <span class="op">=</span> <span class="va">lung</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">s1</span>, exponentiate <span class="op">=</span> <span class="cn">T</span>, striped_rows <span class="op">=</span> <span class="cn">T</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="../reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span>estimate_label <span class="op">=</span> <span class="st">"HR"</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="../reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="ggforestplotR-plot-customization_files/figure-html/survival-analysis-plot-1.png" class="r-plt" alt="" width="816"></p>
 </div>
 <div class="section level2">
@@ -250,7 +260,7 @@ log-odds scale (or similar).</p>
 </h2>
 <p>The <code>group</code> argument is handy when comparing estimates
 from several models.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">comparison_coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  term <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Age"</span>, <span class="st">"BMI"</span>, <span class="st">"Smoking"</span>, <span class="st">"Stage II"</span>, <span class="st">"Stage III"</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>  estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.12</span>, <span class="op">-</span><span class="fl">0.10</span>, <span class="fl">0.18</span>, <span class="fl">0.30</span>, <span class="fl">0.46</span>, <span class="fl">0.08</span>, <span class="op">-</span><span class="fl">0.05</span>, <span class="fl">0.24</span>, <span class="fl">0.40</span>, <span class="fl">0.58</span><span class="op">)</span>,</span>
@@ -268,7 +278,9 @@ from several models.</p>
 <span>  dodge_width <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  grouping_strip_position <span class="op">=</span> <span class="st">"right"</span></span>
 <span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"top"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#1F968BFF"</span>, <span class="st">"#453781FF"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="ggforestplotR-plot-customization_files/figure-html/comparison-1.png" class="r-plt" alt="" width="816"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

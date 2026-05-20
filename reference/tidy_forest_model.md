@@ -1,7 +1,6 @@
 # Tidy a model object for forest plotting
 
-Uses
-[`broom::tidy()`](https://broom.tidymodels.org/reference/reexports.html)
+Uses [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
 to convert a fitted model into forest-plot data.
 
 ## Usage
@@ -11,8 +10,9 @@ tidy_forest_model(
   model,
   conf.int = TRUE,
   conf.level = 0.95,
-  exponentiate = FALSE,
+  exponentiate = NULL,
   intercept = FALSE,
+  term_labels = NULL,
   sort_terms = c("none", "descending", "ascending")
 )
 ```
@@ -22,12 +22,12 @@ tidy_forest_model(
 - model:
 
   A fitted model object supported by
-  [`broom::tidy()`](https://broom.tidymodels.org/reference/reexports.html).
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html).
 
 - conf.int:
 
   Logical; if `TRUE`, request confidence intervals from
-  [`broom::tidy()`](https://broom.tidymodels.org/reference/reexports.html).
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html).
 
 - conf.level:
 
@@ -36,11 +36,16 @@ tidy_forest_model(
 - exponentiate:
 
   Logical; passed through to
-  [`broom::tidy()`](https://broom.tidymodels.org/reference/reexports.html).
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html).
 
 - intercept:
 
   Logical; if `FALSE`, drop the intercept term.
+
+- term_labels:
+
+  Optional named vector used to relabel displayed terms. Names should
+  match model term names and values are the labels to display.
 
 - sort_terms:
 
@@ -75,8 +80,8 @@ if (requireNamespace("broom", quietly = TRUE)) {
 #> 1                age 1.103890 1.061512  1.151411                age  <NA>
 #> 2                bmi 1.118858 1.043220  1.204389                bmi  <NA>
 #> 3 treatmentTreatment 3.133149 1.782915  5.613038 treatmentTreatment  <NA>
-#>   grouping separate_groups    n events      p.value
-#> 1     <NA>            <NA> <NA>   <NA> 1.719452e-06
-#> 2     <NA>            <NA> <NA>   <NA> 2.093412e-03
-#> 3     <NA>            <NA> <NA>   <NA> 9.087778e-05
+#>   grouping separate_groups    n events      p.value  std.error statistic
+#> 1     <NA>            <NA> <NA>   <NA> 1.719452e-06 0.02066110  4.783878
+#> 2     <NA>            <NA> <NA>   <NA> 2.093412e-03 0.03650339  3.076650
+#> 3     <NA>            <NA> <NA>   <NA> 9.087778e-05 0.29180238  3.913739
 ```

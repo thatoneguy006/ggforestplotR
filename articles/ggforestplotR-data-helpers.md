@@ -1,6 +1,7 @@
 # Prepare Forest Data with Helper Functions
 
 ``` r
+
 library(ggforestplotR)
 library(ggplot2)
 ```
@@ -19,6 +20,7 @@ and
 [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_split_table.md).
 
 ``` r
+
 raw_coefs <- data.frame(
   variable = c("Age", "BMI", "Treatment"),
   beta = c(0.10, -0.08, 0.34),
@@ -47,6 +49,7 @@ Once the data are standardized, you can pass them straight into
 [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md).
 
 ``` r
+
 ggforestplot(forest_ready)
 ```
 
@@ -60,6 +63,7 @@ can pull coefficient estimates and confidence limits from a fitted
 model.
 
 ``` r
+
 fit <- lm(mpg ~ wt + hp + qsec, data = mtcars)
 
 model_ready <- tidy_forest_model(fit)
@@ -69,6 +73,7 @@ The returned object can be passed directly into
 [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md).
 
 ``` r
+
 ggforestplot(model_ready)
 ```
 

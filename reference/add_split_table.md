@@ -18,9 +18,15 @@ add_split_table(
   term_header = "Term",
   n_header = "N",
   events_header = "Events",
-  estimate_label = "Estimate",
+  estimate_label = NULL,
   p_header = "P-value",
+  column_labels = NULL,
   digits = NULL,
+  estimate_digits = NULL,
+  interval_digits = NULL,
+  p_digits = NULL,
+  estimate_fmt = NULL,
+  ci_fmt = NULL,
   text_size = NULL,
   header_text_size = NULL,
   header_fontface = "bold",
@@ -73,15 +79,18 @@ add_split_table(
 - left_columns:
 
   Optional explicit columns to place on the left side of the forest
-  plot. Accepts names such as `"term"`, `"n"`, and `"events"`, or
-  positions `1:5` corresponding to `term`, `n`, `events`, `estimate`,
-  and `p`.
+  plot. Accepts built-in names such as `"term"`, `"n"`, `"events"`,
+  `"estimate"`, `"ci"`, and `"p"`, arbitrary original dataframe columns,
+  or positions corresponding to the built-in columns. `"conf.low"` and
+  `"conf.high"` are accepted as aliases for `"ci"`.
 
 - right_columns:
 
   Optional explicit columns to place on the right side of the forest
-  plot. Accepts names such as `"estimate"` and `"p"`, or positions `1:5`
-  corresponding to `term`, `n`, `events`, `estimate`, and `p`.
+  plot. Accepts built-in names such as `"estimate"`, `"ci"`, and `"p"`,
+  arbitrary original dataframe columns, or positions corresponding to
+  the built-in columns. `"conf.low"` and `"conf.high"` are accepted as
+  aliases for `"ci"`.
 
 - term_header:
 
@@ -97,16 +106,52 @@ add_split_table(
 
 - estimate_label:
 
-  Header label for the estimate column.
+  Header label for the estimate column. Defaults to the model-derived
+  label when available.
 
 - p_header:
 
   Header text for the p-value column.
 
+- column_labels:
+
+  Optional named vector used to relabel table column headers. Names
+  should match values supplied to `left_columns` or `right_columns`
+  after column resolution, such as `"term"`, `"estimate"`, `"ci"`,
+  `"p"`, or an arbitrary original dataframe column.
+
 - digits:
 
   Number of digits used when formatting estimates and p-values. Defaults
-  to `2`.
+  to `2`. Superseded by `estimate_digits`, `interval_digits`, and
+  `p_digits` for separate control.
+
+- estimate_digits:
+
+  Number of digits used for point estimates.
+
+- interval_digits:
+
+  Number of digits used for confidence interval bounds.
+
+- p_digits:
+
+  Number of digits used for p-values.
+
+- estimate_fmt:
+
+  Format string for the estimate column. Use `{estimate}`, `{conf.low}`,
+  and `{conf.high}` as placeholders. The shorthand
+  `{conf.low, conf.high}` is also supported. Defaults to
+  `"{estimate} ({conf.low}, {conf.high})"`, or `"{estimate}"` when table
+  columns include `"ci"`.
+
+- ci_fmt:
+
+  Format string for the confidence interval column when table columns
+  include `"ci"`. Use `{conf.low}` and `{conf.high}` as placeholders.
+  The shorthand `{conf.low, conf.high}` is also supported. Defaults to
+  `"({conf.low}, {conf.high})"`.
 
 - text_size:
 

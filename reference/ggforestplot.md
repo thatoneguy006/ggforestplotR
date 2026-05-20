@@ -13,6 +13,7 @@ ggforestplot(
   conf.low = "conf.low",
   conf.high = "conf.high",
   label = term,
+  term_labels = NULL,
   group = NULL,
   grouping = NULL,
   grouping_strip_position = c("left", "right"),
@@ -20,7 +21,7 @@ ggforestplot(
   n = NULL,
   events = NULL,
   p.value = NULL,
-  exponentiate = FALSE,
+  exponentiate = NULL,
   sort_terms = c("none", "descending", "ascending"),
   point_size = 2.3,
   point_shape = 19,
@@ -36,7 +37,12 @@ ggforestplot(
   stripe_colour = NA,
   zero_line = TRUE,
   zero_line_linetype = 2,
-  zero_line_colour = "grey60"
+  zero_line_colour = "grey60",
+  ref_line = NULL,
+  ref_line_value = NULL,
+  ref_line_label = NULL,
+  ref_line_linetype = NULL,
+  ref_line_colour = NULL
 )
 ```
 
@@ -45,7 +51,7 @@ ggforestplot(
 - data:
 
   Either a tidy coefficient data frame or a model object supported by
-  [`broom::tidy()`](https://broom.tidymodels.org/reference/reexports.html).
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html).
 
 - term:
 
@@ -66,6 +72,11 @@ ggforestplot(
 - label:
 
   Optional column name used for the displayed row labels.
+
+- term_labels:
+
+  Optional named vector used to relabel displayed terms. Names should
+  match values in the term column and values are the labels to display.
 
 - group:
 
@@ -101,7 +112,9 @@ ggforestplot(
 - exponentiate:
 
   Logical; if `TRUE`, transform the estimates and draw the axis on the
-  log scale with the null line at 1.
+  log scale with the reference line at 1. For model objects, `NULL` uses
+  the canonical scale when it can be inferred, such as hazard ratios for
+  Cox models.
 
 - sort_terms:
 
@@ -158,15 +171,39 @@ ggforestplot(
 
 - zero_line:
 
-  Logical; if `TRUE`, draw a null reference line.
+  Logical; if `TRUE`, draw a null reference line. Superseded by
+  `ref_line`.
 
 - zero_line_linetype:
 
-  Line type for the null reference line.
+  Line type for the null reference line. Superseded by
+  `ref_line_linetype`.
 
 - zero_line_colour:
 
-  Color for the null reference line.
+  Color for the null reference line. Superseded by `ref_line_colour`.
+
+- ref_line:
+
+  Logical; if `TRUE`, draw a reference line. Defaults to `zero_line` for
+  backward compatibility.
+
+- ref_line_value:
+
+  Numeric x-value where the reference line is drawn. Defaults to `0` for
+  additive effects and `1` for exponentiated effects.
+
+- ref_line_label:
+
+  Optional label drawn alongside the reference line.
+
+- ref_line_linetype:
+
+  Line type for the reference line.
+
+- ref_line_colour:
+
+  Color for the reference line.
 
 ## Value
 

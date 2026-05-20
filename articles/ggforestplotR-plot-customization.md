@@ -1,6 +1,7 @@
 # Customize Forest Plots and Tables
 
 ``` r
+
 library(ggforestplotR)
 library(ggplot2)
 ```
@@ -8,26 +9,24 @@ library(ggplot2)
 This article focuses on utility and enhanced customization of forest
 plots and accompanied tables.
 
-## Base plotting data
-
-``` r
-coefs <- data.frame(
-  term = c("Age", "BMI", "Smoking", "Stage II", "Stage III"),
-  estimate = c(0.12, -0.10, 0.18, 0.30, 0.46),
-  conf.low = c(0.03, -0.18, 0.04, 0.10, 0.18),
-  conf.high = c(0.21, -0.02, 0.32, 0.50, 0.74),
-  sample_size = c(120, 115, 98, 87, 83),
-  p_value = c(0.04, 0.15, 0.29, 0.001, 0.75),
-  section = c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor")
-)
-```
-
 ## Group rows and control strip placement
 
 `grouping` creates section panels, and `grouping_strip_position`
 controls which side gets the strip labels.
 
 ``` r
+
+coefs <- data.frame(
+  term = c("Age", "BMI", "Smoking", "Stage II", "Stage III"),
+  estimate = c(0.12, -0.10, 0.18, 0.30, 0.46),
+  conf.low = c(0.03, -0.18, 0.04, 0.10, 0.18),
+  conf.high = c(0.21, 0.02, 0.32, 0.50, 0.74),
+  sample_size = c(120, 115, 98, 87, 83),
+  p_value = c(0.04, 0.15, 0.29, 0.001, 0.075),
+  section = c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor")
+)
+
+
 ggforestplot(
   coefs,
   grouping = "section",
@@ -46,6 +45,7 @@ categorical variables with many levels. `separate_groups` automatically
 appends the variable name to the level.
 
 ``` r
+
 block_coefs <- data.frame(
   term = c("race_black", "race_white", "race_other", "age", "bmi"),
   label = c("Black", "White", "Other", "Age", "BMI"),
@@ -80,19 +80,31 @@ styling your plot because the function calls on `patchwork` internally.
 `patchwork` requires specific syntax to customize plots and is generally
 more difficult to get working correctly.
 
+You can choose which columns from your dataframe to include in the table
+using the `columns` argument, and can change the labels using
+`column_labels`. If some of the term labels need to be changed, use
+`term_labels` to assign them new values. Some of the column labels are
+automatically assigned if no value is provided.
+
+Notice how we are explicitly naming the *n* and *p.value* columns? This
+is necessary in most cases because aliases are not yet incorporated (but
+they will be…I promise I’m getting to it).
+
 ``` r
+
 ggforestplot(
   coefs,
   grouping = "section",
   grouping_strip_position = "right",
   n = "sample_size",
   p.value = "p_value",
-  striped_rows = TRUE
+  striped_rows = TRUE,
+  term_labels = c("Smoking" = "Smoking status")
 ) +
   add_forest_table(
-    show_n = TRUE,
-    show_p = TRUE,
-    estimate_label = "Beta"
+    columns = c("term", "sample_size", "estimate", "p_value"),
+    column_labels = c("term" = "Variable", "sample_size" = "N",
+                      "estimate" = "Beta (95% CI)", "p_value" = "P-value")
   )
 ```
 
@@ -104,6 +116,7 @@ ggforestplot(
 the forest table.
 
 ``` r
+
 ggforestplot(
   coefs,
   n = "sample_size",
@@ -112,9 +125,6 @@ ggforestplot(
 ) +
   add_forest_table(
     position = "left",
-    show_n = TRUE,
-    show_p = TRUE,
-    estimate_label = "Beta",
     grid_lines = T,
     grid_line_linetype = 2,
     grid_line_colour = "red"
@@ -131,7 +141,12 @@ choose which summary information goes to which side. Like
 [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_forest_table.md),
 it should be added after any plot-level styling.
 
+Use the `estimate_fmt` argument to change how your estimates are
+displayed. You can also control digits via `estimate_digits` and
+`interval_digits`.
+
 ``` r
+
 ggforestplot(
   coefs,
   n = "sample_size",
@@ -142,7 +157,10 @@ ggforestplot(
   add_split_table(
     left_columns = c("term","n"),
     right_columns = c("estimate","p"),
-    estimate_label = "Beta"
+    column_labels = c("estimate" = "Beta [95% CI]"),
+    estimate_fmt = "{estimate} [{conf.low}, {conf.high}]",
+    estimate_digits = 2,
+    interval_digits = 3
   ) 
 ```
 
@@ -154,6 +172,7 @@ You can use `exponentiate = TRUE` for models on the log-odds scale (or
 similar).
 
 ``` r
+
 data(CO2)
 
 l1 <- glm(Treatment ~ conc + uptake + Type, family = binomial(link = "logit"), 
@@ -162,9 +181,9 @@ l1 <- glm(Treatment ~ conc + uptake + Type, family = binomial(link = "logit"),
 
 ``` r
 
-ggforestplot(l1, exponentiate = TRUE, striped_rows = T) +
+
+ggforestplot(l1, exponentiate = TRUE, striped_rows = T, term_labels = c("TypeMississippi" = "Mississippi")) +
   add_forest_table(position = "left", 
-                   estimate_label = "OR", 
                    show_p = F)
 ```
 
@@ -173,6 +192,7 @@ ggforestplot(l1, exponentiate = TRUE, striped_rows = T) +
 We can do this for survival models as well.
 
 ``` r
+
 lung <- survival::lung
 
 lung <- lung |>  
@@ -184,8 +204,9 @@ s1 <- survival::coxph(Surv(time, status) ~ sex + age + ph.karno + pat.karno, dat
 ```
 
 ``` r
+
 ggforestplot(s1, exponentiate = T, striped_rows = T) +
-  add_forest_table(estimate_label = "HR")
+  add_forest_table()
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/survival-analysis-plot-1.png)
@@ -196,6 +217,7 @@ The `group` argument is handy when comparing estimates from several
 models.
 
 ``` r
+
 comparison_coefs <- data.frame(
   term = rep(c("Age", "BMI", "Smoking", "Stage II", "Stage III"), 2),
   estimate = c(0.12, -0.10, 0.18, 0.30, 0.46, 0.08, -0.05, 0.24, 0.40, 0.58),
@@ -213,7 +235,9 @@ ggforestplot(
   dodge_width = 0.5,
   grouping_strip_position = "right"
 ) +
-  theme(legend.position = "bottom")
+  theme(legend.position = "top") +
+  scale_color_manual(values = c("#1F968BFF", "#453781FF")) +
+  add_forest_table()
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/comparison-1.png)
