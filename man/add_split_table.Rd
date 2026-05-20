@@ -84,8 +84,8 @@ model-derived label when available.}
 
 \item{column_labels}{Optional named vector used to relabel table column
 headers. Names should match values supplied to \code{left_columns} or
-\code{right_columns} after column resolution, such as \code{"term"},
-\code{"estimate"}, \code{"ci"}, \code{"p"}, or an arbitrary original dataframe column.}
+\code{right_columns} after column resolution, such as \code{"term"}, \code{"estimate"},
+\code{"ci"}, \code{"p"}, or an arbitrary original dataframe column.}
 
 \item{digits}{Number of digits used when formatting estimates and p-values.
 Defaults to \code{2}. Superseded by \code{estimate_digits}, \code{interval_digits}, and
@@ -98,15 +98,15 @@ Defaults to \code{2}. Superseded by \code{estimate_digits}, \code{interval_digit
 \item{p_digits}{Number of digits used for p-values.}
 
 \item{estimate_fmt}{Format string for the estimate column. Use
-\code{\{estimate\}}, \code{\{conf.low\}}, and \code{\{conf.high\}} as placeholders. The
-shorthand \code{\{conf.low, conf.high\}} is also supported. Defaults to
-\code{"\{estimate\} (\{conf.low\}, \{conf.high\})"}, or \code{"\{estimate\}"} when
-table columns include \code{"ci"}.}
+\code{{estimate}}, \code{{conf.low}}, and \code{{conf.high}} as placeholders. The
+shorthand \verb{\{conf.low, conf.high\}} is also supported. Defaults to
+\code{"{estimate} ({conf.low}, {conf.high})"}, or \code{"{estimate}"} when table
+columns include \code{"ci"}.}
 
 \item{ci_fmt}{Format string for the confidence interval column when
-table columns include \code{"ci"}. Use \code{\{conf.low\}} and \code{\{conf.high\}} as
-placeholders. The shorthand \code{\{conf.low, conf.high\}} is also supported.
-Defaults to \code{"(\{conf.low\}, \{conf.high\})"}.}
+table columns include \code{"ci"}. Use \code{{conf.low}} and \code{{conf.high}} as
+placeholders. The shorthand \verb{\{conf.low, conf.high\}} is also supported.
+Defaults to \code{"({conf.low}, {conf.high})"}.}
 
 \item{text_size}{Text size for table contents. Defaults to \code{3.2}.}
 

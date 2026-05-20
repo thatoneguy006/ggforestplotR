@@ -62,8 +62,8 @@ interval column. Soft-deprecated; use \code{columns} instead.}
 
 \item{columns}{Optional explicit columns to display in the side table, in
 the order they should appear. Accepts built-in names such as \code{"term"},
-\code{"n"}, \code{"events"}, \code{"estimate"}, \code{"ci"}, and \code{"p"}, arbitrary original
-dataframe columns, or positions corresponding to the built-in columns. \code{"conf.low"}
+\code{"n"}, \code{"events"}, \code{"estimate"}, \code{"ci"}, and \code{"p"}, arbitrary original dataframe
+columns, or positions corresponding to the built-in columns. \code{"conf.low"}
 and \code{"conf.high"} are accepted as aliases for \code{"ci"}. When supplied, this
 overrides the default \verb{show_*} column selection.}
 
@@ -94,15 +94,15 @@ Defaults to \code{2}. Superseded by \code{estimate_digits}, \code{interval_digit
 \item{p_digits}{Number of digits used for p-values.}
 
 \item{estimate_fmt}{Format string for the estimate column. Use
-\code{\{estimate\}}, \code{\{conf.low\}}, and \code{\{conf.high\}} as placeholders. The
-shorthand \code{\{conf.low, conf.high\}} is also supported. Defaults to
-\code{"\{estimate\} (\{conf.low\}, \{conf.high\})"}, or \code{"\{estimate\}"} when
+\code{{estimate}}, \code{{conf.low}}, and \code{{conf.high}} as placeholders. The
+shorthand \verb{\{conf.low, conf.high\}} is also supported. Defaults to
+\code{"{estimate} ({conf.low}, {conf.high})"}, or \code{"{estimate}"} when
 \code{columns} includes \code{"ci"}.}
 
 \item{ci_fmt}{Format string for the confidence interval column when
-\code{columns} includes \code{"ci"}. Use \code{\{conf.low\}} and \code{\{conf.high\}} as
-placeholders. The shorthand \code{\{conf.low, conf.high\}} is also supported.
-Defaults to \code{"(\{conf.low\}, \{conf.high\})"}.}
+\code{columns} includes \code{"ci"}. Use \code{{conf.low}} and \code{{conf.high}} as
+placeholders. The shorthand \verb{\{conf.low, conf.high\}} is also supported.
+Defaults to \code{"({conf.low}, {conf.high})"}.}
 
 \item{text_size}{Text size for table contents. Defaults to \code{3.2}.}
 

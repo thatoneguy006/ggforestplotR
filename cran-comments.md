@@ -1,12 +1,12 @@
 ## Test environments
 
-- Windows 10 x64, R 4.5.3
+- Windows 11 x64, R 4.6.0
 
 ## R CMD check results
 
-- `R CMD check ggforestplotR_0.1.1.tar.gz --as-cran --no-manual`
+- `R CMD check ggforestplotR_0.2.0.tar.gz --as-cran`
 - Status: OK
-0 errors ✔ | 0 warnings ✔ | 0 notes ✔
+0 errors | 0 warnings | 0 notes
 
 ## Notes
 
