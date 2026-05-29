@@ -14,9 +14,12 @@
 #'   Names should match values in the term column and values are the labels to
 #'   display.
 #' @param group Optional column name used for color-grouping estimates.
-#' @param grouping Optional column name used to split rows into grouped plot
+#' @param facet Optional column name used to split rows into faceted plot
 #'   sections.
-#' @param grouping_strip_position Positioning for grouped section strips.
+#' @param facet_strip_position Positioning for facet strip labels.
+#' @param grouping Deprecated. Use `facet` instead.
+#' @param grouping_strip_position Deprecated. Use `facet_strip_position`
+#'   instead.
 #' @param separate_groups Optional column name used to identify labeled
 #'   variable blocks that can be outlined with grid lines.
 #' @param n Optional column name holding sample sizes or other N labels for
@@ -82,8 +85,10 @@ ggforestplot <- function(data,
                          label = term,
                          term_labels = NULL,
                          group = NULL,
+                         facet = NULL,
+                         facet_strip_position = c("left", "right"),
                          grouping = NULL,
-                         grouping_strip_position = c("left", "right"),
+                         grouping_strip_position = NULL,
                          separate_groups = NULL,
                          n = NULL,
                          events = NULL,
@@ -122,8 +127,29 @@ ggforestplot <- function(data,
     warn_deprecated_argument("zero_line_colour", "`ref_line_colour`")
   }
 
+  if (!missing(grouping)) {
+    if (!is.null(facet)) {
+      stop("Use only one of `facet` or deprecated `grouping`.", call. = FALSE)
+    }
+
+    warn_deprecated_argument("grouping", "`facet`")
+    facet <- grouping
+  }
+
+  if (!missing(grouping_strip_position)) {
+    if (!missing(facet_strip_position)) {
+      stop(
+        "Use only one of `facet_strip_position` or deprecated `grouping_strip_position`.",
+        call. = FALSE
+      )
+    }
+
+    warn_deprecated_argument("grouping_strip_position", "`facet_strip_position`")
+    facet_strip_position <- grouping_strip_position
+  }
+
   sort_terms <- match.arg(sort_terms)
-  grouping_strip_position <- match.arg(grouping_strip_position)
+  facet_strip_position <- match.arg(facet_strip_position)
   draw_ref_line <- if (is.null(ref_line)) isTRUE(zero_line) else isTRUE(ref_line)
   ref_line_linetype <- if (is.null(ref_line_linetype)) zero_line_linetype else ref_line_linetype
   ref_line_colour <- if (is.null(ref_line_colour)) zero_line_colour else ref_line_colour
@@ -138,7 +164,7 @@ ggforestplot <- function(data,
       label = label,
       term_labels = term_labels,
       group = group,
-      grouping = grouping,
+      grouping = facet,
       separate_groups = separate_groups,
       n = n,
       events = events,
@@ -299,7 +325,7 @@ ggforestplot <- function(data,
       ggplot2::vars(grouping_panel),
       ncol = 1,
       scales = "free_y",
-      strip.position = grouping_strip_position
+      strip.position = facet_strip_position
     )
   }
 
@@ -313,7 +339,8 @@ ggforestplot <- function(data,
     forest_data = forest_data,
     stripe_data = stripe_data,
     has_groupings = display_data$has_groupings,
-    grouping_strip_position = grouping_strip_position,
+    facet_strip_position = facet_strip_position,
+    grouping_strip_position = facet_strip_position,
     defaults = list(
       striped_rows = striped_rows,
       stripe_fill = stripe_fill,

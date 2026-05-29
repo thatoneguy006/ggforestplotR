@@ -13,8 +13,10 @@ ggforestplot(
   label = term,
   term_labels = NULL,
   group = NULL,
+  facet = NULL,
+  facet_strip_position = c("left", "right"),
   grouping = NULL,
-  grouping_strip_position = c("left", "right"),
+  grouping_strip_position = NULL,
   separate_groups = NULL,
   n = NULL,
   events = NULL,
@@ -63,10 +65,15 @@ display.}
 
 \item{group}{Optional column name used for color-grouping estimates.}
 
-\item{grouping}{Optional column name used to split rows into grouped plot
+\item{facet}{Optional column name used to split rows into faceted plot
 sections.}
 
-\item{grouping_strip_position}{Positioning for grouped section strips.}
+\item{facet_strip_position}{Positioning for facet strip labels.}
+
+\item{grouping}{Deprecated. Use \code{facet} instead.}
+
+\item{grouping_strip_position}{Deprecated. Use \code{facet_strip_position}
+instead.}
 
 \item{separate_groups}{Optional column name used to identify labeled
 variable blocks that can be outlined with grid lines.}

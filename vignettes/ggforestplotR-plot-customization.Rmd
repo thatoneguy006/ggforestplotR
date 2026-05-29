@@ -27,10 +27,10 @@ This article focuses on utility and enhanced customization of forest plots and a
 
 ## Group rows and control strip placement
 
-`grouping` creates section panels, and `grouping_strip_position` controls which
+`facet` creates section panels, and `facet_strip_position` controls which
 side gets the strip labels.
 
-```{r grouping-right}
+```{r facet-right}
 coefs <- data.frame(
   term = c("Age", "BMI", "Smoking", "Stage II", "Stage III"),
   estimate = c(0.12, -0.10, 0.18, 0.30, 0.46),
@@ -44,8 +44,8 @@ coefs <- data.frame(
 
 ggforestplot(
   coefs,
-  grouping = "section",
-  grouping_strip_position = "right",
+  facet = "section",
+  facet_strip_position = "right",
   striped_rows = TRUE
 )
 ```
@@ -86,8 +86,8 @@ Notice how we are explicitly naming the *n* and *p.value* columns? This is neces
 ```{r left-side-table}
 ggforestplot(
   coefs,
-  grouping = "section",
-  grouping_strip_position = "right",
+  facet = "section",
+  facet_strip_position = "right",
   n = "sample_size",
   p.value = "p_value",
   striped_rows = TRUE,
@@ -197,10 +197,10 @@ comparison_coefs <- data.frame(
 ggforestplot(
   comparison_coefs,
   group = "model",
-  grouping = "section",
+  facet = "section",
   striped_rows = TRUE,
   dodge_width = 0.5,
-  grouping_strip_position = "right"
+  facet_strip_position = "right"
 ) +
   theme(legend.position = "top") +
   scale_color_manual(values = c("#1F968BFF", "#453781FF")) +

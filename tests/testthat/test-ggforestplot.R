@@ -20,7 +20,7 @@ test_that("ggforestplot can facet grouped rows and add stripes", {
     section = c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor", "Tumor")
   )
 
-  p <- ggforestplot(raw, grouping = "section", striped_rows = TRUE)
+  p <- ggforestplot(raw, facet = "section", striped_rows = TRUE)
   built <- ggplot2::ggplot_build(p)
   panel_rows <- lapply(split(as.numeric(built$data[[2]]$y), built$data[[2]]$PANEL), unique)
 
@@ -127,6 +127,33 @@ test_that("deprecated ggforestplot reference-line arguments warn", {
   )
 })
 
+test_that("deprecated ggforestplot facet arguments warn", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3, -0.2),
+    conf.low = c(0.1, -0.4),
+    conf.high = c(0.5, 0.0),
+    section = c("Clinical", "Tumor")
+  )
+
+  expect_warning(
+    ggforestplot(raw, grouping = "section"),
+    "`grouping` is deprecated"
+  )
+  expect_warning(
+    ggforestplot(raw, facet = "section", grouping_strip_position = "right"),
+    "`grouping_strip_position` is deprecated"
+  )
+  expect_error(
+    ggforestplot(raw, facet = "section", grouping = "section"),
+    "Use only one of"
+  )
+  expect_error(
+    ggforestplot(raw, facet_strip_position = "right", grouping_strip_position = "right"),
+    "Use only one of"
+  )
+})
+
 test_that("add_forest_table requires a ggforestplot object", {
   raw <- data.frame(x = 1:2, y = 1:2)
   p <- ggplot2::ggplot(raw, ggplot2::aes(x, y)) + ggplot2::geom_point()
@@ -196,7 +223,7 @@ test_that("ggforestplot can draw striped rows on exponentiated plots", {
   expect_equal(p$scales$get_scales("x")$limits, log10(expected_limits))
 })
 
-test_that("ggforestplot allows grouping strip labels on the right", {
+test_that("ggforestplot allows facet strip labels on the right", {
   raw <- data.frame(
     term = c("Age", "BMI", "Stage II", "Stage III"),
     estimate = c(0.3, -0.2, 0.5, 0.8),
@@ -205,17 +232,17 @@ test_that("ggforestplot allows grouping strip labels on the right", {
     section = c("Clinical", "Clinical", "Tumor", "Tumor")
   )
 
-  p <- ggforestplot(raw, grouping = "section", grouping_strip_position = "right")
+  p <- ggforestplot(raw, facet = "section", facet_strip_position = "right")
   table_spec <- build_forest_table_data(p$ggforestplotR_state$forest_data)
   table_plot <- build_forest_table_plot(
     table_spec = table_spec,
     stripe_data = p$ggforestplotR_state$stripe_data,
     has_groupings = p$ggforestplotR_state$has_groupings,
-    grouping_strip_position = p$ggforestplotR_state$grouping_strip_position
+    grouping_strip_position = p$ggforestplotR_state$facet_strip_position
   )
 
   expect_equal(p$facet$params$strip.position, "right")
-  expect_equal(p$ggforestplotR_state$grouping_strip_position, "right")
+  expect_equal(p$ggforestplotR_state$facet_strip_position, "right")
   expect_equal(table_plot$facet$params$strip.position, "right")
 })
 
@@ -230,10 +257,10 @@ test_that("ggforestplot can sort terms with grouped sections", {
 
   p <- ggforestplot(
     raw,
-    grouping = "section",
+    facet = "section",
     striped_rows = TRUE,
     stripe_fill = "grey94",
-    grouping_strip_position = "right",
+    facet_strip_position = "right",
     sort_terms = "descending"
   )
 
