@@ -1,5 +1,35 @@
 # Changelog
 
+## ggforestplotR 0.2.1
+
+### Breaking Changes
+
+- Simplified the reference-line API in
+  [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md):
+  `ref_line` now takes the numeric reference value directly, and `NULL`
+  hides the line.
+- Replaced the older reference-line arguments with `ref_label`,
+  `ref_linetype`, and `ref_color`.
+
+### Major Changes
+
+- Added `facet` and `facet_strip_position` as clearer names for grouped
+  plot panels. The older `grouping` and `grouping_strip_position`
+  arguments now warn and continue to work.
+- Added `linewidth` for confidence interval widths. The older
+  `line_size` argument now warns and continues to work.
+- Added deprecation warnings for table-display shortcuts in favor of
+  explicit `columns`, `left_columns`, and `right_columns` selections.
+
+### Minor Changes
+
+- Added `stripe_alpha` to control row stripe transparency across plots,
+  side tables, and split tables.
+- Updated table helpers so they inherit custom y-axis ordering and
+  filtering from the trained forest plot scale.
+- Updated vignettes and tests to use the clearer faceting and geometry
+  argument names.
+
 ## ggforestplotR 0.2.0
 
 CRAN release: 2026-05-20
