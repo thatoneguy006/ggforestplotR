@@ -27,7 +27,8 @@ ggforestplot(
   sort_terms = c("none", "descending", "ascending"),
   point_size = 2.3,
   point_shape = 19,
-  line_size = 0.5,
+  linewidth = 0.5,
+  line_size = NULL,
   staple_width = 0.2,
   dodge_width = 0.6,
   separate_lines = FALSE,
@@ -37,14 +38,11 @@ ggforestplot(
   striped_rows = FALSE,
   stripe_fill = "grey95",
   stripe_colour = NA,
-  zero_line = TRUE,
-  zero_line_linetype = 2,
-  zero_line_colour = "grey60",
+  stripe_alpha = 1,
   ref_line = NULL,
-  ref_line_value = NULL,
-  ref_line_label = NULL,
-  ref_line_linetype = NULL,
-  ref_line_colour = NULL
+  ref_label = NULL,
+  ref_linetype = 2,
+  ref_color = "grey60"
 )
 ```
 
@@ -138,9 +136,13 @@ ggforestplot(
 
   Shape used for coefficient markers.
 
-- line_size:
+- linewidth:
 
   Line width for confidence intervals.
+
+- line_size:
+
+  Deprecated. Use `linewidth` instead.
 
 - staple_width:
 
@@ -179,40 +181,25 @@ ggforestplot(
 
   Border color for shaded rows.
 
-- zero_line:
+- stripe_alpha:
 
-  Deprecated. Logical; if `TRUE`, draw a null reference line. Use
-  `ref_line` instead.
-
-- zero_line_linetype:
-
-  Deprecated. Line type for the null reference line. Use
-  `ref_line_linetype` instead.
-
-- zero_line_colour:
-
-  Deprecated. Color for the null reference line. Use `ref_line_colour`
-  instead.
+  Transparency for shaded rows.
 
 - ref_line:
 
-  Logical; if `TRUE`, draw a reference line. Defaults to `zero_line` for
-  backward compatibility.
+  Numeric x-value where the reference line is drawn, or `NULL` to hide
+  it. When omitted, defaults to `0` for additive effects and `1` for
+  exponentiated effects.
 
-- ref_line_value:
-
-  Numeric x-value where the reference line is drawn. Defaults to `0` for
-  additive effects and `1` for exponentiated effects.
-
-- ref_line_label:
+- ref_label:
 
   Optional label drawn alongside the reference line.
 
-- ref_line_linetype:
+- ref_linetype:
 
   Line type for the reference line.
 
-- ref_line_colour:
+- ref_color:
 
   Color for the reference line.
 

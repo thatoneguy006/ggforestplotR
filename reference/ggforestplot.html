@@ -76,7 +76,8 @@ fitted model.</p>
 <span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
 <span>  point_size <span class="op">=</span> <span class="fl">2.3</span>,</span>
 <span>  point_shape <span class="op">=</span> <span class="fl">19</span>,</span>
-<span>  line_size <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>  linewidth <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>  line_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  staple_width <span class="op">=</span> <span class="fl">0.2</span>,</span>
 <span>  dodge_width <span class="op">=</span> <span class="fl">0.6</span>,</span>
 <span>  separate_lines <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -86,14 +87,11 @@ fitted model.</p>
 <span>  striped_rows <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  stripe_fill <span class="op">=</span> <span class="st">"grey95"</span>,</span>
 <span>  stripe_colour <span class="op">=</span> <span class="cn">NA</span>,</span>
-<span>  zero_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  zero_line_linetype <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  zero_line_colour <span class="op">=</span> <span class="st">"grey60"</span>,</span>
+<span>  stripe_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  ref_line <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ref_line_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ref_line_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ref_line_linetype <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ref_line_colour <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  ref_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ref_linetype <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  ref_color <span class="op">=</span> <span class="st">"grey60"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -193,8 +191,12 @@ ratios for Cox models.</p></dd>
 <dd><p>Shape used for coefficient markers.</p></dd>
 
 
-<dt id="arg-line-size">line_size<a class="anchor" aria-label="anchor" href="#arg-line-size"></a></dt>
+<dt id="arg-linewidth">linewidth<a class="anchor" aria-label="anchor" href="#arg-linewidth"></a></dt>
 <dd><p>Line width for confidence intervals.</p></dd>
+
+
+<dt id="arg-line-size">line_size<a class="anchor" aria-label="anchor" href="#arg-line-size"></a></dt>
+<dd><p>Deprecated. Use <code>linewidth</code> instead.</p></dd>
 
 
 <dt id="arg-staple-width">staple_width<a class="anchor" aria-label="anchor" href="#arg-staple-width"></a></dt>
@@ -235,40 +237,25 @@ around each labeled block identified by <code>separate_groups</code>.</p></dd>
 <dd><p>Border color for shaded rows.</p></dd>
 
 
-<dt id="arg-zero-line">zero_line<a class="anchor" aria-label="anchor" href="#arg-zero-line"></a></dt>
-<dd><p>Deprecated. Logical; if <code>TRUE</code>, draw a null reference
-line. Use <code>ref_line</code> instead.</p></dd>
-
-
-<dt id="arg-zero-line-linetype">zero_line_linetype<a class="anchor" aria-label="anchor" href="#arg-zero-line-linetype"></a></dt>
-<dd><p>Deprecated. Line type for the null reference
-line. Use <code>ref_line_linetype</code> instead.</p></dd>
-
-
-<dt id="arg-zero-line-colour">zero_line_colour<a class="anchor" aria-label="anchor" href="#arg-zero-line-colour"></a></dt>
-<dd><p>Deprecated. Color for the null reference line. Use
-<code>ref_line_colour</code> instead.</p></dd>
+<dt id="arg-stripe-alpha">stripe_alpha<a class="anchor" aria-label="anchor" href="#arg-stripe-alpha"></a></dt>
+<dd><p>Transparency for shaded rows.</p></dd>
 
 
 <dt id="arg-ref-line">ref_line<a class="anchor" aria-label="anchor" href="#arg-ref-line"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, draw a reference line. Defaults to
-<code>zero_line</code> for backward compatibility.</p></dd>
+<dd><p>Numeric x-value where the reference line is drawn, or
+<code>NULL</code> to hide it. When omitted, defaults to <code>0</code> for additive effects and
+<code>1</code> for exponentiated effects.</p></dd>
 
 
-<dt id="arg-ref-line-value">ref_line_value<a class="anchor" aria-label="anchor" href="#arg-ref-line-value"></a></dt>
-<dd><p>Numeric x-value where the reference line is drawn.
-Defaults to <code>0</code> for additive effects and <code>1</code> for exponentiated effects.</p></dd>
-
-
-<dt id="arg-ref-line-label">ref_line_label<a class="anchor" aria-label="anchor" href="#arg-ref-line-label"></a></dt>
+<dt id="arg-ref-label">ref_label<a class="anchor" aria-label="anchor" href="#arg-ref-label"></a></dt>
 <dd><p>Optional label drawn alongside the reference line.</p></dd>
 
 
-<dt id="arg-ref-line-linetype">ref_line_linetype<a class="anchor" aria-label="anchor" href="#arg-ref-line-linetype"></a></dt>
+<dt id="arg-ref-linetype">ref_linetype<a class="anchor" aria-label="anchor" href="#arg-ref-linetype"></a></dt>
 <dd><p>Line type for the reference line.</p></dd>
 
 
-<dt id="arg-ref-line-colour">ref_line_colour<a class="anchor" aria-label="anchor" href="#arg-ref-line-colour"></a></dt>
+<dt id="arg-ref-color">ref_color<a class="anchor" aria-label="anchor" href="#arg-ref-color"></a></dt>
 <dd><p>Color for the reference line.</p></dd>
 
 </dl></div>

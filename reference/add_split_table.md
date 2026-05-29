@@ -34,6 +34,7 @@ add_split_table(
   striped_rows = NULL,
   stripe_fill = NULL,
   stripe_colour = NULL,
+  stripe_alpha = NULL,
   left_width = NULL,
   plot_width = NULL,
   right_width = NULL
@@ -184,6 +185,11 @@ add_split_table(
 
   Outline colour for striped rows. Defaults to the stripe outline used
   in
+  [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md).
+
+- stripe_alpha:
+
+  Transparency for striped rows. Defaults to the stripe alpha used in
   [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md).
 
 - left_width:
