@@ -113,14 +113,14 @@ around each labeled block identified by \code{separate_groups}.}
 
 \item{stripe_colour}{Border color for shaded rows.}
 
-\item{zero_line}{Logical; if \code{TRUE}, draw a null reference line. Superseded
-by \code{ref_line}.}
+\item{zero_line}{Deprecated. Logical; if \code{TRUE}, draw a null reference
+line. Use \code{ref_line} instead.}
 
-\item{zero_line_linetype}{Line type for the null reference line. Superseded
-by \code{ref_line_linetype}.}
+\item{zero_line_linetype}{Deprecated. Line type for the null reference
+line. Use \code{ref_line_linetype} instead.}
 
-\item{zero_line_colour}{Color for the null reference line. Superseded by
-\code{ref_line_colour}.}
+\item{zero_line_colour}{Deprecated. Color for the null reference line. Use
+\code{ref_line_colour} instead.}
 
 \item{ref_line}{Logical; if \code{TRUE}, draw a reference line. Defaults to
 \code{zero_line} for backward compatibility.}

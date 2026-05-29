@@ -44,12 +44,12 @@
 #' @param striped_rows Logical; if `TRUE`, shade alternating rows.
 #' @param stripe_fill Fill color used for shaded rows.
 #' @param stripe_colour Border color for shaded rows.
-#' @param zero_line Logical; if `TRUE`, draw a null reference line. Superseded
-#'   by `ref_line`.
-#' @param zero_line_linetype Line type for the null reference line. Superseded
-#'   by `ref_line_linetype`.
-#' @param zero_line_colour Color for the null reference line. Superseded by
-#'   `ref_line_colour`.
+#' @param zero_line Deprecated. Logical; if `TRUE`, draw a null reference
+#'   line. Use `ref_line` instead.
+#' @param zero_line_linetype Deprecated. Line type for the null reference
+#'   line. Use `ref_line_linetype` instead.
+#' @param zero_line_colour Deprecated. Color for the null reference line. Use
+#'   `ref_line_colour` instead.
 #' @param ref_line Logical; if `TRUE`, draw a reference line. Defaults to
 #'   `zero_line` for backward compatibility.
 #' @param ref_line_value Numeric x-value where the reference line is drawn.
@@ -110,6 +110,18 @@ ggforestplot <- function(data,
                          ref_line_label = NULL,
                          ref_line_linetype = NULL,
                          ref_line_colour = NULL) {
+  if (!missing(zero_line)) {
+    warn_deprecated_argument("zero_line", "`ref_line`")
+  }
+
+  if (!missing(zero_line_linetype)) {
+    warn_deprecated_argument("zero_line_linetype", "`ref_line_linetype`")
+  }
+
+  if (!missing(zero_line_colour)) {
+    warn_deprecated_argument("zero_line_colour", "`ref_line_colour`")
+  }
+
   sort_terms <- match.arg(sort_terms)
   grouping_strip_position <- match.arg(grouping_strip_position)
   draw_ref_line <- if (is.null(ref_line)) isTRUE(zero_line) else isTRUE(ref_line)
