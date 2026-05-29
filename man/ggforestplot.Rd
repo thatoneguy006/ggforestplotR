@@ -25,7 +25,8 @@ ggforestplot(
   sort_terms = c("none", "descending", "ascending"),
   point_size = 2.3,
   point_shape = 19,
-  line_size = 0.5,
+  linewidth = 0.5,
+  line_size = NULL,
   staple_width = 0.2,
   dodge_width = 0.6,
   separate_lines = FALSE,
@@ -35,14 +36,11 @@ ggforestplot(
   striped_rows = FALSE,
   stripe_fill = "grey95",
   stripe_colour = NA,
-  zero_line = TRUE,
-  zero_line_linetype = 2,
-  zero_line_colour = "grey60",
+  stripe_alpha = 1,
   ref_line = NULL,
-  ref_line_value = NULL,
-  ref_line_label = NULL,
-  ref_line_linetype = NULL,
-  ref_line_colour = NULL
+  ref_label = NULL,
+  ref_linetype = 2,
+  ref_color = "grey60"
 )
 }
 \arguments{
@@ -98,7 +96,9 @@ ratios for Cox models.}
 
 \item{point_shape}{Shape used for coefficient markers.}
 
-\item{line_size}{Line width for confidence intervals.}
+\item{linewidth}{Line width for confidence intervals.}
+
+\item{line_size}{Deprecated. Use \code{linewidth} instead.}
 
 \item{staple_width}{Width of the terminal staples on confidence interval
 lines.}
@@ -120,26 +120,17 @@ around each labeled block identified by \code{separate_groups}.}
 
 \item{stripe_colour}{Border color for shaded rows.}
 
-\item{zero_line}{Deprecated. Logical; if \code{TRUE}, draw a null reference
-line. Use \code{ref_line} instead.}
+\item{stripe_alpha}{Transparency for shaded rows.}
 
-\item{zero_line_linetype}{Deprecated. Line type for the null reference
-line. Use \code{ref_line_linetype} instead.}
+\item{ref_line}{Numeric x-value where the reference line is drawn, or
+\code{NULL} to hide it. When omitted, defaults to \code{0} for additive effects and
+\code{1} for exponentiated effects.}
 
-\item{zero_line_colour}{Deprecated. Color for the null reference line. Use
-\code{ref_line_colour} instead.}
+\item{ref_label}{Optional label drawn alongside the reference line.}
 
-\item{ref_line}{Logical; if \code{TRUE}, draw a reference line. Defaults to
-\code{zero_line} for backward compatibility.}
+\item{ref_linetype}{Line type for the reference line.}
 
-\item{ref_line_value}{Numeric x-value where the reference line is drawn.
-Defaults to \code{0} for additive effects and \code{1} for exponentiated effects.}
-
-\item{ref_line_label}{Optional label drawn alongside the reference line.}
-
-\item{ref_line_linetype}{Line type for the reference line.}
-
-\item{ref_line_colour}{Color for the reference line.}
+\item{ref_color}{Color for the reference line.}
 }
 \value{
 A \code{ggplot} object. Use standard \code{ggplot2} functions such as

@@ -75,7 +75,7 @@ test_that("ggforestplot labels Cox models as hazard ratios", {
 
   expect_equal(p$labels$x, "HR (95% CI)")
   expect_equal(p$ggforestplotR_state$defaults$estimate_label, "HR")
-  expect_equal(p$ggforestplotR_state$defaults$ref_line_value, 1)
+  expect_equal(p$ggforestplotR_state$defaults$ref_line, 1)
   expect_true(all(p$ggforestplotR_state$forest_data$estimate > 0))
 })
 

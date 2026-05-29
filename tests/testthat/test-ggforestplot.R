@@ -20,17 +20,19 @@ test_that("ggforestplot can facet grouped rows and add stripes", {
     section = c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor", "Tumor")
   )
 
-  p <- ggforestplot(raw, facet = "section", striped_rows = TRUE)
+  p <- ggforestplot(raw, facet = "section", striped_rows = TRUE, stripe_alpha = 0.35)
   built <- ggplot2::ggplot_build(p)
   panel_rows <- lapply(split(as.numeric(built$data[[2]]$y), built$data[[2]]$PANEL), unique)
 
   expect_equal(nrow(built$data[[1]]), 4L)
+  expect_true(all(built$data[[1]]$alpha == 0.35))
+  expect_equal(p$ggforestplotR_state$defaults$stripe_alpha, 0.35)
   expect_equal(length(panel_rows), 2L)
   expect_equal(unname(panel_rows[[1]]), c(1, 2, 3))
   expect_equal(unname(panel_rows[[2]]), c(1, 2, 3))
 })
 
-test_that("ggforestplot supports shape and staple width controls", {
+test_that("ggforestplot supports point and interval geometry controls", {
   raw <- data.frame(
     term = c("Age", "BMI"),
     estimate = c(0.3, -0.2),
@@ -39,10 +41,11 @@ test_that("ggforestplot supports shape and staple width controls", {
   )
 
   built <- ggplot2::ggplot_build(
-    ggforestplot(raw, point_shape = 17, staple_width = 0.25)
+    ggforestplot(raw, point_shape = 17, linewidth = 0.8, staple_width = 0.25)
   )
 
   expect_true(all(built$data[[2]]$shape == 17))
+  expect_true(all(built$data[[1]]$linewidth == 0.8))
   expect_true(all(built$data[[1]]$width == 0.25))
 })
 
@@ -62,7 +65,7 @@ test_that("ggforestplot can draw separator lines for each labeled variable block
       label = "label",
       separate_groups = "block",
       separate_lines = TRUE,
-      ref_line = FALSE
+      ref_line = NULL
     )
   )
 
@@ -105,28 +108,6 @@ test_that("add_forest_table validates N table requests", {
   )
 })
 
-test_that("deprecated ggforestplot reference-line arguments warn", {
-  raw <- data.frame(
-    term = "Age",
-    estimate = 0.3,
-    conf.low = 0.1,
-    conf.high = 0.5
-  )
-
-  expect_warning(
-    ggforestplot(raw, zero_line = FALSE),
-    "`zero_line` is deprecated"
-  )
-  expect_warning(
-    ggforestplot(raw, zero_line_linetype = 3),
-    "`zero_line_linetype` is deprecated"
-  )
-  expect_warning(
-    ggforestplot(raw, zero_line_colour = "red"),
-    "`zero_line_colour` is deprecated"
-  )
-})
-
 test_that("deprecated ggforestplot facet arguments warn", {
   raw <- data.frame(
     term = c("Age", "BMI"),
@@ -152,6 +133,42 @@ test_that("deprecated ggforestplot facet arguments warn", {
     ggforestplot(raw, facet_strip_position = "right", grouping_strip_position = "right"),
     "Use only one of"
   )
+})
+
+test_that("deprecated ggforestplot line_size argument warns", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3, -0.2),
+    conf.low = c(0.1, -0.4),
+    conf.high = c(0.5, 0.0)
+  )
+
+  expect_warning(
+    ggforestplot(raw, line_size = 0.8),
+    "`line_size` is deprecated"
+  )
+  expect_error(
+    ggforestplot(raw, linewidth = 0.8, line_size = 0.6),
+    "Use only one of"
+  )
+})
+
+test_that("table helpers use stripe alpha from plots and overrides", {
+  raw <- data.frame(
+    term = c("Age", "BMI", "Treatment"),
+    estimate = c(0.3, -0.2, 0.4),
+    conf.low = c(0.1, -0.4, 0.2),
+    conf.high = c(0.5, 0.0, 0.6)
+  )
+
+  p <- ggforestplot(raw, striped_rows = TRUE, stripe_alpha = 0.35)
+  table_out <- add_forest_table(p, position = "left")
+  table_plot <- table_out$patches$plots[[1]]
+  split_out <- add_split_table(p, stripe_alpha = 0.6)
+  left_table <- split_out$patches$plots[[1]]
+
+  expect_true(all(ggplot2::ggplot_build(table_plot)$data[[1]]$alpha == 0.35))
+  expect_true(all(ggplot2::ggplot_build(left_table)$data[[1]]$alpha == 0.6))
 })
 
 test_that("add_forest_table requires a ggforestplot object", {
@@ -380,11 +397,10 @@ test_that("ggforestplot supports reference line naming and values", {
 
   p <- ggforestplot(
     raw,
-    ref_line = TRUE,
-    ref_line_value = 0.25,
-    ref_line_label = "Null",
-    ref_line_linetype = 3,
-    ref_line_colour = "red"
+    ref_line = 0.25,
+    ref_label = "Null",
+    ref_linetype = 3,
+    ref_color = "red"
   )
   built <- ggplot2::ggplot_build(p)
   vline_layers <- Filter(function(x) "xintercept" %in% names(x), built$data)
@@ -394,7 +410,16 @@ test_that("ggforestplot supports reference line naming and values", {
   expect_equal(vline_layers[[1]]$linetype, 3)
   expect_equal(vline_layers[[1]]$colour, "red")
   expect_equal(label_layers[[1]]$label, "Null")
-  expect_equal(p$ggforestplotR_state$defaults$ref_line_value, 0.25)
+  expect_equal(p$ggforestplotR_state$defaults$ref_line, 0.25)
+
+  hidden <- ggplot2::ggplot_build(ggforestplot(raw, ref_line = NULL))
+  hidden_vline_layers <- Filter(function(x) "xintercept" %in% names(x), hidden$data)
+
+  expect_length(hidden_vline_layers, 0L)
+  expect_error(
+    ggforestplot(raw, ref_line = "Null"),
+    "`ref_line` must be a single numeric value or `NULL`."
+  )
 })
 
 test_that("add_forest_table supports arbitrary preserved columns", {

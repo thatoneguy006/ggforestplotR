@@ -25,6 +25,7 @@
                                   striped_rows = NULL,
                                   stripe_fill = NULL,
                                   stripe_colour = NULL,
+                                  stripe_alpha = NULL,
                                   grid_lines = FALSE,
                                   grid_line_colour = "black",
                                   grid_line_size = 0.3,
@@ -88,6 +89,10 @@
 
   if (is.null(stripe_colour)) {
     stripe_colour <- state$defaults$stripe_colour
+  }
+
+  if (is.null(stripe_alpha)) {
+    stripe_alpha <- state$defaults$stripe_alpha
   }
 
   table_columns <- if (is.null(columns)) {
@@ -161,6 +166,7 @@
     striped_rows = striped_rows,
     stripe_fill = stripe_fill,
     stripe_colour = stripe_colour,
+    stripe_alpha = stripe_alpha,
     text_size = text_size,
     grid_lines = grid_lines,
     grid_line_colour = grid_line_colour,
@@ -243,6 +249,8 @@
 #'   stripe fill used in [ggforestplot()].
 #' @param stripe_colour Outline colour for striped rows. Defaults to the
 #'   stripe outline used in [ggforestplot()].
+#' @param stripe_alpha Transparency for striped rows. Defaults to the stripe
+#'   alpha used in [ggforestplot()].
 #' @param grid_lines Whether to draw black horizontal grid lines in the table.
 #' @param grid_line_colour Colour used for the table grid lines.
 #' @param grid_line_size Line width used for the table grid lines.
@@ -303,6 +311,7 @@ add_forest_table <- function(plot = NULL,
                              striped_rows = NULL,
                              stripe_fill = NULL,
                              stripe_colour = NULL,
+                             stripe_alpha = NULL,
                              grid_lines = FALSE,
                              grid_line_colour = "black",
                              grid_line_size = 0.3,
@@ -362,6 +371,7 @@ add_forest_table <- function(plot = NULL,
         striped_rows = striped_rows,
         stripe_fill = stripe_fill,
         stripe_colour = stripe_colour,
+        stripe_alpha = stripe_alpha,
         grid_lines = grid_lines,
         grid_line_colour = grid_line_colour,
         grid_line_size = grid_line_size,
@@ -399,6 +409,7 @@ add_forest_table <- function(plot = NULL,
     striped_rows = striped_rows,
     stripe_fill = stripe_fill,
     stripe_colour = stripe_colour,
+    stripe_alpha = stripe_alpha,
     grid_lines = grid_lines,
     grid_line_colour = grid_line_colour,
     grid_line_size = grid_line_size,
