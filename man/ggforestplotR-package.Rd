@@ -23,5 +23,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Carson Richardson \email{carson.richardson@outlook.com} [copyright holder]
 
+Authors:
+\itemize{
+  \item Carson Richardson \email{carson.richardson@outlook.com} [copyright holder]
+}
+
 }
 \keyword{internal}
