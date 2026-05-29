@@ -62,7 +62,7 @@ test_that("ggforestplot can draw separator lines for each labeled variable block
       label = "label",
       separate_groups = "block",
       separate_lines = TRUE,
-      ref_line = FALSE
+      ref_line = NULL
     )
   )
 
@@ -102,28 +102,6 @@ test_that("add_forest_table validates N table requests", {
   expect_error(
     add_forest_table(ggforestplot(raw), position = "left", columns = "n"),
     "requires an `n` column"
-  )
-})
-
-test_that("deprecated ggforestplot reference-line arguments warn", {
-  raw <- data.frame(
-    term = "Age",
-    estimate = 0.3,
-    conf.low = 0.1,
-    conf.high = 0.5
-  )
-
-  expect_warning(
-    ggforestplot(raw, zero_line = FALSE),
-    "`zero_line` is deprecated"
-  )
-  expect_warning(
-    ggforestplot(raw, zero_line_linetype = 3),
-    "`zero_line_linetype` is deprecated"
-  )
-  expect_warning(
-    ggforestplot(raw, zero_line_colour = "red"),
-    "`zero_line_colour` is deprecated"
   )
 })
 
@@ -380,11 +358,10 @@ test_that("ggforestplot supports reference line naming and values", {
 
   p <- ggforestplot(
     raw,
-    ref_line = TRUE,
-    ref_line_value = 0.25,
-    ref_line_label = "Null",
-    ref_line_linetype = 3,
-    ref_line_colour = "red"
+    ref_line = 0.25,
+    ref_label = "Null",
+    ref_linetype = 3,
+    ref_color = "red"
   )
   built <- ggplot2::ggplot_build(p)
   vline_layers <- Filter(function(x) "xintercept" %in% names(x), built$data)
@@ -394,7 +371,16 @@ test_that("ggforestplot supports reference line naming and values", {
   expect_equal(vline_layers[[1]]$linetype, 3)
   expect_equal(vline_layers[[1]]$colour, "red")
   expect_equal(label_layers[[1]]$label, "Null")
-  expect_equal(p$ggforestplotR_state$defaults$ref_line_value, 0.25)
+  expect_equal(p$ggforestplotR_state$defaults$ref_line, 0.25)
+
+  hidden <- ggplot2::ggplot_build(ggforestplot(raw, ref_line = NULL))
+  hidden_vline_layers <- Filter(function(x) "xintercept" %in% names(x), hidden$data)
+
+  expect_length(hidden_vline_layers, 0L)
+  expect_error(
+    ggforestplot(raw, ref_line = "Null"),
+    "`ref_line` must be a single numeric value or `NULL`."
+  )
 })
 
 test_that("add_forest_table supports arbitrary preserved columns", {

@@ -1078,15 +1078,15 @@ split_table_width_multiplier <- function(n_columns) {
 default_plot_background_limits <- function(forest_data,
                                            exponentiate = FALSE,
                                            include_zero = TRUE,
-                                           ref_line_value = NULL) {
+                                           ref_line = NULL) {
   xmin <- min(forest_data$conf.low, na.rm = TRUE)
   xmax <- max(forest_data$conf.high, na.rm = TRUE)
 
   if (isTRUE(include_zero)) {
-    null_value <- if (is.null(ref_line_value)) {
+    null_value <- if (is.null(ref_line)) {
       if (isTRUE(exponentiate)) 1 else 0
     } else {
-      ref_line_value
+      ref_line
     }
     xmin <- min(xmin, null_value)
     xmax <- max(xmax, null_value)

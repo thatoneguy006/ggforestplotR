@@ -47,19 +47,12 @@
 #' @param striped_rows Logical; if `TRUE`, shade alternating rows.
 #' @param stripe_fill Fill color used for shaded rows.
 #' @param stripe_colour Border color for shaded rows.
-#' @param zero_line Deprecated. Logical; if `TRUE`, draw a null reference
-#'   line. Use `ref_line` instead.
-#' @param zero_line_linetype Deprecated. Line type for the null reference
-#'   line. Use `ref_line_linetype` instead.
-#' @param zero_line_colour Deprecated. Color for the null reference line. Use
-#'   `ref_line_colour` instead.
-#' @param ref_line Logical; if `TRUE`, draw a reference line. Defaults to
-#'   `zero_line` for backward compatibility.
-#' @param ref_line_value Numeric x-value where the reference line is drawn.
-#'   Defaults to `0` for additive effects and `1` for exponentiated effects.
-#' @param ref_line_label Optional label drawn alongside the reference line.
-#' @param ref_line_linetype Line type for the reference line.
-#' @param ref_line_colour Color for the reference line.
+#' @param ref_line Numeric x-value where the reference line is drawn, or
+#'   `NULL` to hide it. When omitted, defaults to `0` for additive effects and
+#'   `1` for exponentiated effects.
+#' @param ref_label Optional label drawn alongside the reference line.
+#' @param ref_linetype Line type for the reference line.
+#' @param ref_color Color for the reference line.
 #'
 #' @return A `ggplot` object. Use standard `ggplot2` functions such as
 #'   [ggplot2::labs()] for plot labels, and add composition helpers after
@@ -107,25 +100,11 @@ ggforestplot <- function(data,
                          striped_rows = FALSE,
                          stripe_fill = "grey95",
                          stripe_colour = NA,
-                         zero_line = TRUE,
-                         zero_line_linetype = 2,
-                         zero_line_colour = "grey60",
                          ref_line = NULL,
-                         ref_line_value = NULL,
-                         ref_line_label = NULL,
-                         ref_line_linetype = NULL,
-                         ref_line_colour = NULL) {
-  if (!missing(zero_line)) {
-    warn_deprecated_argument("zero_line", "`ref_line`")
-  }
-
-  if (!missing(zero_line_linetype)) {
-    warn_deprecated_argument("zero_line_linetype", "`ref_line_linetype`")
-  }
-
-  if (!missing(zero_line_colour)) {
-    warn_deprecated_argument("zero_line_colour", "`ref_line_colour`")
-  }
+                         ref_label = NULL,
+                         ref_linetype = 2,
+                         ref_color = "grey60") {
+  ref_line_missing <- missing(ref_line)
 
   if (!missing(grouping)) {
     if (!is.null(facet)) {
@@ -150,9 +129,6 @@ ggforestplot <- function(data,
 
   sort_terms <- match.arg(sort_terms)
   facet_strip_position <- match.arg(facet_strip_position)
-  draw_ref_line <- if (is.null(ref_line)) isTRUE(zero_line) else isTRUE(ref_line)
-  ref_line_linetype <- if (is.null(ref_line_linetype)) zero_line_linetype else ref_line_linetype
-  ref_line_colour <- if (is.null(ref_line_colour)) zero_line_colour else ref_line_colour
 
   forest_data <- if (is.data.frame(data)) {
     as_forest_data(
@@ -192,16 +168,20 @@ ggforestplot <- function(data,
     axis_label <- if (isTRUE(plot_exponentiate)) "Estimate (log scale)" else "Estimate"
   }
 
-  if (is.null(ref_line_value)) {
-    ref_line_value <- if (isTRUE(plot_exponentiate)) 1 else 0
+  default_ref_line <- if (isTRUE(plot_exponentiate)) 1 else 0
+
+  if (ref_line_missing) {
+    ref_line <- default_ref_line
   }
 
-  if (!is.numeric(ref_line_value) || length(ref_line_value) != 1L || is.na(ref_line_value)) {
-    stop("`ref_line_value` must be a single numeric value.", call. = FALSE)
+  draw_ref_line <- !is.null(ref_line)
+
+  if (isTRUE(draw_ref_line) && (!is.numeric(ref_line) || length(ref_line) != 1L || is.na(ref_line))) {
+    stop("`ref_line` must be a single numeric value or `NULL`.", call. = FALSE)
   }
 
-  if (isTRUE(plot_exponentiate) && ref_line_value <= 0) {
-    stop("`ref_line_value` must be positive for exponentiated plots.", call. = FALSE)
+  if (isTRUE(plot_exponentiate) && isTRUE(draw_ref_line) && ref_line <= 0) {
+    stop("`ref_line` must be positive for exponentiated plots.", call. = FALSE)
   }
 
   display_data <- build_forest_plot_data(forest_data)
@@ -216,7 +196,7 @@ ggforestplot <- function(data,
       forest_data,
       exponentiate = plot_exponentiate,
       include_zero = draw_ref_line,
-      ref_line_value = ref_line_value
+      ref_line = ref_line
     )
 
     plot_stripe_data$xmin <- plot_x_limits[1]
@@ -294,21 +274,21 @@ ggforestplot <- function(data,
 
   if (isTRUE(draw_ref_line)) {
     p <- p + ggplot2::geom_vline(
-      xintercept = ref_line_value,
-      linetype = ref_line_linetype,
-      colour = ref_line_colour
+      xintercept = ref_line,
+      linetype = ref_linetype,
+      colour = ref_color
     )
 
-    if (!is.null(ref_line_label)) {
+    if (!is.null(ref_label)) {
       p <- p + ggplot2::annotate(
         "text",
-        x = ref_line_value,
+        x = ref_line,
         y = Inf,
-        label = ref_line_label,
+        label = ref_label,
         angle = 90,
         hjust = 1.1,
         vjust = -0.4,
-        colour = ref_line_colour
+        colour = ref_color
       )
     }
   }
@@ -348,10 +328,8 @@ ggforestplot <- function(data,
       exponentiate = plot_exponentiate,
       estimate_label = estimate_label,
       axis_label = axis_label,
-      ref_line = draw_ref_line,
-      ref_line_value = ref_line_value,
-      ref_line_label = ref_line_label,
-      zero_line = draw_ref_line
+      ref_line = ref_line,
+      ref_label = ref_label
     )
   )
 
