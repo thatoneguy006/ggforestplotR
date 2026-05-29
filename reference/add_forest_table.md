@@ -54,27 +54,26 @@ add_forest_table(
 
 - show_terms:
 
-  Whether to show the term column in the table. Soft- deprecated; use
+  Deprecated. Whether to show the term column in the table. Use
   `columns` instead.
 
 - show_n:
 
-  Whether to show the `N` column. Soft-deprecated; use `columns`
-  instead.
+  Deprecated. Whether to show the `N` column. Use `columns` instead.
 
 - show_events:
 
-  Whether to show the `Events` column. Soft-deprecated; use `columns`
+  Deprecated. Whether to show the `Events` column. Use `columns`
   instead.
 
 - show_estimate:
 
-  Whether to show the formatted estimate and confidence interval column.
-  Soft-deprecated; use `columns` instead.
+  Deprecated. Whether to show the formatted estimate and confidence
+  interval column. Use `columns` instead.
 
 - show_p:
 
-  Whether to display the p-value column. Soft-deprecated; use `columns`
+  Deprecated. Whether to display the p-value column. Use `columns`
   instead.
 
 - columns:
@@ -116,9 +115,9 @@ add_forest_table(
 
 - digits:
 
-  Number of digits used when formatting estimates and p-values. Defaults
-  to `2`. Superseded by `estimate_digits`, `interval_digits`, and
-  `p_digits` for separate control.
+  Deprecated. Number of digits used when formatting estimates and
+  p-values. Defaults to `2`. Use `estimate_digits`, `interval_digits`,
+  and `p_digits` for separate control.
 
 - estimate_digits:
 

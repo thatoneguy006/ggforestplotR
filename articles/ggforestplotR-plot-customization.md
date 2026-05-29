@@ -11,8 +11,8 @@ plots and accompanied tables.
 
 ## Group rows and control strip placement
 
-`grouping` creates section panels, and `grouping_strip_position`
-controls which side gets the strip labels.
+`facet` creates section panels, and `facet_strip_position` controls
+which side gets the strip labels.
 
 ``` r
 
@@ -29,13 +29,13 @@ coefs <- data.frame(
 
 ggforestplot(
   coefs,
-  grouping = "section",
-  grouping_strip_position = "right",
+  facet = "section",
+  facet_strip_position = "right",
   striped_rows = TRUE
 )
 ```
 
-![](ggforestplotR-plot-customization_files/figure-html/grouping-right-1.png)
+![](ggforestplotR-plot-customization_files/figure-html/facet-right-1.png)
 
 ## Distinct variable separation
 
@@ -94,8 +94,8 @@ they will be…I promise I’m getting to it).
 
 ggforestplot(
   coefs,
-  grouping = "section",
-  grouping_strip_position = "right",
+  facet = "section",
+  facet_strip_position = "right",
   n = "sample_size",
   p.value = "p_value",
   striped_rows = TRUE,
@@ -230,10 +230,10 @@ comparison_coefs <- data.frame(
 ggforestplot(
   comparison_coefs,
   group = "model",
-  grouping = "section",
+  facet = "section",
   striped_rows = TRUE,
   dodge_width = 0.5,
-  grouping_strip_position = "right"
+  facet_strip_position = "right"
 ) +
   theme(legend.position = "top") +
   scale_color_manual(values = c("#1F968BFF", "#453781FF")) +

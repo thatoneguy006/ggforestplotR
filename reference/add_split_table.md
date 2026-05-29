@@ -122,9 +122,9 @@ add_split_table(
 
 - digits:
 
-  Number of digits used when formatting estimates and p-values. Defaults
-  to `2`. Superseded by `estimate_digits`, `interval_digits`, and
-  `p_digits` for separate control.
+  Deprecated. Number of digits used when formatting estimates and
+  p-values. Defaults to `2`. Use `estimate_digits`, `interval_digits`,
+  and `p_digits` for separate control.
 
 - estimate_digits:
 

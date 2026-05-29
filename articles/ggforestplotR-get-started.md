@@ -52,7 +52,7 @@ ggforestplot(basic_coefs,
 
 ## Add grouped sections and row striping
 
-Use `grouping` when you want related variables separated into labeled
+Use `facet` when you want related variables separated into labeled
 panels. Add `striped_rows = TRUE` to color alternating rows in the plot.
 
 ``` r
@@ -67,10 +67,10 @@ sectioned_coefs <- data.frame(
 
 ggforestplot(
   sectioned_coefs,
-  grouping = "section",
+  facet = "section",
   striped_rows = TRUE,
   stripe_fill = "grey94",
-  grouping_strip_position = "right",
+  facet_strip_position = "right",
   sort_terms = "ascending"
 )
 ```

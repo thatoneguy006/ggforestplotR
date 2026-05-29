@@ -64,8 +64,10 @@ fitted model.</p>
 <span>  label <span class="op">=</span> <span class="va">term</span>,</span>
 <span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  facet <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  facet_strip_position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"left"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
 <span>  grouping <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  grouping_strip_position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"left"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
+<span>  grouping_strip_position <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  separate_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  events <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -134,13 +136,22 @@ display.</p></dd>
 <dd><p>Optional column name used for color-grouping estimates.</p></dd>
 
 
-<dt id="arg-grouping">grouping<a class="anchor" aria-label="anchor" href="#arg-grouping"></a></dt>
-<dd><p>Optional column name used to split rows into grouped plot
+<dt id="arg-facet">facet<a class="anchor" aria-label="anchor" href="#arg-facet"></a></dt>
+<dd><p>Optional column name used to split rows into faceted plot
 sections.</p></dd>
 
 
+<dt id="arg-facet-strip-position">facet_strip_position<a class="anchor" aria-label="anchor" href="#arg-facet-strip-position"></a></dt>
+<dd><p>Positioning for facet strip labels.</p></dd>
+
+
+<dt id="arg-grouping">grouping<a class="anchor" aria-label="anchor" href="#arg-grouping"></a></dt>
+<dd><p>Deprecated. Use <code>facet</code> instead.</p></dd>
+
+
 <dt id="arg-grouping-strip-position">grouping_strip_position<a class="anchor" aria-label="anchor" href="#arg-grouping-strip-position"></a></dt>
-<dd><p>Positioning for grouped section strips.</p></dd>
+<dd><p>Deprecated. Use <code>facet_strip_position</code>
+instead.</p></dd>
 
 
 <dt id="arg-separate-groups">separate_groups<a class="anchor" aria-label="anchor" href="#arg-separate-groups"></a></dt>
@@ -225,18 +236,18 @@ around each labeled block identified by <code>separate_groups</code>.</p></dd>
 
 
 <dt id="arg-zero-line">zero_line<a class="anchor" aria-label="anchor" href="#arg-zero-line"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, draw a null reference line. Superseded
-by <code>ref_line</code>.</p></dd>
+<dd><p>Deprecated. Logical; if <code>TRUE</code>, draw a null reference
+line. Use <code>ref_line</code> instead.</p></dd>
 
 
 <dt id="arg-zero-line-linetype">zero_line_linetype<a class="anchor" aria-label="anchor" href="#arg-zero-line-linetype"></a></dt>
-<dd><p>Line type for the null reference line. Superseded
-by <code>ref_line_linetype</code>.</p></dd>
+<dd><p>Deprecated. Line type for the null reference
+line. Use <code>ref_line_linetype</code> instead.</p></dd>
 
 
 <dt id="arg-zero-line-colour">zero_line_colour<a class="anchor" aria-label="anchor" href="#arg-zero-line-colour"></a></dt>
-<dd><p>Color for the null reference line. Superseded by
-<code>ref_line_colour</code>.</p></dd>
+<dd><p>Deprecated. Color for the null reference line. Use
+<code>ref_line_colour</code> instead.</p></dd>
 
 
 <dt id="arg-ref-line">ref_line<a class="anchor" aria-label="anchor" href="#arg-ref-line"></a></dt>

@@ -15,8 +15,10 @@ ggforestplot(
   label = term,
   term_labels = NULL,
   group = NULL,
+  facet = NULL,
+  facet_strip_position = c("left", "right"),
   grouping = NULL,
-  grouping_strip_position = c("left", "right"),
+  grouping_strip_position = NULL,
   separate_groups = NULL,
   n = NULL,
   events = NULL,
@@ -82,13 +84,21 @@ ggforestplot(
 
   Optional column name used for color-grouping estimates.
 
+- facet:
+
+  Optional column name used to split rows into faceted plot sections.
+
+- facet_strip_position:
+
+  Positioning for facet strip labels.
+
 - grouping:
 
-  Optional column name used to split rows into grouped plot sections.
+  Deprecated. Use `facet` instead.
 
 - grouping_strip_position:
 
-  Positioning for grouped section strips.
+  Deprecated. Use `facet_strip_position` instead.
 
 - separate_groups:
 
@@ -171,17 +181,18 @@ ggforestplot(
 
 - zero_line:
 
-  Logical; if `TRUE`, draw a null reference line. Superseded by
-  `ref_line`.
+  Deprecated. Logical; if `TRUE`, draw a null reference line. Use
+  `ref_line` instead.
 
 - zero_line_linetype:
 
-  Line type for the null reference line. Superseded by
-  `ref_line_linetype`.
+  Deprecated. Line type for the null reference line. Use
+  `ref_line_linetype` instead.
 
 - zero_line_colour:
 
-  Color for the null reference line. Superseded by `ref_line_colour`.
+  Deprecated. Color for the null reference line. Use `ref_line_colour`
+  instead.
 
 - ref_line:
 

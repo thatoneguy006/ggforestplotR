@@ -2,6 +2,8 @@
 
 ## ggforestplotR 0.2.0
 
+CRAN release: 2026-05-20
+
 ### Major Changes
 
 - Added separate table formatting controls for point estimates,
