@@ -41,6 +41,8 @@
     stop("`plot` must be created by `ggforestplot()` before calling `add_forest_table()`.", call. = FALSE)
   }
 
+  state <- align_forest_state_to_plot_y_scale(state, plot)
+
   if (is.null(show_n)) {
     show_n <- any(!is.na(state$forest_data$n) & nzchar(state$forest_data$n))
   }
@@ -188,15 +190,15 @@
 #'   `+ add_forest_table(...)` syntax.
 #' @param position Whether to place the table on the left or right of the
 #'   forest plot.
-#' @param show_terms Whether to show the term column in the table. Soft-
-#'   deprecated; use `columns` instead.
-#' @param show_n Whether to show the `N` column. Soft-deprecated; use
+#' @param show_terms Deprecated. Whether to show the term column in the table.
+#'   Use `columns` instead.
+#' @param show_n Deprecated. Whether to show the `N` column. Use `columns`
+#'   instead.
+#' @param show_events Deprecated. Whether to show the `Events` column. Use
 #'   `columns` instead.
-#' @param show_events Whether to show the `Events` column. Soft-deprecated;
-#'   use `columns` instead.
-#' @param show_estimate Whether to show the formatted estimate and confidence
-#'   interval column. Soft-deprecated; use `columns` instead.
-#' @param show_p Whether to display the p-value column. Soft-deprecated; use
+#' @param show_estimate Deprecated. Whether to show the formatted estimate and
+#'   confidence interval column. Use `columns` instead.
+#' @param show_p Deprecated. Whether to display the p-value column. Use
 #'   `columns` instead.
 #' @param columns Optional explicit columns to display in the side table, in
 #'   the order they should appear. Accepts built-in names such as `"term"`,
@@ -214,9 +216,9 @@
 #'   headers. Names should match values supplied to `columns` after column
 #'   resolution, such as `"term"`, `"estimate"`, `"ci"`, `"p"`, or an arbitrary
 #'   original dataframe column.
-#' @param digits Number of digits used when formatting estimates and p-values.
-#'   Defaults to `2`. Superseded by `estimate_digits`, `interval_digits`, and
-#'   `p_digits` for separate control.
+#' @param digits Deprecated. Number of digits used when formatting estimates
+#'   and p-values. Defaults to `2`. Use `estimate_digits`, `interval_digits`,
+#'   and `p_digits` for separate control.
 #' @param estimate_digits Number of digits used for point estimates.
 #' @param interval_digits Number of digits used for confidence interval bounds.
 #' @param p_digits Number of digits used for p-values.
@@ -305,6 +307,30 @@ add_forest_table <- function(plot = NULL,
                              grid_line_colour = "black",
                              grid_line_size = 0.3,
                              grid_line_linetype = 1) {
+  if (!missing(show_terms)) {
+    warn_deprecated_argument("show_terms", "`columns`")
+  }
+
+  if (!missing(show_n)) {
+    warn_deprecated_argument("show_n", "`columns`")
+  }
+
+  if (!missing(show_events)) {
+    warn_deprecated_argument("show_events", "`columns`")
+  }
+
+  if (!missing(show_estimate)) {
+    warn_deprecated_argument("show_estimate", "`columns`")
+  }
+
+  if (!missing(show_p)) {
+    warn_deprecated_argument("show_p", "`columns`")
+  }
+
+  if (!missing(digits)) {
+    warn_deprecated_argument("digits", "`estimate_digits`, `interval_digits`, and `p_digits`")
+  }
+
   position <- match.arg(position)
 
   if (is.null(plot)) {

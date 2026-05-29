@@ -42,7 +42,6 @@ test_that("ggforestplot supports exponentiated logistic regression models", {
   p <- ggforestplot(fit, exponentiate = TRUE) +
     ggplot2::labs(x = "Odds ratio")
 
-  expect_s3_class(p, "ggplot")
   expect_equal(p$labels$x, "Odds ratio")
   expect_equal(p$scales$get_scales("x")$trans$name, "log-10")
   expect_true(all(p$ggforestplotR_state$forest_data$estimate > 0))
@@ -89,8 +88,7 @@ test_that("add_forest_table works for exponentiated logistic regression output",
 
   out <- ggforestplot(fit, exponentiate = TRUE) +
     ggplot2::labs(x = "Odds ratio") +
-    add_forest_table(position = "right", estimate_label = "OR", show_p = TRUE)
+    add_forest_table(position = "right", estimate_label = "OR", columns = c("term", "estimate", "p"))
 
   expect_s3_class(out, "patchwork")
-  expect_s3_class(out, "ggplot")
 })

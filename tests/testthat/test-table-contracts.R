@@ -16,9 +16,7 @@ test_that("add_forest_table returns a two-panel patchwork", {
   out <- add_forest_table(
     p,
     position = "left",
-    show_n = TRUE,
-    show_events = TRUE,
-    show_p = TRUE,
+    columns = c("term", "n", "events", "estimate", "p"),
     estimate_label = "Beta"
   )
 
@@ -32,7 +30,7 @@ test_that("add_forest_table returns a two-panel patchwork", {
 test_that("add_forest_table supports ggplot add syntax as a terminal step", {
   out <- ggforestplot(make_contract_data(), n = "sample_size", events = "event_count", p.value = "p_value") +
     ggplot2::labs(title = "Contract") +
-    add_forest_table(position = "right", show_n = TRUE, show_events = TRUE, show_p = TRUE)
+    add_forest_table(position = "right", columns = c("term", "n", "events", "estimate", "p"))
 
   expect_s3_class(out, "patchwork")
   expect_s3_class(out, "ggplot")

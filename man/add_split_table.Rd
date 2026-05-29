@@ -87,9 +87,9 @@ headers. Names should match values supplied to \code{left_columns} or
 \code{right_columns} after column resolution, such as \code{"term"}, \code{"estimate"},
 \code{"ci"}, \code{"p"}, or an arbitrary original dataframe column.}
 
-\item{digits}{Number of digits used when formatting estimates and p-values.
-Defaults to \code{2}. Superseded by \code{estimate_digits}, \code{interval_digits}, and
-\code{p_digits} for separate control.}
+\item{digits}{Deprecated. Number of digits used when formatting estimates
+and p-values. Defaults to \code{2}. Use \code{estimate_digits}, \code{interval_digits},
+and \code{p_digits} for separate control.}
 
 \item{estimate_digits}{Number of digits used for point estimates.}
 

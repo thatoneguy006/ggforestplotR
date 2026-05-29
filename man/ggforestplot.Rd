@@ -13,8 +13,10 @@ ggforestplot(
   label = term,
   term_labels = NULL,
   group = NULL,
+  facet = NULL,
+  facet_strip_position = c("left", "right"),
   grouping = NULL,
-  grouping_strip_position = c("left", "right"),
+  grouping_strip_position = NULL,
   separate_groups = NULL,
   n = NULL,
   events = NULL,
@@ -63,10 +65,15 @@ display.}
 
 \item{group}{Optional column name used for color-grouping estimates.}
 
-\item{grouping}{Optional column name used to split rows into grouped plot
+\item{facet}{Optional column name used to split rows into faceted plot
 sections.}
 
-\item{grouping_strip_position}{Positioning for grouped section strips.}
+\item{facet_strip_position}{Positioning for facet strip labels.}
+
+\item{grouping}{Deprecated. Use \code{facet} instead.}
+
+\item{grouping_strip_position}{Deprecated. Use \code{facet_strip_position}
+instead.}
 
 \item{separate_groups}{Optional column name used to identify labeled
 variable blocks that can be outlined with grid lines.}
@@ -113,14 +120,14 @@ around each labeled block identified by \code{separate_groups}.}
 
 \item{stripe_colour}{Border color for shaded rows.}
 
-\item{zero_line}{Logical; if \code{TRUE}, draw a null reference line. Superseded
-by \code{ref_line}.}
+\item{zero_line}{Deprecated. Logical; if \code{TRUE}, draw a null reference
+line. Use \code{ref_line} instead.}
 
-\item{zero_line_linetype}{Line type for the null reference line. Superseded
-by \code{ref_line_linetype}.}
+\item{zero_line_linetype}{Deprecated. Line type for the null reference
+line. Use \code{ref_line_linetype} instead.}
 
-\item{zero_line_colour}{Color for the null reference line. Superseded by
-\code{ref_line_colour}.}
+\item{zero_line_colour}{Deprecated. Color for the null reference line. Use
+\code{ref_line_colour} instead.}
 
 \item{ref_line}{Logical; if \code{TRUE}, draw a reference line. Defaults to
 \code{zero_line} for backward compatibility.}

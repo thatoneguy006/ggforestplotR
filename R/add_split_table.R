@@ -38,6 +38,8 @@
     stop("`plot` must be created by `ggforestplot()` before calling `add_split_table()`.", call. = FALSE)
   }
 
+  state <- align_forest_state_to_plot_y_scale(state, plot)
+
   if (is.null(show_n)) {
     show_n <- any(!is.na(state$forest_data$n) & nzchar(state$forest_data$n))
   }
@@ -306,9 +308,9 @@
 #'   headers. Names should match values supplied to `left_columns` or
 #'   `right_columns` after column resolution, such as `"term"`, `"estimate"`,
 #'   `"ci"`, `"p"`, or an arbitrary original dataframe column.
-#' @param digits Number of digits used when formatting estimates and p-values.
-#'   Defaults to `2`. Superseded by `estimate_digits`, `interval_digits`, and
-#'   `p_digits` for separate control.
+#' @param digits Deprecated. Number of digits used when formatting estimates
+#'   and p-values. Defaults to `2`. Use `estimate_digits`, `interval_digits`,
+#'   and `p_digits` for separate control.
 #' @param estimate_digits Number of digits used for point estimates.
 #' @param interval_digits Number of digits used for confidence interval bounds.
 #' @param p_digits Number of digits used for p-values.
@@ -401,6 +403,10 @@ add_split_table <- function(plot = NULL,
                             left_width = NULL,
                             plot_width = NULL,
                             right_width = NULL) {
+  if (!missing(digits)) {
+    warn_deprecated_argument("digits", "`estimate_digits`, `interval_digits`, and `p_digits`")
+  }
+
   if (is.null(plot)) {
     return(structure(
       list(

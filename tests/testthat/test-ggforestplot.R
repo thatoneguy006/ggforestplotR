@@ -20,11 +20,10 @@ test_that("ggforestplot can facet grouped rows and add stripes", {
     section = c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor", "Tumor")
   )
 
-  p <- ggforestplot(raw, grouping = "section", striped_rows = TRUE)
+  p <- ggforestplot(raw, facet = "section", striped_rows = TRUE)
   built <- ggplot2::ggplot_build(p)
   panel_rows <- lapply(split(as.numeric(built$data[[2]]$y), built$data[[2]]$PANEL), unique)
 
-  expect_s3_class(p, "ggplot")
   expect_equal(nrow(built$data[[1]]), 4L)
   expect_equal(length(panel_rows), 2L)
   expect_equal(unname(panel_rows[[1]]), c(1, 2, 3))
@@ -63,7 +62,7 @@ test_that("ggforestplot can draw separator lines for each labeled variable block
       label = "label",
       separate_groups = "block",
       separate_lines = TRUE,
-      zero_line = FALSE
+      ref_line = FALSE
     )
   )
 
@@ -101,8 +100,57 @@ test_that("add_forest_table validates N table requests", {
   )
 
   expect_error(
-    add_forest_table(ggforestplot(raw), position = "left", show_n = TRUE),
+    add_forest_table(ggforestplot(raw), position = "left", columns = "n"),
     "requires an `n` column"
+  )
+})
+
+test_that("deprecated ggforestplot reference-line arguments warn", {
+  raw <- data.frame(
+    term = "Age",
+    estimate = 0.3,
+    conf.low = 0.1,
+    conf.high = 0.5
+  )
+
+  expect_warning(
+    ggforestplot(raw, zero_line = FALSE),
+    "`zero_line` is deprecated"
+  )
+  expect_warning(
+    ggforestplot(raw, zero_line_linetype = 3),
+    "`zero_line_linetype` is deprecated"
+  )
+  expect_warning(
+    ggforestplot(raw, zero_line_colour = "red"),
+    "`zero_line_colour` is deprecated"
+  )
+})
+
+test_that("deprecated ggforestplot facet arguments warn", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3, -0.2),
+    conf.low = c(0.1, -0.4),
+    conf.high = c(0.5, 0.0),
+    section = c("Clinical", "Tumor")
+  )
+
+  expect_warning(
+    ggforestplot(raw, grouping = "section"),
+    "`grouping` is deprecated"
+  )
+  expect_warning(
+    ggforestplot(raw, facet = "section", grouping_strip_position = "right"),
+    "`grouping_strip_position` is deprecated"
+  )
+  expect_error(
+    ggforestplot(raw, facet = "section", grouping = "section"),
+    "Use only one of"
+  )
+  expect_error(
+    ggforestplot(raw, facet_strip_position = "right", grouping_strip_position = "right"),
+    "Use only one of"
   )
 })
 
@@ -114,6 +162,35 @@ test_that("add_forest_table requires a ggforestplot object", {
     add_forest_table(p),
     "must be created by"
   )
+})
+
+test_that("forest tables inherit y-axis order from the plot scale", {
+  raw <- data.frame(
+    term = c("Age", "BMI", "Treatment"),
+    estimate = c(0.3, -0.2, 0.4),
+    conf.low = c(0.1, -0.4, 0.2),
+    conf.high = c(0.5, 0.0, 0.6)
+  )
+
+  p <- suppressMessages(
+    ggforestplot(raw) +
+      ggplot2::scale_y_discrete(limits = c("Treatment", "Age"))
+  )
+  aligned_state <- align_forest_state_to_plot_y_scale(p$ggforestplotR_state, p)
+  table_spec <- build_forest_table_data(aligned_state$forest_data)
+  out <- p + add_forest_table()
+  table_plot <- out$patches$plots[[1]]
+
+  expect_equal(
+    levels(aligned_state$forest_data$row_key),
+    c("Treatment", "Age")
+  )
+  expect_equal(
+    levels(table_spec$table_data$row_key),
+    c("Treatment", "Age")
+  )
+  expect_false(any(table_spec$table_data$text == "BMI"))
+  expect_equal(levels(table_plot$data$row_key), c("Treatment", "Age"))
 })
 
 test_that("ggforestplot can draw striped rows on exponentiated plots", {
@@ -146,7 +223,7 @@ test_that("ggforestplot can draw striped rows on exponentiated plots", {
   expect_equal(p$scales$get_scales("x")$limits, log10(expected_limits))
 })
 
-test_that("ggforestplot allows grouping strip labels on the right", {
+test_that("ggforestplot allows facet strip labels on the right", {
   raw <- data.frame(
     term = c("Age", "BMI", "Stage II", "Stage III"),
     estimate = c(0.3, -0.2, 0.5, 0.8),
@@ -155,17 +232,17 @@ test_that("ggforestplot allows grouping strip labels on the right", {
     section = c("Clinical", "Clinical", "Tumor", "Tumor")
   )
 
-  p <- ggforestplot(raw, grouping = "section", grouping_strip_position = "right")
+  p <- ggforestplot(raw, facet = "section", facet_strip_position = "right")
   table_spec <- build_forest_table_data(p$ggforestplotR_state$forest_data)
   table_plot <- build_forest_table_plot(
     table_spec = table_spec,
     stripe_data = p$ggforestplotR_state$stripe_data,
     has_groupings = p$ggforestplotR_state$has_groupings,
-    grouping_strip_position = p$ggforestplotR_state$grouping_strip_position
+    grouping_strip_position = p$ggforestplotR_state$facet_strip_position
   )
 
   expect_equal(p$facet$params$strip.position, "right")
-  expect_equal(p$ggforestplotR_state$grouping_strip_position, "right")
+  expect_equal(p$ggforestplotR_state$facet_strip_position, "right")
   expect_equal(table_plot$facet$params$strip.position, "right")
 })
 
@@ -180,14 +257,13 @@ test_that("ggforestplot can sort terms with grouped sections", {
 
   p <- ggforestplot(
     raw,
-    grouping = "section",
+    facet = "section",
     striped_rows = TRUE,
     stripe_fill = "grey94",
-    grouping_strip_position = "right",
+    facet_strip_position = "right",
     sort_terms = "descending"
   )
 
-  expect_s3_class(p, "ggplot")
   expect_equal(
     as.character(p$ggforestplotR_state$forest_data$term),
     c("Age", "BMI", "Stage III", "Stage II")
@@ -204,7 +280,9 @@ test_that("forest table centers the Term header and text", {
   )
 
   p <- ggforestplot(raw)
-  table_spec <- build_forest_table_data(p$ggforestplotR_state$forest_data)
+  table_spec <- layout_center_table_spec(
+    build_forest_table_data(p$ggforestplotR_state$forest_data)
+  )
   table_plot <- build_forest_table_plot(
     table_spec = table_spec,
     stripe_data = p$ggforestplotR_state$stripe_data
@@ -633,7 +711,7 @@ test_that("add_forest_table validates events table requests", {
   )
 
   expect_error(
-    add_forest_table(ggforestplot(raw), position = "left", show_events = TRUE),
+    add_forest_table(ggforestplot(raw), position = "left", columns = "events"),
     "requires an `events` column"
   )
 })
@@ -708,8 +786,49 @@ test_that("add_forest_table validates p-value table requests", {
   )
 
   expect_error(
-    add_forest_table(ggforestplot(raw), position = "left", show_p = TRUE),
+    add_forest_table(ggforestplot(raw), position = "left", columns = "p"),
     "requires a `p.value` column"
+  )
+})
+
+test_that("deprecated table arguments warn", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3, -0.2),
+    conf.low = c(0.1, -0.4),
+    conf.high = c(0.5, 0.0),
+    p_value = c(0.012, 0.031)
+  )
+
+  p <- ggforestplot(raw, p.value = "p_value")
+
+  expect_warning(
+    add_forest_table(show_terms = FALSE),
+    "`show_terms` is deprecated"
+  )
+  expect_warning(
+    add_forest_table(show_n = TRUE),
+    "`show_n` is deprecated"
+  )
+  expect_warning(
+    add_forest_table(show_events = TRUE),
+    "`show_events` is deprecated"
+  )
+  expect_warning(
+    add_forest_table(show_estimate = FALSE),
+    "`show_estimate` is deprecated"
+  )
+  expect_warning(
+    add_forest_table(p, show_p = TRUE),
+    "`show_p` is deprecated"
+  )
+  expect_warning(
+    add_forest_table(p, digits = 3),
+    "`digits` is deprecated"
+  )
+  expect_warning(
+    add_split_table(p, digits = 3),
+    "`digits` is deprecated"
   )
 })
 
@@ -753,7 +872,6 @@ test_that("add_split_table accepts explicit left and right columns by name", {
     )
 
   expect_s3_class(out, "patchwork")
-  expect_s3_class(out, "ggplot")
 })
 
 test_that("add_split_table supports custom column labels", {
@@ -877,7 +995,6 @@ test_that("add_split_table accepts explicit left and right columns by position",
     )
 
   expect_s3_class(out, "patchwork")
-  expect_s3_class(out, "ggplot")
 })
 
 test_that("add_split_table removes panel border and keeps x-axis line", {

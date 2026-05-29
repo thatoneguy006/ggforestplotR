@@ -162,6 +162,13 @@ resolve_table_digits <- function(digits = NULL,
   )
 }
 
+warn_deprecated_argument <- function(arg, replacement) {
+  rlang::warn(
+    sprintf("`%s` is deprecated; use %s instead.", arg, replacement),
+    class = "ggforestplotR_deprecated_argument"
+  )
+}
+
 apply_term_labels <- function(term, label, term_labels = NULL) {
   if (is.null(term_labels)) {
     return(label)
@@ -578,6 +585,66 @@ build_forest_plot_data <- function(data) {
 }
 
 # ─── Table data construction ─────────────────────────────────────────────────
+
+extract_trained_y_limits <- function(plot) {
+  built <- tryCatch(
+    ggplot2::ggplot_build(plot),
+    error = function(e) NULL
+  )
+
+  if (is.null(built) || is.null(built$layout) || is.null(built$layout$panel_params)) {
+    return(NULL)
+  }
+
+  limits <- unlist(lapply(built$layout$panel_params, function(panel) {
+    y_scale <- panel$y
+
+    if (!is.null(y_scale) && is.function(y_scale$get_limits)) {
+      return(y_scale$get_limits())
+    }
+
+    NULL
+  }), use.names = FALSE)
+
+  limits <- as.character(limits)
+  limits <- limits[!is.na(limits) & nzchar(limits)]
+
+  if (length(limits) == 0L) {
+    return(NULL)
+  }
+
+  unique(limits)
+}
+
+align_forest_state_to_plot_y_scale <- function(state, plot) {
+  row_levels <- levels(state$forest_data$row_key)
+  y_limits <- extract_trained_y_limits(plot)
+
+  if (is.null(row_levels) || is.null(y_limits)) {
+    return(state)
+  }
+
+  matched_limits <- y_limits[y_limits %in% row_levels]
+
+  if (length(matched_limits) == 0L || identical(matched_limits, row_levels)) {
+    return(state)
+  }
+
+  keep_rows <- as.character(state$forest_data$row_key) %in% matched_limits
+  aligned_data <- state$forest_data[keep_rows, , drop = FALSE]
+  aligned_data$row_key <- factor(as.character(aligned_data$row_key), levels = matched_limits)
+
+  source_columns <- attr(state$forest_data, "source_columns")
+  if (!is.null(source_columns)) {
+    source_columns <- source_columns[keep_rows, , drop = FALSE]
+    attr(aligned_data, "source_columns") <- source_columns
+  }
+
+  aligned_state <- state
+  aligned_state$forest_data <- aligned_data
+  aligned_state$stripe_data <- build_stripe_rectangles(aligned_data, state$has_groupings)
+  aligned_state
+}
 
 build_forest_table_data <- function(data,
                                     show_terms = TRUE,
