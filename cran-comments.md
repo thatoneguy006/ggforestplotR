@@ -4,7 +4,7 @@
 
 ## R CMD check results
 
-- `R CMD check ggforestplotR_0.2.0.tar.gz --as-cran`
+- `R CMD check ggforestplotR_0.2.1.tar.gz --as-cran`
 - Status: OK
 0 errors | 0 warnings | 0 notes
 
