@@ -1120,6 +1120,7 @@ build_forest_table_plot <- function(table_spec,
                                     striped_rows = FALSE,
                                     stripe_fill = "grey95",
                                     stripe_colour = NA,
+                                    stripe_alpha = 1,
                                     text_size = 3.2,
                                     grid_lines = FALSE,
                                     grid_line_colour = "black",
@@ -1158,7 +1159,8 @@ build_forest_table_plot <- function(table_spec,
       ),
       inherit.aes = FALSE,
       fill = stripe_fill,
-      colour = stripe_colour
+      colour = stripe_colour,
+      alpha = stripe_alpha
     )
   }
 

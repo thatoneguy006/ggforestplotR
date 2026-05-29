@@ -32,6 +32,7 @@ add_forest_table(
   striped_rows = NULL,
   stripe_fill = NULL,
   stripe_colour = NULL,
+  stripe_alpha = NULL,
   grid_lines = FALSE,
   grid_line_colour = "black",
   grid_line_size = 0.3,
@@ -122,6 +123,9 @@ stripe fill used in \code{\link[=ggforestplot]{ggforestplot()}}.}
 
 \item{stripe_colour}{Outline colour for striped rows. Defaults to the
 stripe outline used in \code{\link[=ggforestplot]{ggforestplot()}}.}
+
+\item{stripe_alpha}{Transparency for striped rows. Defaults to the stripe
+alpha used in \code{\link[=ggforestplot]{ggforestplot()}}.}
 
 \item{grid_lines}{Whether to draw black horizontal grid lines in the table.}
 

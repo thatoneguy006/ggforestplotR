@@ -35,7 +35,8 @@
 #'   `"ascending"`.
 #' @param point_size Point size for coefficient markers.
 #' @param point_shape Shape used for coefficient markers.
-#' @param line_size Line width for confidence intervals.
+#' @param linewidth Line width for confidence intervals.
+#' @param line_size Deprecated. Use `linewidth` instead.
 #' @param staple_width Width of the terminal staples on confidence interval
 #'   lines.
 #' @param dodge_width Horizontal dodging used for grouped estimates.
@@ -47,6 +48,7 @@
 #' @param striped_rows Logical; if `TRUE`, shade alternating rows.
 #' @param stripe_fill Fill color used for shaded rows.
 #' @param stripe_colour Border color for shaded rows.
+#' @param stripe_alpha Transparency for shaded rows.
 #' @param ref_line Numeric x-value where the reference line is drawn, or
 #'   `NULL` to hide it. When omitted, defaults to `0` for additive effects and
 #'   `1` for exponentiated effects.
@@ -90,7 +92,8 @@ ggforestplot <- function(data,
                          sort_terms = c("none", "descending", "ascending"),
                          point_size = 2.3,
                          point_shape = 19,
-                         line_size = 0.5,
+                         linewidth = 0.5,
+                         line_size = NULL,
                          staple_width = 0.2,
                          dodge_width = 0.6,
                          separate_lines = FALSE,
@@ -100,11 +103,21 @@ ggforestplot <- function(data,
                          striped_rows = FALSE,
                          stripe_fill = "grey95",
                          stripe_colour = NA,
+                         stripe_alpha = 1,
                          ref_line = NULL,
                          ref_label = NULL,
                          ref_linetype = 2,
                          ref_color = "grey60") {
   ref_line_missing <- missing(ref_line)
+
+  if (!missing(line_size)) {
+    if (!missing(linewidth)) {
+      stop("Use only one of `linewidth` or deprecated `line_size`.", call. = FALSE)
+    }
+
+    warn_deprecated_argument("line_size", "`linewidth`")
+    linewidth <- line_size
+  }
 
   if (!missing(grouping)) {
     if (!is.null(facet)) {
@@ -235,7 +248,8 @@ ggforestplot <- function(data,
       ),
       inherit.aes = FALSE,
       fill = stripe_fill,
-      colour = stripe_colour
+      colour = stripe_colour,
+      alpha = stripe_alpha
     )
   }
 
@@ -253,7 +267,7 @@ ggforestplot <- function(data,
   p <- p +
     ggplot2::geom_errorbar(
       width = staple_width,
-      linewidth = line_size,
+      linewidth = linewidth,
       position = dodge,
       orientation = "y"
     ) +
@@ -325,6 +339,7 @@ ggforestplot <- function(data,
       striped_rows = striped_rows,
       stripe_fill = stripe_fill,
       stripe_colour = stripe_colour,
+      stripe_alpha = stripe_alpha,
       exponentiate = plot_exponentiate,
       estimate_label = estimate_label,
       axis_label = axis_label,

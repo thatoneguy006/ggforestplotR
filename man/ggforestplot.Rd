@@ -25,7 +25,8 @@ ggforestplot(
   sort_terms = c("none", "descending", "ascending"),
   point_size = 2.3,
   point_shape = 19,
-  line_size = 0.5,
+  linewidth = 0.5,
+  line_size = NULL,
   staple_width = 0.2,
   dodge_width = 0.6,
   separate_lines = FALSE,
@@ -35,6 +36,7 @@ ggforestplot(
   striped_rows = FALSE,
   stripe_fill = "grey95",
   stripe_colour = NA,
+  stripe_alpha = 1,
   ref_line = NULL,
   ref_label = NULL,
   ref_linetype = 2,
@@ -94,7 +96,9 @@ ratios for Cox models.}
 
 \item{point_shape}{Shape used for coefficient markers.}
 
-\item{line_size}{Line width for confidence intervals.}
+\item{linewidth}{Line width for confidence intervals.}
+
+\item{line_size}{Deprecated. Use \code{linewidth} instead.}
 
 \item{staple_width}{Width of the terminal staples on confidence interval
 lines.}
@@ -115,6 +119,8 @@ around each labeled block identified by \code{separate_groups}.}
 \item{stripe_fill}{Fill color used for shaded rows.}
 
 \item{stripe_colour}{Border color for shaded rows.}
+
+\item{stripe_alpha}{Transparency for shaded rows.}
 
 \item{ref_line}{Numeric x-value where the reference line is drawn, or
 \code{NULL} to hide it. When omitted, defaults to \code{0} for additive effects and

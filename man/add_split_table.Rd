@@ -32,6 +32,7 @@ add_split_table(
   striped_rows = NULL,
   stripe_fill = NULL,
   stripe_colour = NULL,
+  stripe_alpha = NULL,
   left_width = NULL,
   plot_width = NULL,
   right_width = NULL
@@ -127,6 +128,9 @@ stripe fill used in \code{\link[=ggforestplot]{ggforestplot()}}.}
 
 \item{stripe_colour}{Outline colour for striped rows. Defaults to the
 stripe outline used in \code{\link[=ggforestplot]{ggforestplot()}}.}
+
+\item{stripe_alpha}{Transparency for striped rows. Defaults to the stripe
+alpha used in \code{\link[=ggforestplot]{ggforestplot()}}.}
 
 \item{left_width}{Optional width allocated to the left table block. By
 default this is derived from the number of displayed left-side columns

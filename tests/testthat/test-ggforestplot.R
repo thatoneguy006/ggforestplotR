@@ -20,17 +20,19 @@ test_that("ggforestplot can facet grouped rows and add stripes", {
     section = c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor", "Tumor")
   )
 
-  p <- ggforestplot(raw, facet = "section", striped_rows = TRUE)
+  p <- ggforestplot(raw, facet = "section", striped_rows = TRUE, stripe_alpha = 0.35)
   built <- ggplot2::ggplot_build(p)
   panel_rows <- lapply(split(as.numeric(built$data[[2]]$y), built$data[[2]]$PANEL), unique)
 
   expect_equal(nrow(built$data[[1]]), 4L)
+  expect_true(all(built$data[[1]]$alpha == 0.35))
+  expect_equal(p$ggforestplotR_state$defaults$stripe_alpha, 0.35)
   expect_equal(length(panel_rows), 2L)
   expect_equal(unname(panel_rows[[1]]), c(1, 2, 3))
   expect_equal(unname(panel_rows[[2]]), c(1, 2, 3))
 })
 
-test_that("ggforestplot supports shape and staple width controls", {
+test_that("ggforestplot supports point and interval geometry controls", {
   raw <- data.frame(
     term = c("Age", "BMI"),
     estimate = c(0.3, -0.2),
@@ -39,10 +41,11 @@ test_that("ggforestplot supports shape and staple width controls", {
   )
 
   built <- ggplot2::ggplot_build(
-    ggforestplot(raw, point_shape = 17, staple_width = 0.25)
+    ggforestplot(raw, point_shape = 17, linewidth = 0.8, staple_width = 0.25)
   )
 
   expect_true(all(built$data[[2]]$shape == 17))
+  expect_true(all(built$data[[1]]$linewidth == 0.8))
   expect_true(all(built$data[[1]]$width == 0.25))
 })
 
@@ -130,6 +133,42 @@ test_that("deprecated ggforestplot facet arguments warn", {
     ggforestplot(raw, facet_strip_position = "right", grouping_strip_position = "right"),
     "Use only one of"
   )
+})
+
+test_that("deprecated ggforestplot line_size argument warns", {
+  raw <- data.frame(
+    term = c("Age", "BMI"),
+    estimate = c(0.3, -0.2),
+    conf.low = c(0.1, -0.4),
+    conf.high = c(0.5, 0.0)
+  )
+
+  expect_warning(
+    ggforestplot(raw, line_size = 0.8),
+    "`line_size` is deprecated"
+  )
+  expect_error(
+    ggforestplot(raw, linewidth = 0.8, line_size = 0.6),
+    "Use only one of"
+  )
+})
+
+test_that("table helpers use stripe alpha from plots and overrides", {
+  raw <- data.frame(
+    term = c("Age", "BMI", "Treatment"),
+    estimate = c(0.3, -0.2, 0.4),
+    conf.low = c(0.1, -0.4, 0.2),
+    conf.high = c(0.5, 0.0, 0.6)
+  )
+
+  p <- ggforestplot(raw, striped_rows = TRUE, stripe_alpha = 0.35)
+  table_out <- add_forest_table(p, position = "left")
+  table_plot <- table_out$patches$plots[[1]]
+  split_out <- add_split_table(p, stripe_alpha = 0.6)
+  left_table <- split_out$patches$plots[[1]]
+
+  expect_true(all(ggplot2::ggplot_build(table_plot)$data[[1]]$alpha == 0.35))
+  expect_true(all(ggplot2::ggplot_build(left_table)$data[[1]]$alpha == 0.6))
 })
 
 test_that("add_forest_table requires a ggforestplot object", {
