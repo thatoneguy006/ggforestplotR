@@ -2,6 +2,8 @@
 
 ## ggforestplotR 0.2.1
 
+CRAN release: 2026-05-30
+
 ### Breaking Changes
 
 - Simplified the reference-line API in
