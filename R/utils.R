@@ -425,12 +425,37 @@ prefix_ambiguous_labels <- function(data, has_groupings) {
   data
 }
 
-#' Assign a unique row_key per label within each panel and set factor levels
-#' in display order.
+#' Identify labels that need panel-qualified row keys.
+#' @keywords internal
+#' @noRd
+labels_requiring_panel_keys <- function(data, has_groupings) {
+  if (!isTRUE(has_groupings)) {
+    return(character())
+  }
+
+  panel_labels <- unique(data[c("grouping_panel", "label")])
+  label_counts <- table(panel_labels$label)
+  names(label_counts[label_counts > 1L])
+}
+
+make_panel_row_keys <- function(panel, labels, panel_key_labels) {
+  labels <- as.character(labels)
+
+  if (length(panel_key_labels) == 0L) {
+    return(labels)
+  }
+
+  ifelse(labels %in% panel_key_labels, paste(panel, labels, sep = "___"), labels)
+}
+
+#' Assign a row_key per label within each panel and set factor levels in display
+#' order. Facet names are encoded only when a visible label is reused across
+#' panels and needs a unique internal key.
 #' @keywords internal
 #' @noRd
 assign_row_keys <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
+  panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
   data$row_key <- NA_character_
   all_levels <- character()
 
@@ -438,7 +463,7 @@ assign_row_keys <- function(data, has_groupings) {
     idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
     panel_labels <- unique(data$label[idx])
 
-    keys <- if (has_groupings) paste(pv, panel_labels, sep = "___") else panel_labels
+    keys <- make_panel_row_keys(pv, panel_labels, panel_key_labels)
     row_map <- stats::setNames(keys, panel_labels)
 
     data$row_key[idx] <- unname(row_map[data$label[idx]])
@@ -454,12 +479,13 @@ assign_row_keys <- function(data, has_groupings) {
 #' @noRd
 build_axis_labels <- function(data, has_groupings) {
   panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
+  panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
   labels <- character()
 
   for (pv in panel_values) {
     idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
     panel_labels <- unique(data$label[idx])
-    keys <- if (has_groupings) paste(pv, panel_labels, sep = "___") else panel_labels
+    keys <- make_panel_row_keys(pv, panel_labels, panel_key_labels)
     labels <- c(labels, stats::setNames(panel_labels, keys))
   }
 

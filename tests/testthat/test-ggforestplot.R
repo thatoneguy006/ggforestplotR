@@ -32,6 +32,36 @@ test_that("ggforestplot can facet grouped rows and add stripes", {
   expect_equal(unname(panel_rows[[2]]), c(1, 2, 3))
 })
 
+test_that("faceted ggforestplot supports visible labels in scale_y_discrete limits", {
+  raw <- data.frame(
+    term = c("Age", "BMI", "Smoking", "Stage II", "Stage III", "Nodes"),
+    estimate = c(0.3, -0.2, 0.4, 0.5, 0.8, 0.4),
+    conf.low = c(0.1, -0.4, 0.2, 0.2, 0.4, 0.1),
+    conf.high = c(0.5, 0.0, 0.6, 0.8, 1.2, 0.7),
+    section = c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor", "Tumor")
+  )
+
+  p <- suppressMessages(
+    ggforestplot(raw, facet = "section") +
+      ggplot2::scale_y_discrete(limits = c("Smoking", "Age", "Stage II"))
+  )
+  built <- ggplot2::ggplot_build(p)
+  panel_limits <- lapply(built$layout$panel_params, function(panel) panel$y$get_limits())
+  aligned_state <- align_forest_state_to_plot_y_scale(p$ggforestplotR_state, p)
+  out <- p + add_forest_table()
+  table_plot <- out$patches$plots[[1]]
+
+  expect_equal(sum(!is.na(built$data[[1]]$y)), 3L)
+  expect_equal(sum(!is.na(built$data[[2]]$y)), 3L)
+  expect_equal(panel_limits[[1]], c("Smoking", "Age"))
+  expect_equal(panel_limits[[2]], "Stage II")
+  expect_equal(
+    levels(aligned_state$forest_data$row_key),
+    c("Smoking", "Age", "Stage II")
+  )
+  expect_equal(levels(table_plot$data$row_key), c("Smoking", "Age", "Stage II"))
+})
+
 test_that("ggforestplot supports point and interval geometry controls", {
   raw <- data.frame(
     term = c("Age", "BMI"),
