@@ -46,12 +46,15 @@ test_that("faceted ggforestplot supports visible labels in scale_y_discrete limi
       ggplot2::scale_y_discrete(limits = c("Smoking", "Age", "Stage II"))
   )
   built <- ggplot2::ggplot_build(p)
+  panel_limits <- lapply(built$layout$panel_params, function(panel) panel$y$get_limits())
   aligned_state <- align_forest_state_to_plot_y_scale(p$ggforestplotR_state, p)
   out <- p + add_forest_table()
   table_plot <- out$patches$plots[[1]]
 
   expect_equal(sum(!is.na(built$data[[1]]$y)), 3L)
   expect_equal(sum(!is.na(built$data[[2]]$y)), 3L)
+  expect_equal(panel_limits[[1]], c("Smoking", "Age"))
+  expect_equal(panel_limits[[2]], "Stage II")
   expect_equal(
     levels(aligned_state$forest_data$row_key),
     c("Smoking", "Age", "Stage II")
