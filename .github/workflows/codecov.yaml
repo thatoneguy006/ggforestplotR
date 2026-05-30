@@ -16,7 +16,6 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
       - uses: actions/checkout@v6
@@ -39,13 +38,8 @@ jobs:
         shell: Rscript {0}
 
       - name: Upload coverage to Codecov
-        if: env.CODECOV_TOKEN != ''
         uses: codecov/codecov-action@v5
         with:
           files: coverage.xml
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Skip Codecov upload
-        if: env.CODECOV_TOKEN == ''
-        run: echo "CODECOV_TOKEN is unavailable; skipping upload."
