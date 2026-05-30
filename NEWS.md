@@ -1,3 +1,9 @@
+# ggforestplotR 0.2.2
+
+## Minor Changes
+
+- Fixed faceted `ggforestplot()` output when users add `scale_y_discrete(limits = ...)`, preserving per-facet row filtering while accepting visible term labels.
+
 # ggforestplotR 0.2.1
 
 ## Breaking Changes
