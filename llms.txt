@@ -48,7 +48,7 @@ sectioned_coefs <- data.frame(
 
 ggforestplot(
   sectioned_coefs,
-  grouping = "section",
+  facet = "section",
   striped_rows = TRUE,
   stripe_fill = "grey94",
   grouping_strip_position = "right"
