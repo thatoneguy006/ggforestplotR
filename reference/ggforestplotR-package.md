@@ -19,3 +19,7 @@ Useful links:
 
 **Maintainer**: Carson Richardson <carson.richardson@outlook.com>
 \[copyright holder\]
+
+Authors:
+
+- Carson Richardson <carson.richardson@outlook.com> \[copyright holder\]
