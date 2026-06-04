@@ -84,7 +84,8 @@ ggforestplot(
 
 - facet:
 
-  Optional column name used to split rows into faceted plot sections.
+  Optional column name used to split rows into faceted plot sections. If
+  this column is a factor, its levels control facet order.
 
 - facet_strip_position:
 
