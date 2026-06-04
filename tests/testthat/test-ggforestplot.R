@@ -32,6 +32,30 @@ test_that("ggforestplot can facet grouped rows and add stripes", {
   expect_equal(unname(panel_rows[[2]]), c(1, 2, 3))
 })
 
+test_that("ggforestplot respects factor level order for facets", {
+  raw <- data.frame(
+    term = c("Age", "BMI", "Stage II", "Stage III"),
+    estimate = c(0.3, -0.2, 0.5, 0.8),
+    conf.low = c(0.1, -0.4, 0.2, 0.4),
+    conf.high = c(0.5, 0.0, 0.8, 1.2),
+    section = factor(
+      c("Clinical", "Clinical", "Tumor", "Tumor"),
+      levels = c("Tumor", "Clinical")
+    )
+  )
+
+  p <- ggforestplot(raw, facet = "section")
+  built <- ggplot2::ggplot_build(p)
+  panel_order <- as.character(built$layout$layout$grouping_panel)
+  out <- p + add_forest_table()
+  table_plot <- out$patches$plots[[1]]
+
+  expect_equal(panel_order, c("Tumor", "Clinical"))
+  expect_equal(levels(p$ggforestplotR_state$forest_data$grouping_panel), c("Tumor", "Clinical"))
+  expect_equal(levels(p$ggforestplotR_state$stripe_data$grouping_panel), c("Tumor", "Clinical"))
+  expect_equal(levels(table_plot$data$grouping_panel), c("Tumor", "Clinical"))
+})
+
 test_that("faceted ggforestplot supports visible labels in scale_y_discrete limits", {
   raw <- data.frame(
     term = c("Age", "BMI", "Smoking", "Stage II", "Stage III", "Nodes"),

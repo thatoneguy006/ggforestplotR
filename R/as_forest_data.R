@@ -83,6 +83,12 @@ as_forest_data <- function(data,
     p.value = resolve_column(data, p.value, "p.value", required = FALSE)
   )
 
+  grouping_levels <- if (!is.null(cols$grouping) && is.factor(data[[cols$grouping]])) {
+    levels(data[[cols$grouping]])
+  } else {
+    NULL
+  }
+
   out <- data.frame(
     term = as.character(data[[cols$term]]),
     estimate = as.numeric(data[[cols$estimate]]),
@@ -141,6 +147,7 @@ as_forest_data <- function(data,
   }
 
   out$.source_row <- seq_len(nrow(out))
+  attr(out, "grouping_levels") <- grouping_levels
 
   validate_forest_data(out, exponentiate = exponentiate)
 
@@ -151,6 +158,7 @@ as_forest_data <- function(data,
   rownames(out) <- NULL
   attr(out, "exponentiate") <- isTRUE(exponentiate)
   attr(out, "source_columns") <- source_columns
+  attr(out, "grouping_levels") <- grouping_levels
 
   out
 }
