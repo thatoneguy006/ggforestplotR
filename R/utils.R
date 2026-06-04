@@ -204,7 +204,12 @@ sort_forest_data <- function(data, sort_terms = c("none", "descending", "ascendi
     "(Ungrouped)",
     data$grouping
   )
-  group_levels <- unique(group_key)
+  grouping_levels <- attr(data, "grouping_levels")
+  group_levels <- if (is.null(grouping_levels)) {
+    unique(group_key)
+  } else {
+    c(grouping_levels[grouping_levels %in% group_key], setdiff(unique(group_key), grouping_levels))
+  }
   row_order <- unlist(lapply(group_levels, function(level) {
     idx <- which(group_key == level)
     idx[order(data$estimate[idx], decreasing = decreasing)]
@@ -390,13 +395,50 @@ format_forest_table_values <- function(values, group = NULL) {
 
 # ─── Plot data construction (decomposed into single-purpose passes) ──────────
 
+observed_grouping_panels <- function(data, has_groupings) {
+  if (!isTRUE(has_groupings)) {
+    return("__all__")
+  }
+
+  panels <- data$grouping_panel
+
+  if (is.factor(panels)) {
+    observed <- unique(as.character(panels))
+    return(levels(panels)[levels(panels) %in% observed])
+  }
+
+  unique(panels)
+}
+
+resolve_grouping_panel_levels <- function(grouping, grouping_levels = NULL) {
+  panel_values <- ifelse(
+    is.na(grouping) | !nzchar(grouping),
+    "(Ungrouped)",
+    grouping
+  )
+  observed <- unique(panel_values)
+
+  if (is.null(grouping_levels)) {
+    return(observed)
+  }
+
+  c(grouping_levels[grouping_levels %in% observed], setdiff(observed, grouping_levels))
+}
+
 assign_grouping_panels <- function(data, has_groupings) {
   if (has_groupings) {
-    ifelse(
+    panels <- ifelse(
       is.na(data$grouping) | !nzchar(data$grouping),
       "(Ungrouped)",
       data$grouping
     )
+
+    grouping_levels <- attr(data, "grouping_levels")
+    if (is.null(grouping_levels)) {
+      panels
+    } else {
+      factor(panels, levels = resolve_grouping_panel_levels(panels, grouping_levels))
+    }
   } else {
     rep(NA_character_, nrow(data))
   }
@@ -408,7 +450,7 @@ assign_grouping_panels <- function(data, has_groupings) {
 #' @keywords internal
 #' @noRd
 prefix_ambiguous_labels <- function(data, has_groupings) {
-  panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
+  panel_values <- observed_grouping_panels(data, has_groupings)
 
   for (pv in panel_values) {
     idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
@@ -454,7 +496,7 @@ make_panel_row_keys <- function(panel, labels, panel_key_labels) {
 #' @keywords internal
 #' @noRd
 assign_row_keys <- function(data, has_groupings) {
-  panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
+  panel_values <- observed_grouping_panels(data, has_groupings)
   panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
   data$row_key <- NA_character_
   all_levels <- character()
@@ -478,7 +520,7 @@ assign_row_keys <- function(data, has_groupings) {
 #' @keywords internal
 #' @noRd
 build_axis_labels <- function(data, has_groupings) {
-  panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
+  panel_values <- observed_grouping_panels(data, has_groupings)
   panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
   labels <- character()
 
@@ -496,7 +538,7 @@ build_axis_labels <- function(data, has_groupings) {
 #' @keywords internal
 #' @noRd
 build_stripe_rectangles <- function(data, has_groupings) {
-  panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
+  panel_values <- observed_grouping_panels(data, has_groupings)
   parts <- vector("list", length(panel_values))
 
   for (i in seq_along(panel_values)) {
@@ -516,6 +558,12 @@ build_stripe_rectangles <- function(data, has_groupings) {
   }
 
   stripe_data <- do.call(rbind, parts)
+  if (isTRUE(has_groupings) && is.factor(data$grouping_panel)) {
+    stripe_data$grouping_panel <- factor(
+      stripe_data$grouping_panel,
+      levels = levels(data$grouping_panel)
+    )
+  }
   stripe_data$fill_key <- ifelse(stripe_data$stripe_id %% 2 == 1, "stripe", "base")
   stripe_data
 }
@@ -525,7 +573,7 @@ build_stripe_rectangles <- function(data, has_groupings) {
 #' @keywords internal
 #' @noRd
 build_separate_lines <- function(data, has_groupings) {
-  panel_values <- if (has_groupings) unique(data$grouping_panel) else "__all__"
+  panel_values <- observed_grouping_panels(data, has_groupings)
   parts <- vector("list", length(panel_values))
 
   for (i in seq_along(panel_values)) {
@@ -579,7 +627,14 @@ build_separate_lines <- function(data, has_groupings) {
       stringsAsFactors = FALSE
     )
   } else {
-    unique(separator_data[c("grouping_panel", "yintercept")])
+    separator_data <- unique(separator_data[c("grouping_panel", "yintercept")])
+    if (isTRUE(has_groupings) && is.factor(data$grouping_panel)) {
+      separator_data$grouping_panel <- factor(
+        separator_data$grouping_panel,
+        levels = levels(data$grouping_panel)
+      )
+    }
+    separator_data
   }
 }
 

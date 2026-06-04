@@ -64,7 +64,7 @@ display.}
 \item{group}{Optional column name used for color-grouping estimates.}
 
 \item{facet}{Optional column name used to split rows into faceted plot
-sections.}
+sections. If this column is a factor, its levels control facet order.}
 
 \item{facet_strip_position}{Positioning for facet strip labels.}
 

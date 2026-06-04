@@ -15,7 +15,7 @@
 #'   display.
 #' @param group Optional column name used for color-grouping estimates.
 #' @param facet Optional column name used to split rows into faceted plot
-#'   sections.
+#'   sections. If this column is a factor, its levels control facet order.
 #' @param facet_strip_position Positioning for facet strip labels.
 #' @param grouping Deprecated. Use `facet` instead.
 #' @param grouping_strip_position Deprecated. Use `facet_strip_position`
