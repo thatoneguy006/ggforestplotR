@@ -1184,6 +1184,39 @@ default_plot_background_limits <- function(forest_data,
 }
 
 
+resolve_plot_x_limits <- function(x_limits,
+                                  default_limits,
+                                  exponentiate = FALSE) {
+  if (is.null(x_limits)) {
+    return(default_limits)
+  }
+
+  if (!is.numeric(x_limits) || length(x_limits) != 2L) {
+    stop("`x_limits` must be a numeric vector of length 2.", call. = FALSE)
+  }
+
+  if (any(is.nan(x_limits))) {
+    stop("`x_limits` must contain finite values or `NA`.", call. = FALSE)
+  }
+
+  out <- x_limits
+  out[is.na(out)] <- default_limits[is.na(out)]
+
+  if (any(!is.finite(out))) {
+    stop("`x_limits` must contain finite values or `NA`.", call. = FALSE)
+  }
+
+  if (out[1] >= out[2]) {
+    stop("`x_limits` must be increasing.", call. = FALSE)
+  }
+
+  if (isTRUE(exponentiate) && any(out <= 0)) {
+    stop("`x_limits` must be positive for exponentiated plots.", call. = FALSE)
+  }
+
+  out
+}
+
 # ─── ggplot2 table panel ─────────────────────────────────────────────────────
 
 #' Build a ggplot2 table panel for one side of a split forest plot.

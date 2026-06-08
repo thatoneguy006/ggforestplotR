@@ -5,7 +5,7 @@
 ^ggforestplotR_.*\.tar\.gz$
 ^\.Rhistory$
 ^README\.html$
-^Rplots\.pdf$
+(^|/)Rplots\.pdf$
 ^\.github$
 ^\.github/
 ^_pkgdown\.yml$

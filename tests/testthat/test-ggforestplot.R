@@ -292,6 +292,36 @@ test_that("ggforestplot can draw striped rows on exponentiated plots", {
   )
 
   expect_equal(p$scales$get_scales("x")$limits, log10(expected_limits))
+
+  p_custom <- ggforestplot(
+    raw,
+    exponentiate = TRUE,
+    striped_rows = TRUE,
+    x_limits = c(0.5, 2)
+  )
+  custom_stripe_data <- p_custom$layers[[1]]$data
+
+  expect_equal(p_custom$scales$get_scales("x")$limits, log10(c(0.5, 2)))
+  expect_equal(unique(custom_stripe_data$xmin), 0.5)
+  expect_equal(unique(custom_stripe_data$xmax), 2)
+
+  p_partial <- ggforestplot(
+    raw,
+    exponentiate = TRUE,
+    striped_rows = TRUE,
+    x_limits = c(NA, 2)
+  )
+
+  expect_equal(p_partial$scales$get_scales("x")$limits[2], log10(2))
+  expect_equal(p_partial$layers[[1]]$data$xmax, 2)
+  expect_error(
+    ggforestplot(raw, exponentiate = TRUE, x_limits = c(0, 2)),
+    "`x_limits` must be positive"
+  )
+  expect_error(
+    ggforestplot(raw, exponentiate = TRUE, x_limits = c(2, 0.5)),
+    "`x_limits` must be increasing"
+  )
 })
 
 test_that("ggforestplot allows facet strip labels on the right", {
