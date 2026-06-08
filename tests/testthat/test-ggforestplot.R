@@ -293,34 +293,32 @@ test_that("ggforestplot can draw striped rows on exponentiated plots", {
 
   expect_equal(p$scales$get_scales("x")$limits, log10(expected_limits))
 
-  p_custom <- ggforestplot(
-    raw,
-    exponentiate = TRUE,
-    striped_rows = TRUE,
-    x_limits = c(0.5, 2)
+  p_custom <- suppressMessages(
+    ggforestplot(raw, exponentiate = TRUE, striped_rows = TRUE) +
+      ggplot2::scale_x_log10(limits = c(0.5, 2), breaks = c(0.5, 1, 2))
   )
-  custom_stripe_data <- p_custom$layers[[1]]$data
+  custom_stripe_data <- p_custom$layers[[p_custom$ggforestplotR_state$stripe_layer_index]]$data
 
   expect_equal(p_custom$scales$get_scales("x")$limits, log10(c(0.5, 2)))
+  expect_equal(p_custom$scales$get_scales("x")$breaks, c(0.5, 1, 2))
   expect_equal(unique(custom_stripe_data$xmin), 0.5)
   expect_equal(unique(custom_stripe_data$xmax), 2)
 
-  p_partial <- ggforestplot(
-    raw,
-    exponentiate = TRUE,
-    striped_rows = TRUE,
-    x_limits = c(NA, 2)
+  p_partial <- suppressMessages(
+    p + ggplot2::scale_x_log10(limits = c(NA, 2))
   )
+  partial_stripe_data <- p_partial$layers[[p_partial$ggforestplotR_state$stripe_layer_index]]$data
 
   expect_equal(p_partial$scales$get_scales("x")$limits[2], log10(2))
-  expect_equal(p_partial$layers[[1]]$data$xmax, 2)
-  expect_error(
-    ggforestplot(raw, exponentiate = TRUE, x_limits = c(0, 2)),
-    "`x_limits` must be positive"
+  expect_equal(partial_stripe_data$xmin, p$layers[[p$ggforestplotR_state$stripe_layer_index]]$data$xmin)
+  expect_equal(partial_stripe_data$xmax, 2)
+
+  p_breaks <- suppressMessages(
+    p + ggplot2::scale_x_log10(breaks = c(0.5, 1, 2))
   )
-  expect_error(
-    ggforestplot(raw, exponentiate = TRUE, x_limits = c(2, 0.5)),
-    "`x_limits` must be increasing"
+
+  expect_no_warning(
+    ggplot2::ggplot_build(p_breaks)
   )
 })
 

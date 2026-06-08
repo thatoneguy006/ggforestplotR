@@ -31,9 +31,6 @@
 #'   axis on the log scale with the reference line at 1. For model objects,
 #'   `NULL` uses the canonical scale when it can be inferred, such as hazard
 #'   ratios for Cox models.
-#' @param x_limits Optional numeric vector of length 2 used for x-axis limits.
-#'   Use values on the displayed scale; for exponentiated plots these must be
-#'   positive. `NA` leaves that side at the computed default.
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
 #'   `"ascending"`.
 #' @param point_size Point size for coefficient markers.
@@ -92,7 +89,6 @@ ggforestplot <- function(data,
                          events = NULL,
                          p.value = NULL,
                          exponentiate = NULL,
-                         x_limits = NULL,
                          sort_terms = c("none", "descending", "ascending"),
                          point_size = 2.3,
                          point_shape = 19,
@@ -207,19 +203,14 @@ ggforestplot <- function(data,
   separator_data <- display_data$separator_data
   plot_stripe_data <- stripe_data
   plot_x_limits <- NULL
+  stripe_layer_index <- NULL
 
-  if (isTRUE(plot_exponentiate) || !is.null(x_limits)) {
-    default_x_limits <- default_plot_background_limits(
+  if (isTRUE(plot_exponentiate)) {
+    plot_x_limits <- default_plot_background_limits(
       forest_data,
       exponentiate = plot_exponentiate,
       include_zero = draw_ref_line,
       ref_line = ref_line
-    )
-
-    plot_x_limits <- resolve_plot_x_limits(
-      x_limits,
-      default_limits = default_x_limits,
-      exponentiate = plot_exponentiate
     )
 
     plot_stripe_data$xmin <- plot_x_limits[1]
@@ -261,6 +252,7 @@ ggforestplot <- function(data,
       colour = stripe_colour,
       alpha = stripe_alpha
     )
+    stripe_layer_index <- length(p$layers)
   }
 
   if (isTRUE(separate_lines) && nrow(separator_data) > 0L) {
@@ -322,11 +314,6 @@ ggforestplot <- function(data,
       limits = plot_x_limits,
       expand = ggplot2::expansion(mult = 0)
     )
-  } else if (!is.null(plot_x_limits)) {
-    p <- p + ggplot2::scale_x_continuous(
-      limits = plot_x_limits,
-      expand = ggplot2::expansion(mult = 0)
-    )
   }
 
   if (isTRUE(display_data$has_groupings)) {
@@ -347,6 +334,7 @@ ggforestplot <- function(data,
   p$ggforestplotR_state <- list(
     forest_data = forest_data,
     stripe_data = stripe_data,
+    stripe_layer_index = stripe_layer_index,
     has_groupings = display_data$has_groupings,
     facet_strip_position = facet_strip_position,
     grouping_strip_position = facet_strip_position,

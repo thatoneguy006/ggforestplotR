@@ -22,7 +22,6 @@ ggforestplot(
   events = NULL,
   p.value = NULL,
   exponentiate = NULL,
-  x_limits = NULL,
   sort_terms = c("none", "descending", "ascending"),
   point_size = 2.3,
   point_shape = 19,
@@ -89,10 +88,6 @@ table helpers.}
 axis on the log scale with the reference line at 1. For model objects,
 \code{NULL} uses the canonical scale when it can be inferred, such as hazard
 ratios for Cox models.}
-
-\item{x_limits}{Optional numeric vector of length 2 used for x-axis limits.
-Use values on the displayed scale; for exponentiated plots these must be
-positive. \code{NA} leaves that side at the computed default.}
 
 \item{sort_terms}{How to sort rows: \code{"none"}, \code{"descending"}, or
 \code{"ascending"}.}
