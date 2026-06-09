@@ -2,8 +2,14 @@
 
 ## ggforestplotR 0.2.2
 
+CRAN release: 2026-06-05
+
 ### Minor Changes
 
+- Faceted
+  [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md)
+  output now respects factor level order in the `facet` column, allowing
+  users to control facet ordering directly from their data.
 - Fixed faceted
   [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md)
   output when users add `scale_y_discrete(limits = ...)`, preserving
