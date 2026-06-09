@@ -8,6 +8,17 @@ ggplot_add.ScaleDiscretePosition <- function(object, plot, ...) {
   NextMethod()
 }
 
+#' @export
+#' @keywords internal
+ggplot_add.ScaleContinuousPosition <- function(object, plot, ...) {
+  if (is_ggforestplot_exponentiated_x_scale(object, plot)) {
+    object <- zero_default_x_scale_expansion(object)
+    plot <- align_striped_rows_to_x_scale(object, plot)
+  }
+
+  NextMethod()
+}
+
 is_ggforestplot_faceted_y_scale <- function(scale, plot) {
   state <- plot$ggforestplotR_state
 
@@ -52,4 +63,92 @@ align_discrete_y_scale_to_forest_facets <- function(scale, plot) {
   }
 
   scale
+}
+
+is_ggforestplot_exponentiated_x_scale <- function(scale, plot) {
+  state <- plot$ggforestplotR_state
+
+  if (is.null(state) || !isTRUE(state$defaults$exponentiate)) {
+    return(FALSE)
+  }
+
+  if (is.null(scale$aesthetics) || !"x" %in% scale$aesthetics) {
+    return(FALSE)
+  }
+
+  TRUE
+}
+
+zero_default_x_scale_expansion <- function(scale) {
+  if (inherits(scale$expand, "waiver")) {
+    scale$expand <- ggplot2::expansion(mult = 0)
+  }
+
+  scale
+}
+
+align_striped_rows_to_x_scale <- function(scale, plot) {
+  state <- plot$ggforestplotR_state
+
+  if (!isTRUE(state$defaults$striped_rows) || is.null(state$stripe_layer_index)) {
+    return(plot)
+  }
+
+  stripe_layer_index <- state$stripe_layer_index
+
+  if (stripe_layer_index > length(plot$layers)) {
+    return(plot)
+  }
+
+  stripe_data <- plot$layers[[stripe_layer_index]]$data
+  stripe_limits <- x_scale_limits_for_stripes(scale, stripe_data)
+
+  if (is.null(stripe_limits)) {
+    return(plot)
+  }
+
+  plot$layers[[stripe_layer_index]]$data$xmin <- stripe_limits[1]
+  plot$layers[[stripe_layer_index]]$data$xmax <- stripe_limits[2]
+
+  plot
+}
+
+x_scale_limits_for_stripes <- function(scale, stripe_data) {
+  scale_limits <- scale$limits
+
+  if (is.null(scale_limits) || is.function(scale_limits) || inherits(scale_limits, "waiver")) {
+    return(NULL)
+  }
+
+  if (!is.numeric(scale_limits) || length(scale_limits) != 2L) {
+    return(NULL)
+  }
+
+  stripe_limits <- inverse_continuous_scale_limits(scale, scale_limits)
+
+  current_limits <- c(
+    min(stripe_data$xmin, na.rm = TRUE),
+    max(stripe_data$xmax, na.rm = TRUE)
+  )
+  stripe_limits[is.na(stripe_limits)] <- current_limits[is.na(stripe_limits)]
+
+  if (any(!is.finite(stripe_limits))) {
+    return(NULL)
+  }
+
+  stripe_limits
+}
+
+inverse_continuous_scale_limits <- function(scale, limits) {
+  transformation <- scale$trans
+
+  if (is.null(transformation)) {
+    transformation <- scale$transformation
+  }
+
+  if (!is.null(transformation) && is.function(transformation$inverse)) {
+    return(transformation$inverse(limits))
+  }
+
+  limits
 }

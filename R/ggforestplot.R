@@ -203,6 +203,7 @@ ggforestplot <- function(data,
   separator_data <- display_data$separator_data
   plot_stripe_data <- stripe_data
   plot_x_limits <- NULL
+  stripe_layer_index <- NULL
 
   if (isTRUE(plot_exponentiate)) {
     plot_x_limits <- default_plot_background_limits(
@@ -251,6 +252,7 @@ ggforestplot <- function(data,
       colour = stripe_colour,
       alpha = stripe_alpha
     )
+    stripe_layer_index <- length(p$layers)
   }
 
   if (isTRUE(separate_lines) && nrow(separator_data) > 0L) {
@@ -332,6 +334,7 @@ ggforestplot <- function(data,
   p$ggforestplotR_state <- list(
     forest_data = forest_data,
     stripe_data = stripe_data,
+    stripe_layer_index = stripe_layer_index,
     has_groupings = display_data$has_groupings,
     facet_strip_position = facet_strip_position,
     grouping_strip_position = facet_strip_position,

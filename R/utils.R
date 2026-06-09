@@ -1183,7 +1183,6 @@ default_plot_background_limits <- function(forest_data,
   }
 }
 
-
 # ─── ggplot2 table panel ─────────────────────────────────────────────────────
 
 #' Build a ggplot2 table panel for one side of a split forest plot.

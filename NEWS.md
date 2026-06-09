@@ -2,6 +2,9 @@
 
 ## Minor Changes
 
+- Faceted `ggforestplot()` output now respects factor level order in the
+  `facet` column, allowing users to control facet ordering directly from their
+  data.
 - Fixed faceted `ggforestplot()` output when users add `scale_y_discrete(limits = ...)`, preserving per-facet row filtering while accepting visible term labels.
 
 # ggforestplotR 0.2.1
