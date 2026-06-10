@@ -16,6 +16,22 @@ make_logistic_example_data <- function() {
   logit_data
 }
 
+test_that("mixed-model tidy output is filtered to fixed effects", {
+  mixed_tidy <- data.frame(
+    effect = c("fixed", "fixed", "ran_pars"),
+    term = c("(Intercept)", "Days", "sd__(Intercept)"),
+    estimate = c(251.4, 10.5, 24.7),
+    conf.low = c(238.0, 8.9, NA),
+    conf.high = c(264.8, 12.1, NA),
+    stringsAsFactors = FALSE
+  )
+
+  out <- keep_fixed_effects(mixed_tidy)
+
+  expect_equal(out$term, c("(Intercept)", "Days"))
+  expect_true(all(as.character(out$effect) == "fixed"))
+})
+
 test_that("tidy_forest_model exponentiates logistic regression coefficients", {
   fit <- glm(
     event ~ age + bmi + treatment,
@@ -30,6 +46,44 @@ test_that("tidy_forest_model exponentiates logistic regression coefficients", {
   expect_true(all(out$conf.low > 0))
   expect_true(all(out$conf.high > 0))
   expect_true(all(!is.na(out$p.value)))
+})
+
+test_that("tidy_forest_model supports lme4 mixed models", {
+  skip_if_not_installed("broom.mixed")
+  skip_if_not_installed("lme4")
+
+  fit <- lme4::lmer(Reaction ~ Days + (Days | Subject), data = lme4::sleepstudy)
+  out <- tidy_forest_model(fit)
+
+  expect_equal(out$term, "Days")
+  expect_true("effect" %in% names(out))
+  expect_true(all(as.character(out$effect) == "fixed"))
+  expect_true(all(!is.na(out$estimate)))
+  expect_true(all(!is.na(out$conf.low)))
+  expect_true(all(!is.na(out$conf.high)))
+
+  p <- ggforestplot(fit)
+
+  expect_equal(p$ggforestplotR_state$forest_data$term, "Days")
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("ggforestplot labels logistic mixed models as odds ratios", {
+  skip_if_not_installed("broom.mixed")
+  skip_if_not_installed("lme4")
+
+  fit <- lme4::glmer(
+    cbind(incidence, size - incidence) ~ period + (1 | herd),
+    data = lme4::cbpp,
+    family = binomial()
+  )
+
+  p <- ggforestplot(fit)
+
+  expect_equal(p$labels$x, "OR (95% CI)")
+  expect_equal(p$ggforestplotR_state$defaults$estimate_label, "OR")
+  expect_true(all(p$ggforestplotR_state$forest_data$estimate > 0))
+  expect_true(all(as.character(p$ggforestplotR_state$forest_data$effect) == "fixed"))
 })
 
 test_that("ggforestplot supports exponentiated logistic regression models", {

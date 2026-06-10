@@ -16,6 +16,12 @@
   columns in their original order, rather than the previous fixed built-in
   table-column order.
 
+## Major Changes
+
+- Added mixed-model support for `tidy_forest_model()` and `ggforestplot()`
+  when `broom.mixed` is installed. Mixed-model tidiers are restricted to fixed
+  effects so random-effect parameter rows are not plotted as terms.
+
 ## Minor Changes
 
 - Relaxed forest-data validation so only the core plot geometry columns

@@ -271,13 +271,18 @@ infer_model_estimate_info <- function(model,
                                       conf.level = 0.95) {
   auto_exponentiate <- FALSE
   estimate_label <- "Estimate"
+  model_family <- if (inherits(model, "glm") && !is.null(model$family)) {
+    model$family
+  } else {
+    tryCatch(stats::family(model), error = function(e) NULL)
+  }
 
   if (inherits(model, "coxph")) {
     auto_exponentiate <- TRUE
     estimate_label <- "HR"
-  } else if (inherits(model, "glm") && !is.null(model$family)) {
-    family <- model$family$family
-    link <- model$family$link
+  } else if (!is.null(model_family)) {
+    family <- model_family$family
+    link <- model_family$link
 
     if (identical(family, "binomial") && identical(link, "logit")) {
       auto_exponentiate <- TRUE
