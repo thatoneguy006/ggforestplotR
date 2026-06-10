@@ -113,14 +113,26 @@ test_that("ggforestplot truncates confidence intervals and draws arrows", {
 
   p <- ggforestplot(raw, ci_limits = c(-1, 1), ci_arrow_length = 0.05)
   built <- ggplot2::ggplot_build(p)
+  errorbar_layers <- Filter(
+    function(layer) all(c("xmin", "xmax", "width") %in% names(layer)),
+    built$data
+  )
   segment_layers <- Filter(
     function(layer) all(c("x", "xend", "y", "yend") %in% names(layer)),
     built$data
   )
+  staple_layers <- Filter(
+    function(layer) all(layer$width == 0.2) && all(layer$xmin == layer$xmax),
+    errorbar_layers
+  )
+  staple_positions <- unlist(lapply(staple_layers, function(layer) layer$xmin), use.names = FALSE)
 
   expect_equal(p$scales$get_scales("x")$limits, c(-1, 1))
   expect_equal(built$data[[1]]$xmin, c(-1, -0.4, 0.2))
   expect_equal(built$data[[1]]$xmax, c(0.5, 1, 1))
+  expect_true(all(built$data[[1]]$width == 0))
+  expect_equal(sort(staple_positions), c(-0.4, 0.2, 0.5))
+  expect_false(any(staple_positions %in% c(-1, 1)))
   expect_length(segment_layers, 2L)
   expect_true(any(segment_layers[[1]]$xend == -1))
   expect_true(all(segment_layers[[2]]$xend == 1))
@@ -409,10 +421,24 @@ test_that("ggforestplot truncates confidence intervals on exponentiated plots", 
 
   p <- ggforestplot(raw, exponentiate = TRUE, ci_limits = c(0.5, 2))
   built <- ggplot2::ggplot_build(p)
+  errorbar_layers <- Filter(
+    function(layer) all(c("xmin", "xmax", "width") %in% names(layer)),
+    built$data
+  )
+  truncated_interval <- Filter(
+    function(layer) all(layer$width == 0),
+    errorbar_layers
+  )[[1]]
+  complete_interval <- Filter(
+    function(layer) all(layer$width == 0.2) && any(layer$xmin != layer$xmax),
+    errorbar_layers
+  )[[1]]
 
   expect_equal(p$scales$get_scales("x")$limits, log10(c(0.5, 2)))
-  expect_equal(built$data[[1]]$xmin, log10(c(0.5, 0.6)))
-  expect_equal(built$data[[1]]$xmax, log10(c(2.0, 1.1)))
+  expect_equal(truncated_interval$xmin, log10(0.5))
+  expect_equal(truncated_interval$xmax, log10(2.0))
+  expect_equal(complete_interval$xmin, log10(0.6))
+  expect_equal(complete_interval$xmax, log10(1.1))
 })
 
 test_that("ggforestplot allows facet strip labels on the right", {

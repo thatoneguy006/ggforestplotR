@@ -312,21 +312,114 @@ ggforestplot <- function(data,
     )
   }
 
-  p <- p +
-    ggplot2::geom_errorbar(
+  left_arrow_data <- ci_plot_data[ci_plot_data$ci_truncated_left, , drop = FALSE]
+  right_arrow_data <- ci_plot_data[ci_plot_data$ci_truncated_right, , drop = FALSE]
+  arrow_caps <- isTRUE(ci_arrows) &&
+    any(ci_plot_data$ci_truncated_left | ci_plot_data$ci_truncated_right)
+  arrow_spec <- grid::arrow(
+    length = grid::unit(ci_arrow_length, "inches"),
+    type = ci_arrow_type
+  )
+
+  if (isTRUE(arrow_caps)) {
+    complete_ci_data <- ci_plot_data[
+      !ci_plot_data$ci_truncated_left & !ci_plot_data$ci_truncated_right,
+      ,
+      drop = FALSE
+    ]
+    truncated_ci_data <- ci_plot_data[
+      ci_plot_data$ci_truncated_left | ci_plot_data$ci_truncated_right,
+      ,
+      drop = FALSE
+    ]
+
+    if (nrow(complete_ci_data) > 0L) {
+      p <- p + ggplot2::geom_errorbar(
+        data = complete_ci_data,
+        mapping = ci_mapping,
+        width = staple_width,
+        linewidth = linewidth,
+        position = dodge,
+        orientation = "y"
+      )
+    }
+
+    if (nrow(truncated_ci_data) > 0L) {
+      p <- p + ggplot2::geom_errorbar(
+        data = truncated_ci_data,
+        mapping = ci_mapping,
+        width = 0,
+        linewidth = linewidth,
+        position = dodge,
+        orientation = "y"
+      )
+    }
+
+    low_staple_data <- truncated_ci_data[!truncated_ci_data$ci_truncated_left, , drop = FALSE]
+    high_staple_data <- truncated_ci_data[!truncated_ci_data$ci_truncated_right, , drop = FALSE]
+    low_staple_mapping <- if (has_groups) {
+      ggplot2::aes(
+        x = .data$ci_low,
+        y = .data$row_key,
+        xmin = .data$ci_low,
+        xmax = .data$ci_low,
+        colour = .data$group
+      )
+    } else {
+      ggplot2::aes(
+        x = .data$ci_low,
+        y = .data$row_key,
+        xmin = .data$ci_low,
+        xmax = .data$ci_low
+      )
+    }
+    high_staple_mapping <- if (has_groups) {
+      ggplot2::aes(
+        x = .data$ci_high,
+        y = .data$row_key,
+        xmin = .data$ci_high,
+        xmax = .data$ci_high,
+        colour = .data$group
+      )
+    } else {
+      ggplot2::aes(
+        x = .data$ci_high,
+        y = .data$row_key,
+        xmin = .data$ci_high,
+        xmax = .data$ci_high
+      )
+    }
+
+    if (nrow(low_staple_data) > 0L) {
+      p <- p + ggplot2::geom_errorbar(
+        data = low_staple_data,
+        mapping = low_staple_mapping,
+        width = staple_width,
+        linewidth = linewidth,
+        position = dodge,
+        orientation = "y"
+      )
+    }
+
+    if (nrow(high_staple_data) > 0L) {
+      p <- p + ggplot2::geom_errorbar(
+        data = high_staple_data,
+        mapping = high_staple_mapping,
+        width = staple_width,
+        linewidth = linewidth,
+        position = dodge,
+        orientation = "y"
+      )
+    }
+  } else {
+    p <- p + ggplot2::geom_errorbar(
       mapping = ci_mapping,
       width = staple_width,
       linewidth = linewidth,
       position = dodge,
       orientation = "y"
     )
-
-  left_arrow_data <- ci_plot_data[ci_plot_data$ci_truncated_left, , drop = FALSE]
-  right_arrow_data <- ci_plot_data[ci_plot_data$ci_truncated_right, , drop = FALSE]
-  arrow_spec <- grid::arrow(
-    length = grid::unit(ci_arrow_length, "inches"),
-    type = ci_arrow_type
-  )
+  }
 
   if (isTRUE(ci_arrows) && nrow(left_arrow_data) > 0L) {
     left_arrow_mapping <- if (has_groups) {
