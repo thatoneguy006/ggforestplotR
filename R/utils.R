@@ -22,10 +22,7 @@ resolve_column <- function(data, column, arg, required = TRUE) {
 # ─── Data validation ──────────────────────────────────────────────────────────
 
 validate_forest_data <- function(data, exponentiate = FALSE) {
-  required <- c(
-    "term", "estimate", "conf.low", "conf.high",
-    "label", "group", "grouping", "separate_groups", "n", "events", "p.value"
-  )
+  required <- c("term", "estimate", "conf.low", "conf.high")
   missing <- setdiff(required, names(data))
 
   if (length(missing) > 0L) {
