@@ -31,6 +31,26 @@ test_that("ggforestplot uses bound model labels as groups", {
   expect_s3_class(p, "ggplot")
 })
 
+test_that("bound model tables label terms that appear in only one model", {
+  skip_if_not_installed("broom")
+
+  fit1 <- lm(mpg ~ cyl, data = mtcars)
+  fit2 <- lm(mpg ~ cyl + disp, data = mtcars)
+  fit3 <- lm(mpg ~ cyl + disp + wt, data = mtcars)
+  bound <- bind_forest_models(
+    list(fit1, fit2, fit3),
+    model_labels = c("Unadjusted", "Adjusted", "Fully Adjusted")
+  )
+  p <- ggforestplot(bound)
+  table_spec <- build_forest_table_data(p$ggforestplotR_state$forest_data)
+  estimate_text <- table_spec$table_data$text[
+    table_spec$table_data$column_key == "estimate" &
+      as.character(table_spec$table_data$row_key) == "wt"
+  ]
+
+  expect_match(estimate_text, "^Fully Adjusted: ")
+})
+
 test_that("bind_forest_models supports common exponentiated scales", {
   skip_if_not_installed("broom")
 

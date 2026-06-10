@@ -320,7 +320,7 @@ infer_model_estimate_info <- function(model,
 #' handles that single concern.
 #' @keywords internal
 #' @noRd
-collapse_grouped_values <- function(formatted, group = NULL) {
+collapse_grouped_values <- function(formatted, group = NULL, force_group_labels = FALSE) {
   keep <- !is.na(formatted) & nzchar(formatted)
 
   if (!any(keep)) {
@@ -329,11 +329,11 @@ collapse_grouped_values <- function(formatted, group = NULL) {
 
   non_empty <- formatted[keep]
 
-  if (length(unique(non_empty)) == 1L) {
-    return(non_empty[1L])
-  }
-
   if (all(is.na(group) | !nzchar(group))) {
+    if (length(unique(non_empty)) == 1L) {
+      return(non_empty[1L])
+    }
+
     return(paste(non_empty, collapse = "\n"))
   }
 
@@ -342,22 +342,29 @@ collapse_grouped_values <- function(formatted, group = NULL) {
     paste0("Series ", seq_along(formatted)),
     group
   )
+
+  if (!isTRUE(force_group_labels) && length(unique(non_empty)) == 1L) {
+    return(non_empty[1L])
+  }
+
   paste(paste0(group_labels[keep], ": ", formatted[keep]), collapse = "\n")
 }
 
-format_forest_p_values <- function(values, group = NULL, digits = 2, p_digits = digits) {
+format_forest_p_values <- function(values, group = NULL, digits = 2, p_digits = digits,
+                                   force_group_labels = FALSE) {
   p_digits <- resolve_table_digits(digits = digits, p_digits = p_digits)$p_digits
   d <- max(3L, p_digits)
   values <- as.numeric(values)
   formatted <- ifelse(is.na(values), "", format.pval(values, digits = d, eps = 10^(-d)))
-  collapse_grouped_values(formatted, group)
+  collapse_grouped_values(formatted, group, force_group_labels = force_group_labels)
 }
 
 format_forest_estimates <- function(estimate, conf.low, conf.high,
                                     group = NULL, digits = 2,
                                     estimate_digits = digits,
                                     interval_digits = digits,
-                                    estimate_fmt = NULL) {
+                                    estimate_fmt = NULL,
+                                    force_group_labels = FALSE) {
   digits <- resolve_table_digits(
     digits = digits,
     estimate_digits = estimate_digits,
@@ -391,13 +398,14 @@ format_forest_estimates <- function(estimate, conf.low, conf.high,
     },
     character(1)
   )
-  collapse_grouped_values(formatted, group)
+  collapse_grouped_values(formatted, group, force_group_labels = force_group_labels)
 }
 
 format_forest_intervals <- function(conf.low, conf.high,
                                     group = NULL, digits = 2,
                                     interval_digits = digits,
-                                    ci_fmt = NULL) {
+                                    ci_fmt = NULL,
+                                    force_group_labels = FALSE) {
   digits <- resolve_table_digits(
     digits = digits,
     interval_digits = interval_digits
@@ -428,13 +436,13 @@ format_forest_intervals <- function(conf.low, conf.high,
     },
     character(1)
   )
-  collapse_grouped_values(formatted, group)
+  collapse_grouped_values(formatted, group, force_group_labels = force_group_labels)
 }
 
-format_forest_table_values <- function(values, group = NULL) {
+format_forest_table_values <- function(values, group = NULL, force_group_labels = FALSE) {
   formatted <- as.character(values)
   formatted[is.na(formatted)] <- ""
-  collapse_grouped_values(formatted, group)
+  collapse_grouped_values(formatted, group, force_group_labels = force_group_labels)
 }
 
 # ─── Plot data construction (decomposed into single-purpose passes) ──────────
@@ -795,6 +803,7 @@ build_forest_table_data <- function(data,
   if (is.null(source_columns)) {
     source_columns <- data
   }
+  force_group_labels <- any(!is.na(data$group) & nzchar(data$group))
   row_levels <- levels(data$row_key)
   row_parts <- vector("list", length(row_levels))
 
@@ -809,8 +818,16 @@ build_forest_table_data <- function(data,
       row_key = row_key,
       grouping_panel = rd$grouping_panel[1L],
       term_text = rd$label[1L],
-      n_text = format_forest_table_values(rd$n, rd$group),
-      events_text = format_forest_table_values(rd$events, rd$group),
+      n_text = format_forest_table_values(
+        rd$n,
+        rd$group,
+        force_group_labels = force_group_labels
+      ),
+      events_text = format_forest_table_values(
+        rd$events,
+        rd$group,
+        force_group_labels = force_group_labels
+      ),
       estimate_text = format_forest_estimates(
         rd$estimate,
         rd$conf.low,
@@ -818,7 +835,8 @@ build_forest_table_data <- function(data,
         rd$group,
         estimate_digits = digits$estimate_digits,
         interval_digits = digits$interval_digits,
-        estimate_fmt = estimate_fmt
+        estimate_fmt = estimate_fmt,
+        force_group_labels = force_group_labels
       ),
       estimate_value_text = format_forest_estimates(
         rd$estimate,
@@ -827,16 +845,23 @@ build_forest_table_data <- function(data,
         rd$group,
         estimate_digits = digits$estimate_digits,
         interval_digits = digits$interval_digits,
-        estimate_fmt = if (is.null(estimate_fmt)) "{estimate}" else estimate_fmt
+        estimate_fmt = if (is.null(estimate_fmt)) "{estimate}" else estimate_fmt,
+        force_group_labels = force_group_labels
       ),
       ci_text = format_forest_intervals(
         rd$conf.low,
         rd$conf.high,
         rd$group,
         interval_digits = digits$interval_digits,
-        ci_fmt = ci_fmt
+        ci_fmt = ci_fmt,
+        force_group_labels = force_group_labels
       ),
-      p_text = format_forest_p_values(rd$p.value, rd$group, p_digits = digits$p_digits),
+      p_text = format_forest_p_values(
+        rd$p.value,
+        rd$group,
+        p_digits = digits$p_digits,
+        force_group_labels = force_group_labels
+      ),
       stringsAsFactors = FALSE
     )
 
@@ -852,7 +877,11 @@ build_forest_table_data <- function(data,
       } else {
         rd[[extra]]
       }
-      row_parts[[i]][[extra]] <- format_forest_table_values(values, rd$group)
+      row_parts[[i]][[extra]] <- format_forest_table_values(
+        values,
+        rd$group,
+        force_group_labels = force_group_labels
+      )
     }
   }
 
