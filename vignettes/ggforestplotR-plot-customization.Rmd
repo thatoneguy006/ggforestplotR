@@ -159,7 +159,7 @@ l1 <- glm(Treatment ~ conc + uptake + Type, family = binomial(link = "logit"),
 
 ggforestplot(l1, exponentiate = TRUE, striped_rows = T, term_labels = c("TypeMississippi" = "Mississippi")) +
   add_forest_table(position = "left", 
-                   show_p = F)
+                   columns = c("term", "estimate"))
 ```
 
 We can do this for survival models as well.
