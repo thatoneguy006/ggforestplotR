@@ -57,20 +57,28 @@ validate_forest_data <- function(data, exponentiate = FALSE) {
 # ─── Column normalisation ────────────────────────────────────────────────────
 
 normalize_table_columns <- function(columns, data = NULL) {
-  default_order <- c("term", "n", "events", "estimate", "p", "ci")
-
   if (is.null(columns)) {
     return(NULL)
   }
 
   if (is.numeric(columns)) {
-    idx <- as.integer(columns)
+    source_names <- if (!is.null(data)) names(attr(data, "source_columns")) else NULL
+    available <- if (length(source_names) > 0L) source_names else names(data)
 
-    if (anyNA(idx) || any(idx < 1L | idx > length(default_order))) {
-      stop("Numeric table columns must be between 1 and 6.", call. = FALSE)
+    if (is.null(available)) {
+      stop("Numeric table columns require named data.", call. = FALSE)
     }
 
-    return(unique(default_order[idx]))
+    idx <- as.integer(columns)
+
+    if (anyNA(idx) || any(columns != idx) || any(idx < 1L | idx > length(available))) {
+      stop(
+        sprintf("Numeric table columns must be between 1 and %s.", length(available)),
+        call. = FALSE
+      )
+    }
+
+    return(normalize_table_columns(available[idx], data = data))
   }
 
   if (!is.character(columns)) {
@@ -129,6 +137,40 @@ normalize_column_labels <- function(column_labels, data = NULL) {
   )
   out <- stats::setNames(as.character(column_labels), label_keys)
   out[!duplicated(names(out), fromLast = TRUE)]
+}
+
+has_table_values <- function(data, column) {
+  if (!column %in% names(data)) {
+    return(FALSE)
+  }
+
+  values <- data[[column]]
+  if (is.numeric(values)) {
+    any(!is.na(values))
+  } else {
+    any(!is.na(values) & nzchar(as.character(values)))
+  }
+}
+
+default_forest_table_columns <- function(data) {
+  c(
+    "term",
+    if (has_table_values(data, "n")) "n",
+    if (has_table_values(data, "events")) "events",
+    "estimate"
+  )
+}
+
+default_split_left_columns <- function(data) {
+  c(
+    "term",
+    if (has_table_values(data, "n")) "n",
+    if (has_table_values(data, "events")) "events"
+  )
+}
+
+default_split_right_columns <- function(data) {
+  "estimate"
 }
 
 normalize_digits <- function(value, arg) {
@@ -725,11 +767,6 @@ align_forest_state_to_plot_y_scale <- function(state, plot) {
 }
 
 build_forest_table_data <- function(data,
-                                    show_terms = TRUE,
-                                    show_n = FALSE,
-                                    show_events = FALSE,
-                                    show_estimate = TRUE,
-                                    show_p = FALSE,
                                     term_header = "Term",
                                     n_header = "N",
                                     events_header = "Events",
@@ -816,15 +853,11 @@ build_forest_table_data <- function(data,
 
   table_rows <- do.call(rbind, row_parts)
   table_rows$row_key <- factor(table_rows$row_key, levels = row_levels)
+  attr(table_rows, "source_columns") <- source_columns
 
   # Determine which columns to show
   if (is.null(columns)) {
-    column_keys <- character()
-    if (isTRUE(show_terms))    column_keys <- c(column_keys, "term")
-    if (isTRUE(show_n))        column_keys <- c(column_keys, "n")
-    if (isTRUE(show_events))   column_keys <- c(column_keys, "events")
-    if (isTRUE(show_estimate)) column_keys <- c(column_keys, "estimate")
-    if (isTRUE(show_p))        column_keys <- c(column_keys, "p")
+    column_keys <- default_forest_table_columns(data)
   } else {
     column_keys <- normalize_table_columns(columns, data = table_rows)
   }

@@ -526,8 +526,18 @@ test_that("add_forest_table supports arbitrary preserved columns", {
   expect_true(any(table_spec$table_data$text == "Clinical"))
   expect_true(any(table_spec$table_data$column_key == "upper_bound"))
   expect_true(any(table_spec$table_data$text == "0.57"))
+  positioned_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = c(1, 5, 6)
+  )
+
+  expect_equal(positioned_spec$column_keys, c("term", "upper_bound", "adjustment"))
   expect_s3_class(
     add_forest_table(p, columns = c("term", "upper_bound", "adjustment")),
+    "patchwork"
+  )
+  expect_s3_class(
+    add_forest_table(p, columns = c(1, 5, 6)),
     "patchwork"
   )
 })
@@ -801,7 +811,7 @@ test_that("add_forest_table can show an events column", {
   p <- ggforestplot(raw, events = "event_count")
   table_spec <- build_forest_table_data(
     p$ggforestplotR_state$forest_data,
-    show_events = TRUE
+    columns = c("term", "events", "estimate")
   )
 
   expect_true(any(table_spec$column_keys == "events"))
@@ -835,7 +845,7 @@ test_that("forest table can draw horizontal separator lines only", {
   p <- ggforestplot(raw, n = "sample_size")
   table_spec <- build_forest_table_data(
     p$ggforestplotR_state$forest_data,
-    show_n = TRUE
+    columns = c("term", "n", "estimate")
   )
   table_plot <- build_forest_table_plot(
     table_spec = table_spec,
@@ -875,7 +885,7 @@ test_that("add_forest_table can show p-values to the right of estimates", {
   p <- ggforestplot(raw, p.value = "p_value")
   table_spec <- build_forest_table_data(
     p$ggforestplotR_state$forest_data,
-    show_p = TRUE,
+    columns = c("term", "estimate", "p"),
     estimate_label = "Beta"
   )
 
@@ -898,7 +908,7 @@ test_that("add_forest_table validates p-value table requests", {
   )
 })
 
-test_that("deprecated table arguments warn", {
+test_that("deprecated table digit argument warns", {
   raw <- data.frame(
     term = c("Age", "BMI"),
     estimate = c(0.3, -0.2),
@@ -909,26 +919,6 @@ test_that("deprecated table arguments warn", {
 
   p <- ggforestplot(raw, p.value = "p_value")
 
-  expect_warning(
-    add_forest_table(show_terms = FALSE),
-    "`show_terms` is deprecated"
-  )
-  expect_warning(
-    add_forest_table(show_n = TRUE),
-    "`show_n` is deprecated"
-  )
-  expect_warning(
-    add_forest_table(show_events = TRUE),
-    "`show_events` is deprecated"
-  )
-  expect_warning(
-    add_forest_table(show_estimate = FALSE),
-    "`show_estimate` is deprecated"
-  )
-  expect_warning(
-    add_forest_table(p, show_p = TRUE),
-    "`show_p` is deprecated"
-  )
   expect_warning(
     add_forest_table(p, digits = 3),
     "`digits` is deprecated"
@@ -951,12 +941,12 @@ test_that("add_split_table requires left and right table columns", {
   p <- ggforestplot(raw, n = "sample_size")
 
   expect_error(
-    add_split_table(p, show_terms = FALSE, show_n = FALSE),
+    add_split_table(p, left_columns = character()),
     "left-side column"
   )
 
   expect_error(
-    add_split_table(p, show_estimate = FALSE, show_p = FALSE),
+    add_split_table(p, right_columns = character()),
     "right-side column"
   )
 })
@@ -979,6 +969,14 @@ test_that("add_split_table accepts explicit left and right columns by name", {
     )
 
   expect_s3_class(out, "patchwork")
+
+  out_with_preserved_columns <- ggforestplot(raw, n = "sample_size", events = "event_count", p.value = "p_value") +
+    add_split_table(
+      left_columns = c(1, 5, 6),
+      right_columns = c(2, 7)
+    )
+
+  expect_s3_class(out_with_preserved_columns, "patchwork")
 })
 
 test_that("add_split_table supports custom column labels", {
@@ -1097,8 +1095,8 @@ test_that("add_split_table accepts explicit left and right columns by position",
 
   out <- ggforestplot(raw, n = "sample_size", events = "event_count", p.value = "p_value") +
     add_split_table(
-      left_columns = c(1, 2, 3),
-      right_columns = c(4, 5)
+      left_columns = c(1, 5, 6),
+      right_columns = c(2, 7)
     )
 
   expect_s3_class(out, "patchwork")

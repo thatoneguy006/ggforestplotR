@@ -7,11 +7,6 @@
 add_forest_table(
   plot = NULL,
   position = c("left", "right"),
-  show_terms = TRUE,
-  show_n = NULL,
-  show_events = NULL,
-  show_estimate = TRUE,
-  show_p = FALSE,
   columns = NULL,
   term_header = "Term",
   n_header = "N",
@@ -46,27 +41,11 @@ add_forest_table(
 \item{position}{Whether to place the table on the left or right of the
 forest plot.}
 
-\item{show_terms}{Deprecated. Whether to show the term column in the table.
-Use \code{columns} instead.}
-
-\item{show_n}{Deprecated. Whether to show the \code{N} column. Use \code{columns}
-instead.}
-
-\item{show_events}{Deprecated. Whether to show the \code{Events} column. Use
-\code{columns} instead.}
-
-\item{show_estimate}{Deprecated. Whether to show the formatted estimate and
-confidence interval column. Use \code{columns} instead.}
-
-\item{show_p}{Deprecated. Whether to display the p-value column. Use
-\code{columns} instead.}
-
 \item{columns}{Optional explicit columns to display in the side table, in
 the order they should appear. Accepts built-in names such as \code{"term"},
-\code{"n"}, \code{"events"}, \code{"estimate"}, \code{"ci"}, and \code{"p"}, arbitrary original dataframe
-columns, or positions corresponding to the built-in columns. \code{"conf.low"}
-and \code{"conf.high"} are accepted as aliases for \code{"ci"}. When supplied, this
-overrides the default \verb{show_*} column selection.}
+\code{"n"}, \code{"events"}, \code{"estimate"}, \code{"ci"}, and \code{"p"}, arbitrary original
+dataframe columns, or numeric positions in the supplied data. \code{"conf.low"}
+and \code{"conf.high"} are accepted as aliases for \code{"ci"}.}
 
 \item{term_header}{Header text for the term column.}
 

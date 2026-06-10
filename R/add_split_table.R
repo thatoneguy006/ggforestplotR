@@ -1,9 +1,4 @@
 .compose_split_table <- function(plot,
-                                 show_terms = TRUE,
-                                 show_n = NULL,
-                                 show_events = NULL,
-                                 show_estimate = TRUE,
-                                 show_p = FALSE,
                                  left_columns = NULL,
                                  right_columns = NULL,
                                  term_header = "Term",
@@ -40,14 +35,6 @@
   }
 
   state <- align_forest_state_to_plot_y_scale(state, plot)
-
-  if (is.null(show_n)) {
-    show_n <- any(!is.na(state$forest_data$n) & nzchar(state$forest_data$n))
-  }
-
-  if (is.null(show_events)) {
-    show_events <- any(!is.na(state$forest_data$events) & nzchar(state$forest_data$events))
-  }
 
   if (is.null(digits)) {
     digits <- 2
@@ -92,21 +79,21 @@
     stripe_alpha <- state$defaults$stripe_alpha
   }
 
-  default_left <- c(if (isTRUE(show_terms)) "term", if (isTRUE(show_n)) "n", if (isTRUE(show_events)) "events")
-  default_right <- c(if (isTRUE(show_estimate)) "estimate", if (isTRUE(show_p)) "p")
+  default_left <- default_split_left_columns(state$forest_data)
+  default_right <- default_split_right_columns(state$forest_data)
   resolved_left <- if (is.null(left_columns)) default_left else normalize_table_columns(left_columns, data = state$forest_data)
   resolved_right <- if (is.null(right_columns)) default_right else normalize_table_columns(right_columns, data = state$forest_data)
 
   if (length(resolved_left) == 0L) {
     stop(
-      "`add_split_table()` requires at least one left-side column. Supply `left_columns` or enable `show_terms`/`show_n`.",
+      "`add_split_table()` requires at least one left-side column. Supply `left_columns`.",
       call. = FALSE
     )
   }
 
   if (length(resolved_right) == 0L) {
     stop(
-      "`add_split_table()` requires at least one right-side column. Supply `right_columns` or enable `show_estimate`/`show_p`.",
+      "`add_split_table()` requires at least one right-side column. Supply `right_columns`.",
       call. = FALSE
     )
   }
@@ -135,10 +122,6 @@
 
   left_spec <- build_forest_table_data(
     state$forest_data,
-    show_terms = FALSE,
-    show_n = FALSE,
-    show_estimate = FALSE,
-    show_p = FALSE,
     term_header = term_header,
     n_header = n_header,
     events_header = events_header,
@@ -155,10 +138,6 @@
 
   right_spec <- build_forest_table_data(
     state$forest_data,
-    show_terms = FALSE,
-    show_n = FALSE,
-    show_estimate = FALSE,
-    show_p = FALSE,
     term_header = term_header,
     n_header = n_header,
     events_header = events_header,
@@ -282,29 +261,16 @@
 #'
 #' @param plot A plot created by [ggforestplot()]. Leave as `NULL` to use
 #'   `+ add_split_table(...)` syntax.
-#' @param show_terms Whether to include the term column in the default
-#'   left-side selection when `left_columns` is not supplied.
-#' @param show_n Whether to include the `N` column in the default left-side
-#'   selection when `left_columns` is not supplied. Defaults to `TRUE` when
-#'   the underlying plot data include an `n` column.
-#' @param show_events Whether to include the `Events` column in the default
-#'   left-side selection when `left_columns` is not supplied. Defaults to
-#'   `TRUE` when the underlying plot data include an `events` column.
-#' @param show_estimate Whether to include the formatted estimate and
-#'   confidence interval column in the default right-side selection when
-#'   `right_columns` is not supplied.
-#' @param show_p Whether to include the p-value column in the default
-#'   right-side selection when `right_columns` is not supplied.
 #' @param left_columns Optional explicit columns to place on the left side of
 #'   the forest plot. Accepts built-in names such as `"term"`, `"n"`,
 #'   `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
-#'   dataframe columns, or positions corresponding to the built-in columns.
-#'   `"conf.low"` and `"conf.high"` are accepted as aliases for `"ci"`.
+#'   dataframe columns, or numeric positions in the supplied data. `"conf.low"`
+#'   and `"conf.high"` are accepted as aliases for `"ci"`.
 #' @param right_columns Optional explicit columns to place on the right side
 #'   of the forest plot. Accepts built-in names such as `"estimate"`, `"ci"`,
-#'   and `"p"`, arbitrary original dataframe columns, or positions
-#'   corresponding to the built-in columns. `"conf.low"` and `"conf.high"` are
-#'   accepted as aliases for `"ci"`.
+#'   and `"p"`, arbitrary original dataframe columns, or numeric positions in
+#'   the supplied data. `"conf.low"` and `"conf.high"` are accepted as aliases
+#'   for `"ci"`.
 #' @param term_header Header text for the term column.
 #' @param n_header Header text for the `N` column.
 #' @param events_header Header text for the `Events` column.
@@ -378,16 +344,11 @@
 #'
 #' ggforestplot(coefs, n = "sample_size", p.value = "p_value") +
 #'   add_split_table(
-#'     left_columns = c(1, 2),
-#'     right_columns = c(4, 5),
+#'     left_columns = c(1, 5),
+#'     right_columns = c(2, 6),
 #'     estimate_label = "HR"
 #'   )
 add_split_table <- function(plot = NULL,
-                            show_terms = TRUE,
-                            show_n = NULL,
-                            show_events = NULL,
-                            show_estimate = TRUE,
-                            show_p = FALSE,
                             left_columns = NULL,
                             right_columns = NULL,
                             term_header = "Term",
@@ -420,11 +381,6 @@ add_split_table <- function(plot = NULL,
   if (is.null(plot)) {
     return(structure(
       list(
-        show_terms = show_terms,
-        show_n = show_n,
-        show_events = show_events,
-        show_estimate = show_estimate,
-        show_p = show_p,
         left_columns = left_columns,
         right_columns = right_columns,
         term_header = term_header,
@@ -457,11 +413,6 @@ add_split_table <- function(plot = NULL,
 
   .compose_split_table(
     plot = plot,
-    show_terms = show_terms,
-    show_n = show_n,
-    show_events = show_events,
-    show_estimate = show_estimate,
-    show_p = show_p,
     left_columns = left_columns,
     right_columns = right_columns,
     term_header = term_header,

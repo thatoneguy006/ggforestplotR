@@ -1,10 +1,5 @@
 .compose_forest_table <- function(plot,
                                   position = c("left", "right"),
-                                  show_terms = TRUE,
-                                  show_n = NULL,
-                                  show_events = NULL,
-                                  show_estimate = TRUE,
-                                  show_p = FALSE,
                                   columns = NULL,
                                   term_header = "Term",
                                   n_header = "N",
@@ -43,14 +38,6 @@
   }
 
   state <- align_forest_state_to_plot_y_scale(state, plot)
-
-  if (is.null(show_n)) {
-    show_n <- any(!is.na(state$forest_data$n) & nzchar(state$forest_data$n))
-  }
-
-  if (is.null(show_events)) {
-    show_events <- any(!is.na(state$forest_data$events) & nzchar(state$forest_data$events))
-  }
 
   if (is.null(digits)) {
     digits <- 2
@@ -96,27 +83,21 @@
   }
 
   table_columns <- if (is.null(columns)) {
-    c(
-      if (isTRUE(show_terms)) "term",
-      if (isTRUE(show_n)) "n",
-      if (isTRUE(show_events)) "events",
-      if (isTRUE(show_estimate)) "estimate",
-      if (isTRUE(show_p)) "p"
-    )
+    default_forest_table_columns(state$forest_data)
   } else {
     normalize_table_columns(columns, data = state$forest_data)
   }
 
   if ("n" %in% table_columns && all(is.na(state$forest_data$n) | !nzchar(state$forest_data$n))) {
-    stop("`show_n = TRUE` requires an `n` column in the underlying forest data.", call. = FALSE)
+    stop("`columns = \"n\"` requires an `n` column in the underlying forest data.", call. = FALSE)
   }
 
   if ("events" %in% table_columns && all(is.na(state$forest_data$events) | !nzchar(state$forest_data$events))) {
-    stop("`show_events = TRUE` requires an `events` column in the underlying forest data.", call. = FALSE)
+    stop("`columns = \"events\"` requires an `events` column in the underlying forest data.", call. = FALSE)
   }
 
   if ("p" %in% table_columns && all(is.na(state$forest_data$p.value))) {
-    stop("`show_p = TRUE` requires a `p.value` column in the underlying forest data.", call. = FALSE)
+    stop("`columns = \"p\"` requires a `p.value` column in the underlying forest data.", call. = FALSE)
   }
 
   plot_out <- plot
@@ -130,11 +111,6 @@
 
   table_spec <- build_forest_table_data(
     state$forest_data,
-    show_terms = show_terms,
-    show_n = show_n,
-    show_events = show_events,
-    show_estimate = show_estimate,
-    show_p = show_p,
     term_header = term_header,
     n_header = n_header,
     events_header = events_header,
@@ -196,22 +172,11 @@
 #'   `+ add_forest_table(...)` syntax.
 #' @param position Whether to place the table on the left or right of the
 #'   forest plot.
-#' @param show_terms Deprecated. Whether to show the term column in the table.
-#'   Use `columns` instead.
-#' @param show_n Deprecated. Whether to show the `N` column. Use `columns`
-#'   instead.
-#' @param show_events Deprecated. Whether to show the `Events` column. Use
-#'   `columns` instead.
-#' @param show_estimate Deprecated. Whether to show the formatted estimate and
-#'   confidence interval column. Use `columns` instead.
-#' @param show_p Deprecated. Whether to display the p-value column. Use
-#'   `columns` instead.
 #' @param columns Optional explicit columns to display in the side table, in
 #'   the order they should appear. Accepts built-in names such as `"term"`,
-#'   `"n"`, `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original dataframe
-#'   columns, or positions corresponding to the built-in columns. `"conf.low"`
-#'   and `"conf.high"` are accepted as aliases for `"ci"`. When supplied, this
-#'   overrides the default `show_*` column selection.
+#'   `"n"`, `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
+#'   dataframe columns, or numeric positions in the supplied data. `"conf.low"`
+#'   and `"conf.high"` are accepted as aliases for `"ci"`.
 #' @param term_header Header text for the term column.
 #' @param n_header Header text for the `N` column.
 #' @param events_header Header text for the `Events` column.
@@ -286,11 +251,6 @@
 #'   )
 add_forest_table <- function(plot = NULL,
                              position = c("left", "right"),
-                             show_terms = TRUE,
-                             show_n = NULL,
-                             show_events = NULL,
-                             show_estimate = TRUE,
-                             show_p = FALSE,
                              columns = NULL,
                              term_header = "Term",
                              n_header = "N",
@@ -316,26 +276,6 @@ add_forest_table <- function(plot = NULL,
                              grid_line_colour = "black",
                              grid_line_size = 0.3,
                              grid_line_linetype = 1) {
-  if (!missing(show_terms)) {
-    warn_deprecated_argument("show_terms", "`columns`")
-  }
-
-  if (!missing(show_n)) {
-    warn_deprecated_argument("show_n", "`columns`")
-  }
-
-  if (!missing(show_events)) {
-    warn_deprecated_argument("show_events", "`columns`")
-  }
-
-  if (!missing(show_estimate)) {
-    warn_deprecated_argument("show_estimate", "`columns`")
-  }
-
-  if (!missing(show_p)) {
-    warn_deprecated_argument("show_p", "`columns`")
-  }
-
   if (!missing(digits)) {
     warn_deprecated_argument("digits", "`estimate_digits`, `interval_digits`, and `p_digits`")
   }
@@ -346,11 +286,6 @@ add_forest_table <- function(plot = NULL,
     return(structure(
       list(
         position = position,
-        show_terms = show_terms,
-        show_n = show_n,
-        show_events = show_events,
-        show_estimate = show_estimate,
-        show_p = show_p,
         columns = columns,
         term_header = term_header,
         n_header = n_header,
@@ -384,11 +319,6 @@ add_forest_table <- function(plot = NULL,
   .compose_forest_table(
     plot = plot,
     position = position,
-    show_terms = show_terms,
-    show_n = show_n,
-    show_events = show_events,
-    show_estimate = show_estimate,
-    show_p = show_p,
     columns = columns,
     term_header = term_header,
     n_header = n_header,
