@@ -157,7 +157,31 @@ ggforestplot <- function(data,
   facet_strip_position <- match.arg(facet_strip_position)
   ci_arrow_type <- match.arg(ci_arrow_type)
 
-  forest_data <- if (is.data.frame(data)) {
+  forest_data <- if (inherits(data, "ggforestplot_bound_models")) {
+    if (!is.null(exponentiate)) {
+      stop("`exponentiate` is set by `bind_forest_models()`; pass it there instead.", call. = FALSE)
+    }
+
+    bound_data <- data
+    bound_data$label <- apply_term_labels(bound_data$term, bound_data$label, term_labels)
+    validate_forest_data(bound_data, exponentiate = isTRUE(attr(bound_data, "exponentiate")))
+
+    source_columns <- attr(bound_data, "source_columns")
+    bound_data$.source_row <- seq_len(nrow(bound_data))
+    bound_data <- sort_forest_data(bound_data, sort_terms = sort_terms)
+
+    if (!is.null(source_columns)) {
+      attr(bound_data, "source_columns") <- source_columns[bound_data$.source_row, , drop = FALSE]
+    }
+
+    bound_data$.source_row <- NULL
+    attr(bound_data, "exponentiate") <- isTRUE(attr(data, "exponentiate"))
+    attr(bound_data, "estimate_label") <- attr(data, "estimate_label")
+    attr(bound_data, "axis_label") <- attr(data, "axis_label")
+    attr(bound_data, "conf.level") <- attr(data, "conf.level")
+    attr(bound_data, "grouping_levels") <- attr(data, "grouping_levels")
+    bound_data
+  } else if (is.data.frame(data)) {
     as_forest_data(
       data = data,
       term = term,

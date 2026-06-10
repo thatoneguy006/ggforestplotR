@@ -24,6 +24,9 @@
 - Added confidence interval truncation support to `ggforestplot()` via
   `ci_limits`, with optional arrowheads for intervals extending beyond the
   displayed range.
+- Added `bind_forest_models()` to stack multiple fitted models into one
+  grouped forest-plot data frame. Model labels are used as plot groups, similar
+  in spirit to model stacking/merging workflows in table packages.
 
 ## Minor Changes
 
