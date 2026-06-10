@@ -9,6 +9,9 @@
 - Removed the internal `show_*` column-selection arguments from
   `build_forest_table_data()`. Internal callers should pass `columns`
   directly.
+- Removed the unused internal `x_limits` override from
+  `build_forest_table_plot()`. Table x-limits are now always derived from the
+  laid-out table specification.
 - Numeric table column positions now resolve against the supplied/source data
   columns in their original order, rather than the previous fixed built-in
   table-column order.

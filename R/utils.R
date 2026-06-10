@@ -1237,7 +1237,6 @@ build_forest_table_plot <- function(table_spec,
                                     grid_line_size = 0.3,
                                     grid_line_linetype = 1,
                                     x_expand = ggplot2::expansion(mult = 0.05),
-                                    x_limits = NULL,
                                     plot_margin = ggplot2::margin(5.5, 4, 5.5, 4),
                                     text_hjust = 0.5,
                                     header_hjust = 0.5,
@@ -1256,9 +1255,7 @@ build_forest_table_plot <- function(table_spec,
     ggplot2::aes(x = .data$column_position, y = .data$row_key, label = .data$text)
   )
 
-  if (is.null(x_limits)) {
-    x_limits <- compute_table_x_limits(table_spec)
-  }
+  x_limits <- compute_table_x_limits(table_spec)
 
   if (isTRUE(striped_rows)) {
     p <- p + ggplot2::geom_rect(
