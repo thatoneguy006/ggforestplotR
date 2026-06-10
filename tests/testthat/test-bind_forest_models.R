@@ -51,6 +51,33 @@ test_that("bound model tables label terms that appear in only one model", {
   expect_match(estimate_text, "^Fully Adjusted: ")
 })
 
+test_that("bound model tables format p.value aliases with p_digits", {
+  skip_if_not_installed("broom")
+
+  fit1 <- lm(mpg ~ cyl, data = mtcars)
+  fit2 <- lm(mpg ~ cyl + disp, data = mtcars)
+  fit3 <- lm(mpg ~ cyl + disp + wt, data = mtcars)
+  bound <- bind_forest_models(
+    list(fit1, fit2, fit3),
+    model_labels = c("Unadjusted", "Adjusted", "Fully Adjusted")
+  )
+  p <- ggforestplot(bound, p.value = "p.value")
+  table_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = c("term", "estimate", "p.value"),
+    p_digits = 3
+  )
+  p_text <- table_spec$table_data$text[
+    table_spec$table_data$column_key == "p" &
+      as.character(table_spec$table_data$row_key) == "wt"
+  ]
+
+  expect_true("p" %in% table_spec$column_keys)
+  expect_false("p.value" %in% table_spec$column_keys)
+  expect_match(p_text, "^Fully Adjusted: ")
+  expect_equal(p_text, "Fully Adjusted: 0.0016")
+})
+
 test_that("bind_forest_models supports common exponentiated scales", {
   skip_if_not_installed("broom")
 

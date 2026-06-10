@@ -108,7 +108,8 @@ normalize_table_columns <- function(columns, data = NULL) {
   normalized <- gsub("\\s+", "", tolower(columns))
   resolved <- unname(aliases[normalized])
   interval_alias <- normalized %in% c("conf.low", "conflow", "conf.high", "confhigh")
-  resolved[exact & !interval_alias] <- columns[exact & !interval_alias]
+  p_value_alias <- normalized %in% "p.value"
+  resolved[exact & !interval_alias & !p_value_alias] <- columns[exact & !interval_alias & !p_value_alias]
 
   if (anyNA(resolved)) {
     bad <- unique(columns[is.na(resolved)])

@@ -207,4 +207,20 @@ ggforestplot(
   add_forest_table()
 ```
 
+You can also use `bind_forest_models()` to plot estimates from several fit models at once.
+
+```{r bind-models, fig.width=8, fig.height=4.5, fig.dpi=300}
+fit1 <- lm(mpg ~ cyl, data = mtcars)
+fit2 <- lm(mpg ~ cyl + disp, data = mtcars)
+fit3 <- lm(mpg ~ cyl + disp + wt, data = mtcars)
+
+bound_models <- bind_forest_models(list(fit1,fit2,fit3), 
+                                   model_labels = c("Unadjusted", "Adjusted", "Fully Adjusted"))
+
+ggforestplot(bound_models, striped_rows = T) +
+  scale_x_continuous(limits = c(-6,1)) +
+  theme(legend.position = "top") +
+  scale_color_manual(values = c("#1F968BFF", "#453781FF", "#FDE725FF")) +
+  add_forest_table()
+```
 
