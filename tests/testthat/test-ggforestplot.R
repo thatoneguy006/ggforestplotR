@@ -103,6 +103,83 @@ test_that("ggforestplot supports point and interval geometry controls", {
   expect_true(all(built$data[[1]]$width == 0.25))
 })
 
+test_that("ggforestplot truncates confidence intervals and draws arrows", {
+  raw <- data.frame(
+    term = c("Age", "BMI", "Treatment"),
+    estimate = c(0.3, -0.2, 0.4),
+    conf.low = c(-2.0, -0.4, 0.2),
+    conf.high = c(0.5, 2.0, 1.8)
+  )
+
+  p <- ggforestplot(raw, ci_limits = c(-1, 1), ci_arrow_length = 0.05)
+  built <- ggplot2::ggplot_build(p)
+  segment_layers <- Filter(
+    function(layer) all(c("x", "xend", "y", "yend") %in% names(layer)),
+    built$data
+  )
+
+  expect_equal(p$scales$get_scales("x")$limits, c(-1, 1))
+  expect_equal(built$data[[1]]$xmin, c(-1, -0.4, 0.2))
+  expect_equal(built$data[[1]]$xmax, c(0.5, 1, 1))
+  expect_length(segment_layers, 2L)
+  expect_true(any(segment_layers[[1]]$xend == -1))
+  expect_true(all(segment_layers[[2]]$xend == 1))
+  expect_equal(p$ggforestplotR_state$forest_data$conf.low, raw$conf.low)
+  expect_equal(p$ggforestplotR_state$forest_data$conf.high, raw$conf.high)
+  expect_equal(p$ggforestplotR_state$defaults$ci_limits, c(-1, 1))
+})
+
+test_that("ggforestplot can truncate confidence intervals without arrows", {
+  raw <- data.frame(
+    term = "Age",
+    estimate = 0.3,
+    conf.low = -2,
+    conf.high = 2
+  )
+
+  built <- ggplot2::ggplot_build(
+    ggforestplot(raw, ci_limits = c(-1, 1), ci_arrows = FALSE)
+  )
+  segment_layers <- Filter(
+    function(layer) all(c("x", "xend", "y", "yend") %in% names(layer)),
+    built$data
+  )
+
+  expect_equal(built$data[[1]]$xmin, -1)
+  expect_equal(built$data[[1]]$xmax, 1)
+  expect_length(segment_layers, 0L)
+})
+
+test_that("ggforestplot validates confidence interval truncation limits", {
+  raw <- data.frame(
+    term = "Age",
+    estimate = 1.2,
+    conf.low = 0.1,
+    conf.high = 3
+  )
+
+  expect_error(
+    ggforestplot(raw, ci_limits = 1),
+    "`ci_limits` must be `NULL` or a numeric vector of length 2."
+  )
+  expect_error(
+    ggforestplot(raw, ci_limits = c(1, 1)),
+    "`ci_limits` must contain two distinct values."
+  )
+  expect_error(
+    ggforestplot(raw, exponentiate = TRUE, ci_limits = c(0, 2)),
+    "`ci_limits` must be positive for exponentiated plots."
+  )
+  expect_error(
+    ggforestplot(raw, ci_limits = c(0, 2), ci_arrows = NA),
+    "`ci_arrows` must be `TRUE` or `FALSE`."
+  )
+  expect_error(
+    ggforestplot(raw, ci_limits = c(0, 2), ci_arrow_length = 0),
+    "`ci_arrow_length` must be a single positive number."
+  )
+})
+
 test_that("ggforestplot can draw separator lines for each labeled variable block", {
   raw <- data.frame(
     term = c("race_black", "race_white", "race_other", "age"),
@@ -320,6 +397,22 @@ test_that("ggforestplot can draw striped rows on exponentiated plots", {
   expect_no_warning(
     ggplot2::ggplot_build(p_breaks)
   )
+})
+
+test_that("ggforestplot truncates confidence intervals on exponentiated plots", {
+  raw <- data.frame(
+    term = c("Treatment", "Biomarker"),
+    estimate = c(1.2, 0.8),
+    conf.low = c(0.2, 0.6),
+    conf.high = c(4.0, 1.1)
+  )
+
+  p <- ggforestplot(raw, exponentiate = TRUE, ci_limits = c(0.5, 2))
+  built <- ggplot2::ggplot_build(p)
+
+  expect_equal(p$scales$get_scales("x")$limits, log10(c(0.5, 2)))
+  expect_equal(built$data[[1]]$xmin, log10(c(0.5, 0.6)))
+  expect_equal(built$data[[1]]$xmax, log10(c(2.0, 1.1)))
 })
 
 test_that("ggforestplot allows facet strip labels on the right", {

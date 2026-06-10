@@ -1220,6 +1220,63 @@ default_plot_background_limits <- function(forest_data,
 
 # ─── ggplot2 table panel ─────────────────────────────────────────────────────
 
+validate_ci_limits <- function(ci_limits = NULL, exponentiate = FALSE) {
+  if (is.null(ci_limits)) {
+    return(NULL)
+  }
+
+  if (!is.numeric(ci_limits) || length(ci_limits) != 2L ||
+      anyNA(ci_limits) || any(!is.finite(ci_limits))) {
+    stop("`ci_limits` must be `NULL` or a numeric vector of length 2.", call. = FALSE)
+  }
+
+  ci_limits <- sort(ci_limits)
+
+  if (ci_limits[[1]] == ci_limits[[2]]) {
+    stop("`ci_limits` must contain two distinct values.", call. = FALSE)
+  }
+
+  if (isTRUE(exponentiate) && any(ci_limits <= 0)) {
+    stop("`ci_limits` must be positive for exponentiated plots.", call. = FALSE)
+  }
+
+  ci_limits
+}
+
+build_ci_plot_data <- function(data, ci_limits = NULL, exponentiate = FALSE) {
+  data$ci_low <- data$conf.low
+  data$ci_high <- data$conf.high
+  data$ci_estimate <- data$estimate
+  data$ci_truncated_left <- FALSE
+  data$ci_truncated_right <- FALSE
+  data$ci_arrow_left_start <- NA_real_
+  data$ci_arrow_right_start <- NA_real_
+
+  if (is.null(ci_limits)) {
+    return(data)
+  }
+
+  lower <- ci_limits[[1]]
+  upper <- ci_limits[[2]]
+  data$ci_truncated_left <- data$conf.low < lower
+  data$ci_truncated_right <- data$conf.high > upper
+  data$ci_low <- pmax(data$conf.low, lower)
+  data$ci_high <- pmin(data$conf.high, upper)
+  data$ci_estimate <- pmin(pmax(data$estimate, lower), upper)
+
+  if (isTRUE(exponentiate)) {
+    arrow_ratio <- exp(log(upper / lower) * 0.025)
+    data$ci_arrow_left_start[data$ci_truncated_left] <- lower * arrow_ratio
+    data$ci_arrow_right_start[data$ci_truncated_right] <- upper / arrow_ratio
+  } else {
+    arrow_offset <- (upper - lower) * 0.025
+    data$ci_arrow_left_start[data$ci_truncated_left] <- lower + arrow_offset
+    data$ci_arrow_right_start[data$ci_truncated_right] <- upper - arrow_offset
+  }
+
+  data
+}
+
 #' Build a ggplot2 table panel for one side of a split forest plot.
 #'
 #' Uses symmetric expansion and uniform margins.  The "equal spacing"

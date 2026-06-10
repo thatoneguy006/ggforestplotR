@@ -28,6 +28,10 @@ ggforestplot(
   linewidth = 0.5,
   line_size = NULL,
   staple_width = 0.2,
+  ci_limits = NULL,
+  ci_arrows = TRUE,
+  ci_arrow_length = 0.08,
+  ci_arrow_type = c("closed", "open"),
   dodge_width = 0.6,
   separate_lines = FALSE,
   separator_line_linetype = 2,
@@ -102,6 +106,19 @@ ratios for Cox models.}
 
 \item{staple_width}{Width of the terminal staples on confidence interval
 lines.}
+
+\item{ci_limits}{Optional numeric vector of length 2 used to truncate
+displayed confidence intervals. Intervals extending beyond these limits
+are clipped to the boundary and marked with arrows when \code{ci_arrows} is
+\code{TRUE}.}
+
+\item{ci_arrows}{Logical; if \code{TRUE}, draw outward-facing arrows for
+confidence intervals truncated by \code{ci_limits}.}
+
+\item{ci_arrow_length}{Length of CI truncation arrows in inches.}
+
+\item{ci_arrow_type}{Arrowhead type for truncated confidence intervals.
+Passed to \code{\link[grid:arrow]{grid::arrow()}}.}
 
 \item{dodge_width}{Horizontal dodging used for grouped estimates.}
 

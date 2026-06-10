@@ -21,6 +21,9 @@
 - Added mixed-model support for `tidy_forest_model()` and `ggforestplot()`
   when `broom.mixed` is installed. Mixed-model tidiers are restricted to fixed
   effects so random-effect parameter rows are not plotted as terms.
+- Added confidence interval truncation support to `ggforestplot()` via
+  `ci_limits`, with optional arrowheads for intervals extending beyond the
+  displayed range.
 
 ## Minor Changes
 
