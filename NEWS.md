@@ -1,3 +1,24 @@
+# ggforestplotR 0.3.0
+
+## Breaking Changes
+
+- Removed the deprecated table-display shortcut arguments `show_terms`,
+  `show_n`, `show_events`, `show_estimate`, and `show_p` from
+  `add_forest_table()` and `add_split_table()`. Use `columns`,
+  `left_columns`, and `right_columns` to choose table columns explicitly.
+- Removed the internal `show_*` column-selection arguments from
+  `build_forest_table_data()`. Internal callers should pass `columns`
+  directly.
+- Numeric table column positions now resolve against the supplied/source data
+  columns in their original order, rather than the previous fixed built-in
+  table-column order.
+
+## Minor Changes
+
+- Relaxed forest-data validation so only the core plot geometry columns
+  `term`, `estimate`, `conf.low`, and `conf.high` are required. Optional table
+  and grouping columns are validated only when used.
+
 # ggforestplotR 0.2.2
 
 ## Minor Changes
