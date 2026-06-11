@@ -6,12 +6,6 @@
   `show_n`, `show_events`, `show_estimate`, and `show_p` from
   `add_forest_table()` and `add_split_table()`. Use `columns`,
   `left_columns`, and `right_columns` to choose table columns explicitly.
-- Removed the internal `show_*` column-selection arguments from
-  `build_forest_table_data()`. Internal callers should pass `columns`
-  directly.
-- Removed the unused internal `x_limits` override from
-  `build_forest_table_plot()`. Table x-limits are now always derived from the
-  laid-out table specification.
 - Numeric table column positions now resolve against the supplied/source data
   columns in their original order, rather than the previous fixed built-in
   table-column order.
@@ -25,8 +19,7 @@
   `ci_limits`, with optional arrowheads for intervals extending beyond the
   displayed range.
 - Added `bind_forest_models()` to stack multiple fitted models into one
-  grouped forest-plot data frame. Model labels are used as plot groups, similar
-  in spirit to model stacking/merging workflows in table packages.
+  grouped forest-plot data frame.
 
 ## Minor Changes
 
