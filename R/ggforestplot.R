@@ -39,6 +39,15 @@
 #' @param line_size Deprecated. Use `linewidth` instead.
 #' @param staple_width Width of the terminal staples on confidence interval
 #'   lines.
+#' @param ci_limits Optional numeric vector of length 2 used to truncate
+#'   displayed confidence intervals. Intervals extending beyond these limits
+#'   are clipped to the boundary and marked with arrows when `ci_arrows` is
+#'   `TRUE`.
+#' @param ci_arrows Logical; if `TRUE`, draw outward-facing arrows for
+#'   confidence intervals truncated by `ci_limits`.
+#' @param ci_arrow_length Length of CI truncation arrows in inches.
+#' @param ci_arrow_type Arrowhead type for truncated confidence intervals.
+#'   Passed to [grid::arrow()].
 #' @param dodge_width Horizontal dodging used for grouped estimates.
 #' @param separate_lines Logical; if `TRUE`, draw grid lines
 #'   around each labeled block identified by `separate_groups`.
@@ -95,6 +104,10 @@ ggforestplot <- function(data,
                          linewidth = 0.5,
                          line_size = NULL,
                          staple_width = 0.2,
+                         ci_limits = NULL,
+                         ci_arrows = TRUE,
+                         ci_arrow_length = 0.08,
+                         ci_arrow_type = c("closed", "open"),
                          dodge_width = 0.6,
                          separate_lines = FALSE,
                          separator_line_linetype = 2,
@@ -142,8 +155,33 @@ ggforestplot <- function(data,
 
   sort_terms <- match.arg(sort_terms)
   facet_strip_position <- match.arg(facet_strip_position)
+  ci_arrow_type <- match.arg(ci_arrow_type)
 
-  forest_data <- if (is.data.frame(data)) {
+  forest_data <- if (inherits(data, "ggforestplot_bound_models")) {
+    if (!is.null(exponentiate)) {
+      stop("`exponentiate` is set by `bind_forest_models()`; pass it there instead.", call. = FALSE)
+    }
+
+    bound_data <- data
+    bound_data$label <- apply_term_labels(bound_data$term, bound_data$label, term_labels)
+    validate_forest_data(bound_data, exponentiate = isTRUE(attr(bound_data, "exponentiate")))
+
+    source_columns <- attr(bound_data, "source_columns")
+    bound_data$.source_row <- seq_len(nrow(bound_data))
+    bound_data <- sort_forest_data(bound_data, sort_terms = sort_terms)
+
+    if (!is.null(source_columns)) {
+      attr(bound_data, "source_columns") <- source_columns[bound_data$.source_row, , drop = FALSE]
+    }
+
+    bound_data$.source_row <- NULL
+    attr(bound_data, "exponentiate") <- isTRUE(attr(data, "exponentiate"))
+    attr(bound_data, "estimate_label") <- attr(data, "estimate_label")
+    attr(bound_data, "axis_label") <- attr(data, "axis_label")
+    attr(bound_data, "conf.level") <- attr(data, "conf.level")
+    attr(bound_data, "grouping_levels") <- attr(data, "grouping_levels")
+    bound_data
+  } else if (is.data.frame(data)) {
     as_forest_data(
       data = data,
       term = term,
@@ -197,6 +235,17 @@ ggforestplot <- function(data,
     stop("`ref_line` must be positive for exponentiated plots.", call. = FALSE)
   }
 
+  ci_limits <- validate_ci_limits(ci_limits, exponentiate = plot_exponentiate)
+
+  if (!is.logical(ci_arrows) || length(ci_arrows) != 1L || is.na(ci_arrows)) {
+    stop("`ci_arrows` must be `TRUE` or `FALSE`.", call. = FALSE)
+  }
+
+  if (!is.numeric(ci_arrow_length) || length(ci_arrow_length) != 1L ||
+      is.na(ci_arrow_length) || ci_arrow_length <= 0) {
+    stop("`ci_arrow_length` must be a single positive number.", call. = FALSE)
+  }
+
   display_data <- build_forest_plot_data(forest_data)
   forest_data <- display_data$plot_data
   stripe_data <- display_data$stripe_data
@@ -205,38 +254,59 @@ ggforestplot <- function(data,
   plot_x_limits <- NULL
   stripe_layer_index <- NULL
 
-  if (isTRUE(plot_exponentiate)) {
+  if (!is.null(ci_limits)) {
+    plot_x_limits <- ci_limits
+  } else if (isTRUE(plot_exponentiate)) {
     plot_x_limits <- default_plot_background_limits(
       forest_data,
       exponentiate = plot_exponentiate,
       include_zero = draw_ref_line,
       ref_line = ref_line
     )
+  }
 
+  if (isTRUE(plot_exponentiate)) {
     plot_stripe_data$xmin <- plot_x_limits[1]
     plot_stripe_data$xmax <- plot_x_limits[2]
   }
 
+  ci_plot_data <- build_ci_plot_data(
+    forest_data,
+    ci_limits = ci_limits,
+    exponentiate = plot_exponentiate
+  )
   has_groups <- any(!is.na(forest_data$group) & nzchar(forest_data$group))
   dodge <- ggplot2::position_dodge(width = dodge_width)
-  mapping <- if (has_groups) {
+  point_mapping <- if (has_groups) {
     ggplot2::aes(
       x = .data$estimate,
       y = .data$row_key,
-      xmin = .data$conf.low,
-      xmax = .data$conf.high,
       colour = .data$group
     )
   } else {
     ggplot2::aes(
       x = .data$estimate,
+      y = .data$row_key
+    )
+  }
+  ci_mapping <- if (has_groups) {
+    ggplot2::aes(
+      x = .data$ci_estimate,
       y = .data$row_key,
-      xmin = .data$conf.low,
-      xmax = .data$conf.high
+      xmin = .data$ci_low,
+      xmax = .data$ci_high,
+      colour = .data$group
+    )
+  } else {
+    ggplot2::aes(
+      x = .data$ci_estimate,
+      y = .data$row_key,
+      xmin = .data$ci_low,
+      xmax = .data$ci_high
     )
   }
 
-  p <- ggplot2::ggplot(forest_data, mapping)
+  p <- ggplot2::ggplot(ci_plot_data, point_mapping)
 
   if (isTRUE(striped_rows)) {
     p <- p + ggplot2::geom_rect(
@@ -266,13 +336,170 @@ ggforestplot <- function(data,
     )
   }
 
-  p <- p +
-    ggplot2::geom_errorbar(
+  left_arrow_data <- ci_plot_data[ci_plot_data$ci_truncated_left, , drop = FALSE]
+  right_arrow_data <- ci_plot_data[ci_plot_data$ci_truncated_right, , drop = FALSE]
+  arrow_caps <- isTRUE(ci_arrows) &&
+    any(ci_plot_data$ci_truncated_left | ci_plot_data$ci_truncated_right)
+  arrow_spec <- grid::arrow(
+    length = grid::unit(ci_arrow_length, "inches"),
+    type = ci_arrow_type
+  )
+
+  if (isTRUE(arrow_caps)) {
+    complete_ci_data <- ci_plot_data[
+      !ci_plot_data$ci_truncated_left & !ci_plot_data$ci_truncated_right,
+      ,
+      drop = FALSE
+    ]
+    truncated_ci_data <- ci_plot_data[
+      ci_plot_data$ci_truncated_left | ci_plot_data$ci_truncated_right,
+      ,
+      drop = FALSE
+    ]
+
+    if (nrow(complete_ci_data) > 0L) {
+      p <- p + ggplot2::geom_errorbar(
+        data = complete_ci_data,
+        mapping = ci_mapping,
+        width = staple_width,
+        linewidth = linewidth,
+        position = dodge,
+        orientation = "y"
+      )
+    }
+
+    if (nrow(truncated_ci_data) > 0L) {
+      p <- p + ggplot2::geom_errorbar(
+        data = truncated_ci_data,
+        mapping = ci_mapping,
+        width = 0,
+        linewidth = linewidth,
+        position = dodge,
+        orientation = "y"
+      )
+    }
+
+    low_staple_data <- truncated_ci_data[!truncated_ci_data$ci_truncated_left, , drop = FALSE]
+    high_staple_data <- truncated_ci_data[!truncated_ci_data$ci_truncated_right, , drop = FALSE]
+    low_staple_mapping <- if (has_groups) {
+      ggplot2::aes(
+        x = .data$ci_low,
+        y = .data$row_key,
+        xmin = .data$ci_low,
+        xmax = .data$ci_low,
+        colour = .data$group
+      )
+    } else {
+      ggplot2::aes(
+        x = .data$ci_low,
+        y = .data$row_key,
+        xmin = .data$ci_low,
+        xmax = .data$ci_low
+      )
+    }
+    high_staple_mapping <- if (has_groups) {
+      ggplot2::aes(
+        x = .data$ci_high,
+        y = .data$row_key,
+        xmin = .data$ci_high,
+        xmax = .data$ci_high,
+        colour = .data$group
+      )
+    } else {
+      ggplot2::aes(
+        x = .data$ci_high,
+        y = .data$row_key,
+        xmin = .data$ci_high,
+        xmax = .data$ci_high
+      )
+    }
+
+    if (nrow(low_staple_data) > 0L) {
+      p <- p + ggplot2::geom_errorbar(
+        data = low_staple_data,
+        mapping = low_staple_mapping,
+        width = staple_width,
+        linewidth = linewidth,
+        position = dodge,
+        orientation = "y"
+      )
+    }
+
+    if (nrow(high_staple_data) > 0L) {
+      p <- p + ggplot2::geom_errorbar(
+        data = high_staple_data,
+        mapping = high_staple_mapping,
+        width = staple_width,
+        linewidth = linewidth,
+        position = dodge,
+        orientation = "y"
+      )
+    }
+  } else {
+    p <- p + ggplot2::geom_errorbar(
+      mapping = ci_mapping,
       width = staple_width,
       linewidth = linewidth,
       position = dodge,
       orientation = "y"
-    ) +
+    )
+  }
+
+  if (isTRUE(ci_arrows) && nrow(left_arrow_data) > 0L) {
+    left_arrow_mapping <- if (has_groups) {
+      ggplot2::aes(
+        x = .data$ci_arrow_left_start,
+        xend = .data$ci_low,
+        y = .data$row_key,
+        yend = .data$row_key,
+        colour = .data$group
+      )
+    } else {
+      ggplot2::aes(
+        x = .data$ci_arrow_left_start,
+        xend = .data$ci_low,
+        y = .data$row_key,
+        yend = .data$row_key
+      )
+    }
+    p <- p + ggplot2::geom_segment(
+      data = left_arrow_data,
+      mapping = left_arrow_mapping,
+      inherit.aes = FALSE,
+      linewidth = linewidth,
+      arrow = arrow_spec,
+      position = dodge
+    )
+  }
+
+  if (isTRUE(ci_arrows) && nrow(right_arrow_data) > 0L) {
+    right_arrow_mapping <- if (has_groups) {
+      ggplot2::aes(
+        x = .data$ci_arrow_right_start,
+        xend = .data$ci_high,
+        y = .data$row_key,
+        yend = .data$row_key,
+        colour = .data$group
+      )
+    } else {
+      ggplot2::aes(
+        x = .data$ci_arrow_right_start,
+        xend = .data$ci_high,
+        y = .data$row_key,
+        yend = .data$row_key
+      )
+    }
+    p <- p + ggplot2::geom_segment(
+      data = right_arrow_data,
+      mapping = right_arrow_mapping,
+      inherit.aes = FALSE,
+      linewidth = linewidth,
+      arrow = arrow_spec,
+      position = dodge
+    )
+  }
+
+  p <- p +
     ggplot2::geom_point(
       size = point_size,
       shape = point_shape,
@@ -314,6 +541,11 @@ ggforestplot <- function(data,
       limits = plot_x_limits,
       expand = ggplot2::expansion(mult = 0)
     )
+  } else if (!is.null(plot_x_limits)) {
+    p <- p + ggplot2::scale_x_continuous(
+      limits = plot_x_limits,
+      expand = ggplot2::expansion(mult = 0)
+    )
   }
 
   if (isTRUE(display_data$has_groupings)) {
@@ -347,7 +579,9 @@ ggforestplot <- function(data,
       estimate_label = estimate_label,
       axis_label = axis_label,
       ref_line = ref_line,
-      ref_label = ref_label
+      ref_label = ref_label,
+      ci_limits = ci_limits,
+      ci_arrows = ci_arrows
     )
   )
 

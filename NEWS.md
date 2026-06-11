@@ -1,3 +1,32 @@
+# ggforestplotR 0.3.0
+
+## Breaking Changes
+
+- Removed the deprecated table-display shortcut arguments `show_terms`,
+  `show_n`, `show_events`, `show_estimate`, and `show_p` from
+  `add_forest_table()` and `add_split_table()`. Use `columns`,
+  `left_columns`, and `right_columns` to choose table columns explicitly.
+- Numeric table column positions now resolve against the supplied/source data
+  columns in their original order, rather than the previous fixed built-in
+  table-column order.
+
+## Major Changes
+
+- Added mixed-model support for `tidy_forest_model()` and `ggforestplot()`
+  when `broom.mixed` is installed. Mixed-model tidiers are restricted to fixed
+  effects so random-effect parameter rows are not plotted as terms.
+- Added confidence interval truncation support to `ggforestplot()` via
+  `ci_limits`, with optional arrowheads for intervals extending beyond the
+  displayed range.
+- Added `bind_forest_models()` to stack multiple fitted models into one
+  grouped forest-plot data frame.
+
+## Minor Changes
+
+- Relaxed forest-data validation so only the core plot geometry columns
+  `term`, `estimate`, `conf.low`, and `conf.high` are required. Optional table
+  and grouping columns are validated only when used.
+
 # ggforestplotR 0.2.2
 
 ## Minor Changes

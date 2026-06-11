@@ -15,7 +15,8 @@ tidy_forest_model(
 )
 }
 \arguments{
-\item{model}{A fitted model object supported by \code{\link[broom:tidy]{broom::tidy()}}.}
+\item{model}{A fitted model object supported by \code{\link[broom:tidy]{broom::tidy()}} or, for
+mixed models, a \code{broom.mixed} tidy method.}
 
 \item{conf.int}{Logical; if \code{TRUE}, request confidence intervals from
 \code{\link[broom:tidy]{broom::tidy()}}.}
@@ -36,7 +37,9 @@ Names should match model term names and values are the labels to display.}
 A standardized coefficient data frame ready for \code{\link[=ggforestplot]{ggforestplot()}}.
 }
 \description{
-Uses \code{\link[broom:tidy]{broom::tidy()}} to convert a fitted model into forest-plot data.
+Uses \code{\link[broom:tidy]{broom::tidy()}} to convert a fitted model into forest-plot data. Mixed
+models are supported through \code{broom.mixed} tidy methods when that package is
+installed.
 }
 \examples{
 if (requireNamespace("broom", quietly = TRUE)) {

@@ -1,8 +1,69 @@
+is_mixed_model <- function(model) {
+  inherits(
+    model,
+    c("merMod", "lmerMod", "glmerMod", "nlmerMod", "lme", "glmmTMB")
+  )
+}
+
+tidy_model_coefficients <- function(model,
+                                    conf.int = TRUE,
+                                    conf.level = 0.95,
+                                    exponentiate = FALSE) {
+  if (!requireNamespace("broom", quietly = TRUE)) {
+    stop(
+      "The `broom` package is required to tidy model objects. ",
+      "Install it or pass a coefficient data frame to `ggforestplot()` instead.",
+      call. = FALSE
+    )
+  }
+
+  if (is_mixed_model(model)) {
+    if (!requireNamespace("broom.mixed", quietly = TRUE)) {
+      stop(
+        "The `broom.mixed` package is required to tidy mixed model objects. ",
+        "Install it or pass a coefficient data frame to `ggforestplot()` instead.",
+        call. = FALSE
+      )
+    }
+
+    return(broom::tidy(
+      x = model,
+      effects = "fixed",
+      conf.int = conf.int,
+      conf.level = conf.level,
+      exponentiate = exponentiate
+    ))
+  }
+
+  broom::tidy(
+    x = model,
+    conf.int = conf.int,
+    conf.level = conf.level,
+    exponentiate = exponentiate
+  )
+}
+
+keep_fixed_effects <- function(out) {
+  if (!"effect" %in% names(out)) {
+    return(out)
+  }
+
+  fixed <- !is.na(out$effect) & as.character(out$effect) == "fixed"
+  if (!any(fixed)) {
+    stop("`tidy()` returned no fixed-effect rows to plot.", call. = FALSE)
+  }
+
+  out[fixed, , drop = FALSE]
+}
+
 #' Tidy a model object for forest plotting
 #'
-#' Uses [broom::tidy()] to convert a fitted model into forest-plot data.
+#' Uses [broom::tidy()] to convert a fitted model into forest-plot data. Mixed
+#' models are supported through `broom.mixed` tidy methods when that package is
+#' installed.
 #'
-#' @param model A fitted model object supported by [broom::tidy()].
+#' @param model A fitted model object supported by [broom::tidy()] or, for
+#'   mixed models, a `broom.mixed` tidy method.
 #' @param conf.int Logical; if `TRUE`, request confidence intervals from
 #'   [broom::tidy()].
 #' @param conf.level Confidence level for intervals.
@@ -48,20 +109,13 @@ tidy_forest_model <- function(model,
     conf.level = conf.level
   )
 
-  if (!requireNamespace("broom", quietly = TRUE)) {
-    stop(
-      "The `broom` package is required to tidy model objects. ",
-      "Install it or pass a coefficient data frame to `ggforestplot()` instead.",
-      call. = FALSE
-    )
-  }
-
-  out <- broom::tidy(
-    x = model,
+  out <- tidy_model_coefficients(
+    model = model,
     conf.int = conf.int,
     conf.level = conf.level,
     exponentiate = estimate_info$exponentiate
   )
+  out <- keep_fixed_effects(out)
 
   if (!"term" %in% names(out) || !"estimate" %in% names(out)) {
     stop(
