@@ -184,7 +184,7 @@ l1 <- glm(Treatment ~ conc + uptake + Type, family = binomial(link = "logit"),
 
 ggforestplot(l1, exponentiate = TRUE, striped_rows = T, term_labels = c("TypeMississippi" = "Mississippi")) +
   add_forest_table(position = "left", 
-                   show_p = F)
+                   columns = c("term", "estimate"))
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/logistic-regression-1.png)
@@ -241,3 +241,26 @@ ggforestplot(
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/comparison-1.png)
+
+You can also use
+[`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/reference/bind_forest_models.md)
+to plot estimates from several fit models at once.
+
+``` r
+
+fit1 <- lm(mpg ~ cyl, data = mtcars)
+fit2 <- lm(mpg ~ cyl + disp, data = mtcars)
+fit3 <- lm(mpg ~ cyl + disp + wt, data = mtcars)
+
+bound_models <- bind_forest_models(list(fit1,fit2,fit3), 
+                                   model_labels = c("Unadjusted", "Adjusted", "Fully Adjusted"))
+
+ggforestplot(bound_models, striped_rows = T, p.value = "p.value") +
+  scale_x_continuous(limits = c(-6,1)) +
+  theme(legend.position = "top") +
+  scale_color_manual(values = c("#1F968BFF", "#453781FF", "#FDE725FF")) +
+  add_forest_table(columns = c("term", "estimate", "p.value"),
+                   p_digits = 4)
+```
+
+![](ggforestplotR-plot-customization_files/figure-html/bind-models-1.png)

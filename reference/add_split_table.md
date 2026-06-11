@@ -8,11 +8,6 @@ appear on both sides of the plotting panel.
 ``` r
 add_split_table(
   plot = NULL,
-  show_terms = TRUE,
-  show_n = NULL,
-  show_events = NULL,
-  show_estimate = TRUE,
-  show_p = FALSE,
   left_columns = NULL,
   right_columns = NULL,
   term_header = "Term",
@@ -49,49 +44,21 @@ add_split_table(
   [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md).
   Leave as `NULL` to use `+ add_split_table(...)` syntax.
 
-- show_terms:
-
-  Whether to include the term column in the default left-side selection
-  when `left_columns` is not supplied.
-
-- show_n:
-
-  Whether to include the `N` column in the default left-side selection
-  when `left_columns` is not supplied. Defaults to `TRUE` when the
-  underlying plot data include an `n` column.
-
-- show_events:
-
-  Whether to include the `Events` column in the default left-side
-  selection when `left_columns` is not supplied. Defaults to `TRUE` when
-  the underlying plot data include an `events` column.
-
-- show_estimate:
-
-  Whether to include the formatted estimate and confidence interval
-  column in the default right-side selection when `right_columns` is not
-  supplied.
-
-- show_p:
-
-  Whether to include the p-value column in the default right-side
-  selection when `right_columns` is not supplied.
-
 - left_columns:
 
   Optional explicit columns to place on the left side of the forest
   plot. Accepts built-in names such as `"term"`, `"n"`, `"events"`,
   `"estimate"`, `"ci"`, and `"p"`, arbitrary original dataframe columns,
-  or positions corresponding to the built-in columns. `"conf.low"` and
+  or numeric positions in the supplied data. `"conf.low"` and
   `"conf.high"` are accepted as aliases for `"ci"`.
 
 - right_columns:
 
   Optional explicit columns to place on the right side of the forest
   plot. Accepts built-in names such as `"estimate"`, `"ci"`, and `"p"`,
-  arbitrary original dataframe columns, or positions corresponding to
-  the built-in columns. `"conf.low"` and `"conf.high"` are accepted as
-  aliases for `"ci"`.
+  arbitrary original dataframe columns, or numeric positions in the
+  supplied data. `"conf.low"` and `"conf.high"` are accepted as aliases
+  for `"ci"`.
 
 - term_header:
 
@@ -236,8 +203,8 @@ add_split_table(
 
 ggforestplot(coefs, n = "sample_size", p.value = "p_value") +
   add_split_table(
-    left_columns = c(1, 2),
-    right_columns = c(4, 5),
+    left_columns = c(1, 5),
+    right_columns = c(2, 6),
     estimate_label = "HR"
   )
 ```

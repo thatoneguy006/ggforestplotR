@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,11 +55,6 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">add_forest_table</span><span class="op">(</span></span>
 <span>  plot <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"left"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
-<span>  show_terms <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  show_n <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  show_events <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  show_estimate <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  show_p <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  columns <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  term_header <span class="op">=</span> <span class="st">"Term"</span>,</span>
 <span>  n_header <span class="op">=</span> <span class="st">"N"</span>,</span>
@@ -102,38 +97,12 @@
 forest plot.</p></dd>
 
 
-<dt id="arg-show-terms">show_terms<a class="anchor" aria-label="anchor" href="#arg-show-terms"></a></dt>
-<dd><p>Deprecated. Whether to show the term column in the table.
-Use <code>columns</code> instead.</p></dd>
-
-
-<dt id="arg-show-n">show_n<a class="anchor" aria-label="anchor" href="#arg-show-n"></a></dt>
-<dd><p>Deprecated. Whether to show the <code>N</code> column. Use <code>columns</code>
-instead.</p></dd>
-
-
-<dt id="arg-show-events">show_events<a class="anchor" aria-label="anchor" href="#arg-show-events"></a></dt>
-<dd><p>Deprecated. Whether to show the <code>Events</code> column. Use
-<code>columns</code> instead.</p></dd>
-
-
-<dt id="arg-show-estimate">show_estimate<a class="anchor" aria-label="anchor" href="#arg-show-estimate"></a></dt>
-<dd><p>Deprecated. Whether to show the formatted estimate and
-confidence interval column. Use <code>columns</code> instead.</p></dd>
-
-
-<dt id="arg-show-p">show_p<a class="anchor" aria-label="anchor" href="#arg-show-p"></a></dt>
-<dd><p>Deprecated. Whether to display the p-value column. Use
-<code>columns</code> instead.</p></dd>
-
-
 <dt id="arg-columns">columns<a class="anchor" aria-label="anchor" href="#arg-columns"></a></dt>
 <dd><p>Optional explicit columns to display in the side table, in
 the order they should appear. Accepts built-in names such as <code>"term"</code>,
-<code>"n"</code>, <code>"events"</code>, <code>"estimate"</code>, <code>"ci"</code>, and <code>"p"</code>, arbitrary original dataframe
-columns, or positions corresponding to the built-in columns. <code>"conf.low"</code>
-and <code>"conf.high"</code> are accepted as aliases for <code>"ci"</code>. When supplied, this
-overrides the default <code>show_*</code> column selection.</p></dd>
+<code>"n"</code>, <code>"events"</code>, <code>"estimate"</code>, <code>"ci"</code>, and <code>"p"</code>, arbitrary original
+dataframe columns, or numeric positions in the supplied data. <code>"conf.low"</code>
+and <code>"conf.high"</code> are accepted as aliases for <code>"ci"</code>.</p></dd>
 
 
 <dt id="arg-term-header">term_header<a class="anchor" aria-label="anchor" href="#arg-term-header"></a></dt>

@@ -129,6 +129,8 @@ Helpers for standardizing coefficient data and tidying model outputs.
   : Standardize coefficient data for forest plots
 - [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
   : Tidy a model object for forest plotting
+- [`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/reference/bind_forest_models.md)
+  : Bind multiple model summaries for a grouped forest plot
 
 # Articles
 

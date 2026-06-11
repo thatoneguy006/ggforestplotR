@@ -8,11 +8,6 @@ Compose a summary table onto a forest plot.
 add_forest_table(
   plot = NULL,
   position = c("left", "right"),
-  show_terms = TRUE,
-  show_n = NULL,
-  show_events = NULL,
-  show_estimate = TRUE,
-  show_p = FALSE,
   columns = NULL,
   term_header = "Term",
   n_header = "N",
@@ -53,38 +48,13 @@ add_forest_table(
 
   Whether to place the table on the left or right of the forest plot.
 
-- show_terms:
-
-  Deprecated. Whether to show the term column in the table. Use
-  `columns` instead.
-
-- show_n:
-
-  Deprecated. Whether to show the `N` column. Use `columns` instead.
-
-- show_events:
-
-  Deprecated. Whether to show the `Events` column. Use `columns`
-  instead.
-
-- show_estimate:
-
-  Deprecated. Whether to show the formatted estimate and confidence
-  interval column. Use `columns` instead.
-
-- show_p:
-
-  Deprecated. Whether to display the p-value column. Use `columns`
-  instead.
-
 - columns:
 
   Optional explicit columns to display in the side table, in the order
   they should appear. Accepts built-in names such as `"term"`, `"n"`,
   `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
-  dataframe columns, or positions corresponding to the built-in columns.
+  dataframe columns, or numeric positions in the supplied data.
   `"conf.low"` and `"conf.high"` are accepted as aliases for `"ci"`.
-  When supplied, this overrides the default `show_*` column selection.
 
 - term_header:
 

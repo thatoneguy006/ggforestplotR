@@ -30,6 +30,10 @@ ggforestplot(
   linewidth = 0.5,
   line_size = NULL,
   staple_width = 0.2,
+  ci_limits = NULL,
+  ci_arrows = TRUE,
+  ci_arrow_length = 0.08,
+  ci_arrow_type = c("closed", "open"),
   dodge_width = 0.6,
   separate_lines = FALSE,
   separator_line_linetype = 2,
@@ -148,6 +152,27 @@ ggforestplot(
 - staple_width:
 
   Width of the terminal staples on confidence interval lines.
+
+- ci_limits:
+
+  Optional numeric vector of length 2 used to truncate displayed
+  confidence intervals. Intervals extending beyond these limits are
+  clipped to the boundary and marked with arrows when `ci_arrows` is
+  `TRUE`.
+
+- ci_arrows:
+
+  Logical; if `TRUE`, draw outward-facing arrows for confidence
+  intervals truncated by `ci_limits`.
+
+- ci_arrow_length:
+
+  Length of CI truncation arrows in inches.
+
+- ci_arrow_type:
+
+  Arrowhead type for truncated confidence intervals. Passed to
+  [`grid::arrow()`](https://rdrr.io/r/grid/arrow.html).
 
 - dodge_width:
 

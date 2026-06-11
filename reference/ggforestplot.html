@@ -9,7 +9,7 @@ fitted model."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,6 +79,10 @@ fitted model.</p>
 <span>  linewidth <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  line_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  staple_width <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>  ci_limits <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ci_arrows <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  ci_arrow_length <span class="op">=</span> <span class="fl">0.08</span>,</span>
+<span>  ci_arrow_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"closed"</span>, <span class="st">"open"</span><span class="op">)</span>,</span>
 <span>  dodge_width <span class="op">=</span> <span class="fl">0.6</span>,</span>
 <span>  separate_lines <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  separator_line_linetype <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -202,6 +206,27 @@ ratios for Cox models.</p></dd>
 <dt id="arg-staple-width">staple_width<a class="anchor" aria-label="anchor" href="#arg-staple-width"></a></dt>
 <dd><p>Width of the terminal staples on confidence interval
 lines.</p></dd>
+
+
+<dt id="arg-ci-limits">ci_limits<a class="anchor" aria-label="anchor" href="#arg-ci-limits"></a></dt>
+<dd><p>Optional numeric vector of length 2 used to truncate
+displayed confidence intervals. Intervals extending beyond these limits
+are clipped to the boundary and marked with arrows when <code>ci_arrows</code> is
+<code>TRUE</code>.</p></dd>
+
+
+<dt id="arg-ci-arrows">ci_arrows<a class="anchor" aria-label="anchor" href="#arg-ci-arrows"></a></dt>
+<dd><p>Logical; if <code>TRUE</code>, draw outward-facing arrows for
+confidence intervals truncated by <code>ci_limits</code>.</p></dd>
+
+
+<dt id="arg-ci-arrow-length">ci_arrow_length<a class="anchor" aria-label="anchor" href="#arg-ci-arrow-length"></a></dt>
+<dd><p>Length of CI truncation arrows in inches.</p></dd>
+
+
+<dt id="arg-ci-arrow-type">ci_arrow_type<a class="anchor" aria-label="anchor" href="#arg-ci-arrow-type"></a></dt>
+<dd><p>Arrowhead type for truncated confidence intervals.
+Passed to <code><a href="https://rdrr.io/r/grid/arrow.html" class="external-link">grid::arrow()</a></code>.</p></dd>
 
 
 <dt id="arg-dodge-width">dodge_width<a class="anchor" aria-label="anchor" href="#arg-dodge-width"></a></dt>

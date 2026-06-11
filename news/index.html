@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,6 +45,24 @@
       <small>Source: <a href="https://github.com/thatoneguy006/ggforestplotR/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.0" id="ggforestplotr-030">ggforestplotR 0.3.0<a class="anchor" aria-label="anchor" href="#ggforestplotr-030"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-0-3-0">Breaking Changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-3-0"></a></h3>
+<ul><li>Removed the deprecated table-display shortcut arguments <code>show_terms</code>, <code>show_n</code>, <code>show_events</code>, <code>show_estimate</code>, and <code>show_p</code> from <code><a href="../reference/add_forest_table.html">add_forest_table()</a></code> and <code><a href="../reference/add_split_table.html">add_split_table()</a></code>. Use <code>columns</code>, <code>left_columns</code>, and <code>right_columns</code> to choose table columns explicitly.</li>
+<li>Numeric table column positions now resolve against the supplied/source data columns in their original order, rather than the previous fixed built-in table-column order.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="major-changes-0-3-0">Major Changes<a class="anchor" aria-label="anchor" href="#major-changes-0-3-0"></a></h3>
+<ul><li>Added mixed-model support for <code><a href="../reference/tidy_forest_model.html">tidy_forest_model()</a></code> and <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code> when <code>broom.mixed</code> is installed. Mixed-model tidiers are restricted to fixed effects so random-effect parameter rows are not plotted as terms.</li>
+<li>Added confidence interval truncation support to <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code> via <code>ci_limits</code>, with optional arrowheads for intervals extending beyond the displayed range.</li>
+<li>Added <code><a href="../reference/bind_forest_models.html">bind_forest_models()</a></code> to stack multiple fitted models into one grouped forest-plot data frame.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="minor-changes-0-3-0">Minor Changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-3-0"></a></h3>
+<ul><li>Relaxed forest-data validation so only the core plot geometry columns <code>term</code>, <code>estimate</code>, <code>conf.low</code>, and <code>conf.high</code> are required. Optional table and grouping columns are validated only when used.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.2" id="ggforestplotr-022">ggforestplotR 0.2.2<a class="anchor" aria-label="anchor" href="#ggforestplotr-022"></a></h2><p class="text-muted">CRAN release: 2026-06-05</p>
 <div class="section level3">

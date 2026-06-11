@@ -1,7 +1,9 @@
 # Tidy a model object for forest plotting
 
 Uses [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
-to convert a fitted model into forest-plot data.
+to convert a fitted model into forest-plot data. Mixed models are
+supported through `broom.mixed` tidy methods when that package is
+installed.
 
 ## Usage
 
@@ -22,7 +24,8 @@ tidy_forest_model(
 - model:
 
   A fitted model object supported by
-  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html).
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) or,
+  for mixed models, a `broom.mixed` tidy method.
 
 - conf.int:
 
