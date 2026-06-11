@@ -217,10 +217,11 @@ fit3 <- lm(mpg ~ cyl + disp + wt, data = mtcars)
 bound_models <- bind_forest_models(list(fit1,fit2,fit3), 
                                    model_labels = c("Unadjusted", "Adjusted", "Fully Adjusted"))
 
-ggforestplot(bound_models, striped_rows = T) +
+ggforestplot(bound_models, striped_rows = T, p.value = "p.value") +
   scale_x_continuous(limits = c(-6,1)) +
   theme(legend.position = "top") +
   scale_color_manual(values = c("#1F968BFF", "#453781FF", "#FDE725FF")) +
-  add_forest_table()
+  add_forest_table(columns = c("term", "estimate", "p.value"),
+                   p_digits = 4)
 ```
 
