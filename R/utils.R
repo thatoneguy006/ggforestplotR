@@ -198,7 +198,7 @@ resolve_table_digits <- function(digits = NULL,
   list(
     estimate_digits = if (is.null(estimate_digits)) digits else estimate_digits,
     interval_digits = if (is.null(interval_digits)) digits else interval_digits,
-    p_digits = if (is.null(p_digits)) digits else p_digits
+    p_digits = if (is.null(p_digits)) max(3L, digits) else p_digits
   )
 }
 
@@ -354,9 +354,15 @@ collapse_grouped_values <- function(formatted, group = NULL, force_group_labels 
 format_forest_p_values <- function(values, group = NULL, digits = 2, p_digits = digits,
                                    force_group_labels = FALSE) {
   p_digits <- resolve_table_digits(digits = digits, p_digits = p_digits)$p_digits
-  d <- max(3L, p_digits)
   values <- as.numeric(values)
-  formatted <- ifelse(is.na(values), "", format.pval(values, digits = d, eps = 10^(-d)))
+  eps <- 10^(-p_digits)
+  formatted <- ifelse(
+    is.na(values),
+    "",
+    ifelse(values < eps, paste0("<", sprintf(paste0("%.", p_digits, "f"), eps)),
+      sprintf(paste0("%.", p_digits, "f"), values)
+    )
+  )
   collapse_grouped_values(formatted, group, force_group_labels = force_group_labels)
 }
 

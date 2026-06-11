@@ -75,7 +75,7 @@ test_that("bound model tables format p.value aliases with p_digits", {
   expect_true("p" %in% table_spec$column_keys)
   expect_false("p.value" %in% table_spec$column_keys)
   expect_match(p_text, "^Fully Adjusted: ")
-  expect_equal(p_text, "Fully Adjusted: 0.0016")
+  expect_equal(p_text, "Fully Adjusted: 0.002")
 })
 
 test_that("bind_forest_models supports common exponentiated scales", {
