@@ -75,6 +75,7 @@ reference:
     contents:
       - as_forest_data
       - tidy_forest_model
+      - bind_forest_models
 
 footer:
   structure:
