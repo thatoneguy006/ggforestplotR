@@ -103,6 +103,8 @@ ggforestplot(
 - [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_split_table.md)
   creates a more traditional forestplot layout with table columns on
   both sides of the plot.
+- [`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/reference/bind_forest_models.md)
+  binds output from several models for grouped plotting.
 - [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
   standardizes custom coefficient data.
 - [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
