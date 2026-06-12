@@ -3,6 +3,7 @@ ___
 <!-- badges: start -->
   [![R-CMD-check](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml)
   [![Codecov](https://codecov.io/gh/thatoneguy006/ggforestplotR/branch/dev/graph/badge.svg)](https://app.codecov.io/gh/thatoneguy006/ggforestplotR)
+  [![CRAN Version](https://shields.io)](https://r-project.org)
 <!-- badges: end -->
 
 ## Overview
