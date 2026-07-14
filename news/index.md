@@ -1,6 +1,16 @@
 # Changelog
 
+## ggforestplotR 0.3.1
+
+### Minor Changes
+
+- Fixed unintended behavior when passing custom columns to
+  [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_forest_table.md)
+  specific to data-frame/plot inheritance.
+
 ## ggforestplotR 0.3.0
+
+CRAN release: 2026-07-07
 
 ### Breaking Changes
 
