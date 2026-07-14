@@ -810,6 +810,7 @@ build_forest_table_data <- function(data,
   if (is.null(source_columns)) {
     source_columns <- data
   }
+  column_mapping <- attr(data, "column_mapping")
   force_group_labels <- any(!is.na(data$group) & nzchar(data$group))
   row_levels <- levels(data$row_key)
   row_parts <- vector("list", length(row_levels))
@@ -927,6 +928,10 @@ build_forest_table_data <- function(data,
   extra_field_lookup <- stats::setNames(extra_column_keys, extra_column_keys)
   column_field_lookup <- c(column_field_lookup, extra_field_lookup)
   header_lookup <- c(header_lookup, stats::setNames(extra_column_keys, extra_column_keys))
+
+  mapped_row_label_columns <- unique(unname(column_mapping[c("term", "label")]))
+  mapped_row_label_columns <- intersect(mapped_row_label_columns, column_keys)
+  header_lookup[mapped_row_label_columns] <- term_header
 
   resolved_column_labels <- normalize_column_labels(column_labels, data = table_rows)
   if (!is.null(resolved_column_labels)) {

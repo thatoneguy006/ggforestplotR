@@ -1,3 +1,10 @@
+# ggforestplotR 0.3.1
+
+## Minor Changes
+
+- Fixed unintended behavior when passing custom columns to `add_forest_table()` 
+  specific to data-frame/plot inheritance.
+
 # ggforestplotR 0.3.0
 
 ## Breaking Changes

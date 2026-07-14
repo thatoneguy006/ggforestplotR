@@ -101,8 +101,13 @@
   }
 
   plot_out <- plot
+  row_label_columns <- unique(c(
+    "term",
+    unname(state$column_mapping[c("term", "label")])
+  ))
+  row_label_columns <- row_label_columns[!is.na(row_label_columns)]
 
-  if ("term" %in% table_columns) {
+  if (any(table_columns %in% row_label_columns)) {
     plot_out <- plot_out + ggplot2::theme(
       axis.text.y = ggplot2::element_blank(),
       axis.ticks.y = ggplot2::element_blank()
