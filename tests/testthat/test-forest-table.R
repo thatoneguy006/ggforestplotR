@@ -311,6 +311,36 @@ test_that("add_forest_table supports explicit side-table column order", {
   )
 })
 
+test_that("mapped row-label columns use the term header and suppress duplicate y-axis labels", {
+  raw <- data.frame(
+    name = c("Age", "BMI", "Treatment"),
+    estimate = c(0.3, -0.2, 0.4),
+    conf.low = c(0.1, -0.4, 0.2),
+    conf.high = c(0.5, 0.0, 0.6)
+  )
+
+  p <- suppressMessages(
+    ggforestplot(raw, term = "name") +
+      ggplot2::scale_y_discrete(limits = c("Treatment", "BMI", "Age"))
+  )
+  out <- p + add_forest_table(
+    columns = c("name", "estimate"),
+    term_header = "Variable"
+  )
+  table_plot <- out$patches$plots[[1]]
+
+  expect_s3_class(out$theme$axis.text.y, "element_blank")
+  expect_s3_class(out$theme$axis.ticks.y, "element_blank")
+  expect_equal(
+    table_plot$scales$get_scales("x")$labels,
+    c("Variable", "Estimate (95% CI)")
+  )
+  expect_equal(
+    out$scales$get_scales("y")$limits,
+    c("Treatment", "BMI", "Age")
+  )
+})
+
 test_that("ggforestplot relabels terms with a named vector", {
   raw <- data.frame(
     term = c("age", "bmi", "treatment"),

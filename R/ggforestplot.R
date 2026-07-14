@@ -210,6 +210,7 @@ ggforestplot <- function(data,
   plot_exponentiate <- isTRUE(attr(forest_data, "exponentiate"))
   estimate_label <- attr(forest_data, "estimate_label")
   axis_label <- attr(forest_data, "axis_label")
+  column_mapping <- attr(forest_data, "column_mapping")
 
   if (is.null(estimate_label)) {
     estimate_label <- "Estimate"
@@ -565,6 +566,7 @@ ggforestplot <- function(data,
 
   p$ggforestplotR_state <- list(
     forest_data = forest_data,
+    column_mapping = column_mapping,
     stripe_data = stripe_data,
     stripe_layer_index = stripe_layer_index,
     has_groupings = display_data$has_groupings,

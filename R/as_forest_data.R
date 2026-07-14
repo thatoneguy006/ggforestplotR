@@ -82,6 +82,7 @@ as_forest_data <- function(data,
     events = resolve_column(data, events, "events", required = FALSE),
     p.value = resolve_column(data, p.value, "p.value", required = FALSE)
   )
+  column_mapping <- unlist(cols, use.names = TRUE)
 
   grouping_levels <- if (!is.null(cols$grouping) && is.factor(data[[cols$grouping]])) {
     levels(data[[cols$grouping]])
@@ -158,6 +159,7 @@ as_forest_data <- function(data,
   rownames(out) <- NULL
   attr(out, "exponentiate") <- isTRUE(exponentiate)
   attr(out, "source_columns") <- source_columns
+  attr(out, "column_mapping") <- column_mapping
   attr(out, "grouping_levels") <- grouping_levels
 
   out
