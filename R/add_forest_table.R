@@ -2,8 +2,6 @@
                                   position = c("left", "right"),
                                   columns = NULL,
                                   term_header = "Term",
-                                  group_header = NULL,
-                                  group_position = NULL,
                                   n_header = "N",
                                   events_header = "Events",
                                   estimate_label = NULL,
@@ -89,11 +87,6 @@
   } else {
     normalize_table_columns(columns, data = state$forest_data)
   }
-  table_columns <- resolve_group_position(
-    table_columns,
-    group_position = group_position,
-    data = state$forest_data
-  )
 
   if ("n" %in% table_columns && all(is.na(state$forest_data$n) | !nzchar(state$forest_data$n))) {
     stop("`columns = \"n\"` requires an `n` column in the underlying forest data.", call. = FALSE)
@@ -124,7 +117,6 @@
   table_spec <- build_forest_table_data(
     state$forest_data,
     term_header = term_header,
-    group_header = group_header,
     n_header = n_header,
     events_header = events_header,
     estimate_label = estimate_label,
@@ -189,16 +181,9 @@
 #'   the order they should appear. Accepts built-in names such as `"term"`,
 #'   `"group"`, `"n"`, `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
 #'   dataframe columns, or numeric positions in the supplied data. `"conf.low"`
-#'   and `"conf.high"` are accepted as aliases for `"ci"`.
+#'   and `"conf.high"` are accepted as aliases for `"ci"`. The default grouped
+#'   table includes `"group"`; omit it from an explicit selection to hide it.
 #' @param term_header Header text for the term column.
-#' @param group_header Header text for the dedicated group column. Defaults to
-#'   `"Model"` for data created by [bind_forest_models()] and `"Group"` for
-#'   other grouped forest data.
-#' @param group_position Optional whole-number position for the dedicated group
-#'   column. Grouped tables include this column after `term` by default. Use
-#'   `FALSE` to omit it without prefixing model or group names onto other
-#'   values. When `columns` is supplied, its explicit `"group"` placement is
-#'   respected unless `group_position` is also supplied.
 #' @param n_header Header text for the `N` column.
 #' @param events_header Header text for the `Events` column.
 #' @param estimate_label Header label for the estimate column. Defaults to the
@@ -206,7 +191,7 @@
 #' @param p_header Header text for the p-value column.
 #' @param column_labels Optional named vector used to relabel table column
 #'   headers. Names should match values supplied to `columns` after column
-#'   resolution, such as `"term"`, `"estimate"`, `"ci"`, `"p"`, or an arbitrary
+#'   resolution, such as `"term"`, `"group"`, `"estimate"`, `"ci"`, `"p"`, or an arbitrary
 #'   original dataframe column.
 #' @param digits Deprecated. Number of digits used when formatting estimates
 #'   and p-values. Defaults to `2`. Use `estimate_digits`, `interval_digits`,
@@ -296,9 +281,7 @@ add_forest_table <- function(plot = NULL,
                              grid_lines = FALSE,
                              grid_line_colour = "black",
                              grid_line_size = 0.3,
-                             grid_line_linetype = 1,
-                             group_header = NULL,
-                             group_position = NULL) {
+                             grid_line_linetype = 1) {
   if (!missing(digits)) {
     warn_deprecated_argument("digits", "`estimate_digits`, `interval_digits`, and `p_digits`")
   }
@@ -311,8 +294,6 @@ add_forest_table <- function(plot = NULL,
         position = position,
         columns = columns,
         term_header = term_header,
-        group_header = group_header,
-        group_position = group_position,
         n_header = n_header,
         events_header = events_header,
         estimate_label = estimate_label,
@@ -346,8 +327,6 @@ add_forest_table <- function(plot = NULL,
     position = position,
     columns = columns,
     term_header = term_header,
-    group_header = group_header,
-    group_position = group_position,
     n_header = n_header,
     events_header = events_header,
     estimate_label = estimate_label,

@@ -30,9 +30,7 @@ add_split_table(
   stripe_alpha = NULL,
   left_width = NULL,
   plot_width = NULL,
-  right_width = NULL,
-  group_header = NULL,
-  group_position = NULL
+  right_width = NULL
 )
 }
 \arguments{
@@ -43,7 +41,8 @@ add_split_table(
 the forest plot. Accepts built-in names such as \code{"term"}, \code{"group"}, \code{"n"},
 \code{"events"}, \code{"estimate"}, \code{"ci"}, and \code{"p"}, arbitrary original
 dataframe columns, or numeric positions in the supplied data. \code{"conf.low"}
-and \code{"conf.high"} are accepted as aliases for \code{"ci"}.}
+and \code{"conf.high"} are accepted as aliases for \code{"ci"}. The default grouped
+layout includes \code{"group"} on the left.}
 
 \item{right_columns}{Optional explicit columns to place on the right side
 of the forest plot. Accepts built-in names such as \code{"group"}, \code{"estimate"},
@@ -64,7 +63,7 @@ model-derived label when available.}
 
 \item{column_labels}{Optional named vector used to relabel table column
 headers. Names should match values supplied to \code{left_columns} or
-\code{right_columns} after column resolution, such as \code{"term"}, \code{"estimate"},
+\code{right_columns} after column resolution, such as \code{"term"}, \code{"group"}, \code{"estimate"},
 \code{"ci"}, \code{"p"}, or an arbitrary original dataframe column.}
 
 \item{digits}{Deprecated. Number of digits used when formatting estimates
@@ -121,18 +120,6 @@ Defaults to \code{2.5}.}
 \item{right_width}{Optional width allocated to the right table block. By
 default this is derived from the number of displayed right-side columns
 relative to \code{plot_width}.}
-
-\item{group_header}{Header text for the dedicated group column. Defaults to
-\code{"Model"} for data created by \code{\link[=bind_forest_models]{bind_forest_models()}} and \code{"Group"} for
-other grouped forest data.}
-
-\item{group_position}{Optional position for the dedicated group column.
-Grouped tables place it after \code{term} on the left by default. Supply an
-unnamed whole number to move it within its current side, a named value
-such as \code{c(right = 1)} to move it to an exact position on either side, or
-\code{FALSE} to omit it without prefixing model or group names onto other
-values. Explicit \code{"group"} placement in \code{left_columns} or \code{right_columns}
-is respected when this argument is \code{NULL}.}
 }
 \value{
 A patchwork-composed plot containing a left table, the forest plot,

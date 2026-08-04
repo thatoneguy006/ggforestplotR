@@ -184,110 +184,6 @@ default_split_right_columns <- function(data) {
   "estimate"
 }
 
-insert_table_column <- function(columns, column, position, arg = "group_position") {
-  columns <- columns[columns != column]
-
-  if (!is.numeric(position) || length(position) != 1L || is.na(position) ||
-      position != as.integer(position) || position < 1L || position > length(columns) + 1L) {
-    stop(
-      sprintf(
-        "`%s` must be a whole-number position between 1 and %s.",
-        arg,
-        length(columns) + 1L
-      ),
-      call. = FALSE
-    )
-  }
-
-  position <- as.integer(position)
-  append(columns, column, after = position - 1L)
-}
-
-resolve_group_position <- function(columns, group_position, data) {
-  if (is.null(group_position)) {
-    return(columns)
-  }
-
-  if (identical(group_position, FALSE)) {
-    return(columns[columns != "group"])
-  }
-
-  if (!has_table_values(data, "group")) {
-    stop("`group_position` requires grouped forest data.", call. = FALSE)
-  }
-
-  position_names <- names(group_position)
-  if (!is.null(position_names) &&
-      (anyNA(position_names) || any(nzchar(position_names)))) {
-    stop("`group_position` must be an unnamed position in `add_forest_table()`.", call. = FALSE)
-  }
-
-  insert_table_column(columns, "group", group_position)
-}
-
-resolve_split_group_position <- function(left_columns,
-                                         right_columns,
-                                         group_position,
-                                         data) {
-  if (is.null(group_position)) {
-    return(list(left = left_columns, right = right_columns))
-  }
-
-  if (identical(group_position, FALSE)) {
-    return(list(
-      left = left_columns[left_columns != "group"],
-      right = right_columns[right_columns != "group"]
-    ))
-  }
-
-  if (!has_table_values(data, "group")) {
-    stop("`group_position` requires grouped forest data.", call. = FALSE)
-  }
-
-  position_names <- names(group_position)
-  if (!is.null(position_names) && anyNA(position_names)) {
-    stop(
-      "For `add_split_table()`, name `group_position` either `left` or `right`, such as `c(right = 1)`.",
-      call. = FALSE
-    )
-  }
-  named_position <- !is.null(position_names) && any(nzchar(position_names))
-
-  if (isTRUE(named_position)) {
-    if (length(group_position) != 1L ||
-        !position_names[[1L]] %in% c("left", "right")) {
-      stop(
-        "For `add_split_table()`, name `group_position` either `left` or `right`, such as `c(right = 1)`.",
-        call. = FALSE
-      )
-    }
-    side <- position_names[[1L]]
-  } else {
-    side <- if ("group" %in% right_columns) "right" else "left"
-  }
-
-  left_columns <- left_columns[left_columns != "group"]
-  right_columns <- right_columns[right_columns != "group"]
-
-  if (identical(side, "left")) {
-    left_columns <- insert_table_column(
-      left_columns,
-      "group",
-      group_position,
-      arg = "group_position"
-    )
-  } else {
-    right_columns <- insert_table_column(
-      right_columns,
-      "group",
-      group_position,
-      arg = "group_position"
-    )
-  }
-
-  list(left = left_columns, right = right_columns)
-}
-
 normalize_digits <- function(value, arg) {
   if (is.null(value)) {
     return(NULL)
@@ -947,7 +843,6 @@ align_forest_state_to_plot_y_scale <- function(state, plot) {
 
 build_forest_table_data <- function(data,
                                     term_header = "Term",
-                                    group_header = NULL,
                                     n_header = "N",
                                     events_header = "Events",
                                     estimate_label = "Estimate",
@@ -998,9 +893,7 @@ build_forest_table_data <- function(data,
   }
   has_groups <- any(!is.na(data$group) & nzchar(data$group))
   align_groups <- has_groups
-  if (is.null(group_header)) {
-    group_header <- if (inherits(data, "ggforestplot_bound_models")) "Model" else "Group"
-  }
+  group_header <- if (inherits(data, "ggforestplot_bound_models")) "Model" else "Group"
   row_levels <- levels(data$row_key)
   row_parts <- vector("list", length(row_levels))
 

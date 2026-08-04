@@ -2,8 +2,6 @@
                                  left_columns = NULL,
                                  right_columns = NULL,
                                  term_header = "Term",
-                                 group_header = NULL,
-                                 group_position = NULL,
                                  n_header = "N",
                                  events_header = "Events",
                                  estimate_label = NULL,
@@ -85,14 +83,6 @@
   default_right <- default_split_right_columns(state$forest_data)
   resolved_left <- if (is.null(left_columns)) default_left else normalize_table_columns(left_columns, data = state$forest_data)
   resolved_right <- if (is.null(right_columns)) default_right else normalize_table_columns(right_columns, data = state$forest_data)
-  resolved_group_columns <- resolve_split_group_position(
-    resolved_left,
-    resolved_right,
-    group_position = group_position,
-    data = state$forest_data
-  )
-  resolved_left <- resolved_group_columns$left
-  resolved_right <- resolved_group_columns$right
 
   if (length(resolved_left) == 0L) {
     stop(
@@ -133,7 +123,6 @@
   left_spec <- build_forest_table_data(
     state$forest_data,
     term_header = term_header,
-    group_header = group_header,
     n_header = n_header,
     events_header = events_header,
     estimate_label = estimate_label,
@@ -150,7 +139,6 @@
   right_spec <- build_forest_table_data(
     state$forest_data,
     term_header = term_header,
-    group_header = group_header,
     n_header = n_header,
     events_header = events_header,
     estimate_label = estimate_label,
@@ -277,23 +265,14 @@
 #'   the forest plot. Accepts built-in names such as `"term"`, `"group"`, `"n"`,
 #'   `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
 #'   dataframe columns, or numeric positions in the supplied data. `"conf.low"`
-#'   and `"conf.high"` are accepted as aliases for `"ci"`.
+#'   and `"conf.high"` are accepted as aliases for `"ci"`. The default grouped
+#'   layout includes `"group"` on the left.
 #' @param right_columns Optional explicit columns to place on the right side
 #'   of the forest plot. Accepts built-in names such as `"group"`, `"estimate"`,
 #'   `"ci"`, and `"p"`, arbitrary original dataframe columns, or numeric positions in
 #'   the supplied data. `"conf.low"` and `"conf.high"` are accepted as aliases
 #'   for `"ci"`.
 #' @param term_header Header text for the term column.
-#' @param group_header Header text for the dedicated group column. Defaults to
-#'   `"Model"` for data created by [bind_forest_models()] and `"Group"` for
-#'   other grouped forest data.
-#' @param group_position Optional position for the dedicated group column.
-#'   Grouped tables place it after `term` on the left by default. Supply an
-#'   unnamed whole number to move it within its current side, a named value
-#'   such as `c(right = 1)` to move it to an exact position on either side, or
-#'   `FALSE` to omit it without prefixing model or group names onto other
-#'   values. Explicit `"group"` placement in `left_columns` or `right_columns`
-#'   is respected when this argument is `NULL`.
 #' @param n_header Header text for the `N` column.
 #' @param events_header Header text for the `Events` column.
 #' @param estimate_label Header label for the estimate column. Defaults to the
@@ -301,7 +280,7 @@
 #' @param p_header Header text for the p-value column.
 #' @param column_labels Optional named vector used to relabel table column
 #'   headers. Names should match values supplied to `left_columns` or
-#'   `right_columns` after column resolution, such as `"term"`, `"estimate"`,
+#'   `right_columns` after column resolution, such as `"term"`, `"group"`, `"estimate"`,
 #'   `"ci"`, `"p"`, or an arbitrary original dataframe column.
 #' @param digits Deprecated. Number of digits used when formatting estimates
 #'   and p-values. Defaults to `2`. Use `estimate_digits`, `interval_digits`,
@@ -395,9 +374,7 @@ add_split_table <- function(plot = NULL,
                             stripe_alpha = NULL,
                             left_width = NULL,
                             plot_width = NULL,
-                            right_width = NULL,
-                            group_header = NULL,
-                            group_position = NULL) {
+                            right_width = NULL) {
   if (!missing(digits)) {
     warn_deprecated_argument("digits", "`estimate_digits`, `interval_digits`, and `p_digits`")
   }
@@ -408,8 +385,6 @@ add_split_table <- function(plot = NULL,
         left_columns = left_columns,
         right_columns = right_columns,
         term_header = term_header,
-        group_header = group_header,
-        group_position = group_position,
         n_header = n_header,
         events_header = events_header,
         estimate_label = estimate_label,
@@ -442,8 +417,6 @@ add_split_table <- function(plot = NULL,
     left_columns = left_columns,
     right_columns = right_columns,
     term_header = term_header,
-    group_header = group_header,
-    group_position = group_position,
     n_header = n_header,
     events_header = events_header,
     estimate_label = estimate_label,

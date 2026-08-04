@@ -31,9 +31,7 @@ add_forest_table(
   grid_lines = FALSE,
   grid_line_colour = "black",
   grid_line_size = 0.3,
-  grid_line_linetype = 1,
-  group_header = NULL,
-  group_position = NULL
+  grid_line_linetype = 1
 )
 }
 \arguments{
@@ -47,7 +45,8 @@ forest plot.}
 the order they should appear. Accepts built-in names such as \code{"term"},
 \code{"group"}, \code{"n"}, \code{"events"}, \code{"estimate"}, \code{"ci"}, and \code{"p"}, arbitrary original
 dataframe columns, or numeric positions in the supplied data. \code{"conf.low"}
-and \code{"conf.high"} are accepted as aliases for \code{"ci"}.}
+and \code{"conf.high"} are accepted as aliases for \code{"ci"}. The default grouped
+table includes \code{"group"}; omit it from an explicit selection to hide it.}
 
 \item{term_header}{Header text for the term column.}
 
@@ -62,7 +61,7 @@ model-derived label when available.}
 
 \item{column_labels}{Optional named vector used to relabel table column
 headers. Names should match values supplied to \code{columns} after column
-resolution, such as \code{"term"}, \code{"estimate"}, \code{"ci"}, \code{"p"}, or an arbitrary
+resolution, such as \code{"term"}, \code{"group"}, \code{"estimate"}, \code{"ci"}, \code{"p"}, or an arbitrary
 original dataframe column.}
 
 \item{digits}{Deprecated. Number of digits used when formatting estimates
@@ -115,16 +114,6 @@ alpha used in \code{\link[=ggforestplot]{ggforestplot()}}.}
 \item{grid_line_size}{Line width used for the table grid lines.}
 
 \item{grid_line_linetype}{Line type used for the table grid lines.}
-
-\item{group_header}{Header text for the dedicated group column. Defaults to
-\code{"Model"} for data created by \code{\link[=bind_forest_models]{bind_forest_models()}} and \code{"Group"} for
-other grouped forest data.}
-
-\item{group_position}{Optional whole-number position for the dedicated group
-column. Grouped tables include this column after \code{term} by default. Use
-\code{FALSE} to omit it without prefixing model or group names onto other
-values. When \code{columns} is supplied, its explicit \code{"group"} placement is
-respected unless \code{group_position} is also supplied.}
 }
 \value{
 A patchwork-composed plot containing the forest plot and side
