@@ -9,7 +9,7 @@ on both sides of the plotting panel."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,16 +96,19 @@ on both sides of the plotting panel.</p>
 
 <dt id="arg-left-columns">left_columns<a class="anchor" aria-label="anchor" href="#arg-left-columns"></a></dt>
 <dd><p>Optional explicit columns to place on the left side of
-the forest plot. Accepts built-in names such as <code>"term"</code>, <code>"n"</code>,
+the forest plot. Accepts built-in names such as <code>"term"</code>, <code>"group"</code>, <code>"n"</code>,
 <code>"events"</code>, <code>"estimate"</code>, <code>"ci"</code>, and <code>"p"</code>, arbitrary original
 dataframe columns, or numeric positions in the supplied data. <code>"conf.low"</code>
-and <code>"conf.high"</code> are accepted as aliases for <code>"ci"</code>.</p></dd>
+and <code>"conf.high"</code> are accepted as aliases for <code>"ci"</code>. The default grouped
+layout includes <code>"group"</code> on the left. Its header defaults to the source
+column supplied through <code>group =</code> for data frames and to <code>"Model"</code> for
+<code><a href="bind_forest_models.html">bind_forest_models()</a></code> output.</p></dd>
 
 
 <dt id="arg-right-columns">right_columns<a class="anchor" aria-label="anchor" href="#arg-right-columns"></a></dt>
 <dd><p>Optional explicit columns to place on the right side
-of the forest plot. Accepts built-in names such as <code>"estimate"</code>, <code>"ci"</code>,
-and <code>"p"</code>, arbitrary original dataframe columns, or numeric positions in
+of the forest plot. Accepts built-in names such as <code>"group"</code>, <code>"estimate"</code>,
+<code>"ci"</code>, and <code>"p"</code>, arbitrary original dataframe columns, or numeric positions in
 the supplied data. <code>"conf.low"</code> and <code>"conf.high"</code> are accepted as aliases
 for <code>"ci"</code>.</p></dd>
 
@@ -134,8 +137,10 @@ model-derived label when available.</p></dd>
 <dt id="arg-column-labels">column_labels<a class="anchor" aria-label="anchor" href="#arg-column-labels"></a></dt>
 <dd><p>Optional named vector used to relabel table column
 headers. Names should match values supplied to <code>left_columns</code> or
-<code>right_columns</code> after column resolution, such as <code>"term"</code>, <code>"estimate"</code>,
-<code>"ci"</code>, <code>"p"</code>, or an arbitrary original dataframe column.</p></dd>
+<code>right_columns</code> after column resolution, such as <code>"term"</code>, <code>"group"</code>, <code>"estimate"</code>,
+<code>"ci"</code>, <code>"p"</code>, or an arbitrary original dataframe column. For grouped
+data frames, either <code>"group"</code> or the source column supplied through
+<code>group =</code> can relabel the group column.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>

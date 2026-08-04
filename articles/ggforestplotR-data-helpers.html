@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -80,15 +80,17 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://thatoneguy006.github.io/ggforestplotR/">ggforestplotR</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
-<p>This short article covers the two helper functions that prepare data
-before the plot is drawn.</p>
+<p>This short article covers the <code>forest_data</code> interchange
+object and the helper functions that prepare it before a plot is
+drawn.</p>
 <div class="section level2">
 <h2 id="use-as_forest_data-to-standardize-a-coefficient-table">Use <code>as_forest_data()</code> to standardize a coefficient
 table<a class="anchor" aria-label="anchor" href="#use-as_forest_data-to-standardize-a-coefficient-table"></a>
 </h2>
 <p><code><a href="../reference/as_forest_data.html">as_forest_data()</a></code> converts your column names into the
-internal structure used by <code>ggforestplotR</code>. The result
-contains the columns expected by <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>,
+internal structure used by <code>ggforestplotR</code>. The result is a
+<code>forest_data</code> data-frame subclass containing the columns
+expected by <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>,
 <code><a href="../reference/add_forest_table.html">add_forest_table()</a></code>, and <code><a href="../reference/add_split_table.html">add_split_table()</a></code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">raw_coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -111,29 +113,70 @@ contains the columns expected by <code><a href="../reference/ggforestplot.html">
 <span>  label <span class="op">=</span> <span class="st">"display"</span>,</span>
 <span>  grouping <span class="op">=</span> <span class="st">"section"</span>,</span>
 <span>  n <span class="op">=</span> <span class="st">"sample_size"</span>,</span>
-<span>  p.value <span class="op">=</span> <span class="st">"p_value"</span></span>
+<span>  p.value <span class="op">=</span> <span class="st">"p_value"</span>,</span>
+<span>  estimate_scale <span class="op">=</span> <span class="st">"identity"</span>,</span>
+<span>  effect_label <span class="op">=</span> <span class="st">"Beta"</span>,</span>
+<span>  conf.level <span class="op">=</span> <span class="fl">0.95</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p>Use <code><a href="../reference/forest_metadata.html">forest_metadata()</a></code> to inspect the semantic and
+provenance contract. The complete fitted model and a duplicate copy of
+the source data are not retained.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/forest_metadata.html">forest_metadata</a></span><span class="op">(</span><span class="va">forest_ready</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"estimate_scale"</span>, <span class="st">"axis_transform"</span>, <span class="st">"effect_label"</span>, <span class="st">"conf_level"</span>,</span>
+<span>  <span class="st">"reference_value"</span>, <span class="st">"source_model"</span>, <span class="st">"source_package"</span>, <span class="st">"source_columns"</span></span>
+<span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt; $estimate_scale</span></span>
+<span><span class="co">#&gt; [1] "identity"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $axis_transform</span></span>
+<span><span class="co">#&gt; [1] "identity"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $effect_label</span></span>
+<span><span class="co">#&gt; [1] "Beta"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $conf_level</span></span>
+<span><span class="co">#&gt; [1] 0.95</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $reference_value</span></span>
+<span><span class="co">#&gt; [1] 0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $source_model</span></span>
+<span><span class="co">#&gt; NULL</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $source_package</span></span>
+<span><span class="co">#&gt; NULL</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $source_columns</span></span>
+<span><span class="co">#&gt;      variable          beta         lower         upper       display </span></span>
+<span><span class="co">#&gt;    "variable"        "beta"       "lower"       "upper"     "display" </span></span>
+<span><span class="co">#&gt;       section   sample_size       p_value </span></span>
+<span><span class="co">#&gt;     "section" "sample_size"     "p_value"</span></span></code></pre></div>
 <p>Once the data are standardized, you can pass them straight into
 <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">forest_ready</span><span class="op">)</span></span></code></pre></div>
 <p><img src="ggforestplotR-data-helpers_files/figure-html/helper-to-plot-1.png" class="r-plt" alt="" width="768"></p>
 </div>
 <div class="section level2">
-<h2 id="use-tidy_forest_model-for-model-objects">Use <code>tidy_forest_model()</code> for model objects<a class="anchor" aria-label="anchor" href="#use-tidy_forest_model-for-model-objects"></a>
+<h2 id="use-as_forest_data-for-model-objects">Use <code>as_forest_data()</code> for model objects<a class="anchor" aria-label="anchor" href="#use-as_forest_data-for-model-objects"></a>
 </h2>
-<p>If <code>broom</code> is available, <code><a href="../reference/tidy_forest_model.html">tidy_forest_model()</a></code>
-can pull coefficient estimates and confidence limits from a fitted
-model.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p>If <code>broom</code> is available, the model-specific
+<code><a href="../reference/as_forest_data.html">as_forest_data()</a></code> method pulls coefficient estimates and
+confidence limits from a fitted model. The method also assigns model
+semantics such as <code>Beta</code>, <code>OR</code>, or
+<code>HR</code>.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">wt</span> <span class="op">+</span> <span class="va">hp</span> <span class="op">+</span> <span class="va">qsec</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">model_ready</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_forest_model.html">tidy_forest_model</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">model_ready</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_forest_data.html">as_forest_data</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <p>The returned object can be passed directly into
 <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">model_ready</span><span class="op">)</span></span></code></pre></div>
 <p><img src="ggforestplotR-data-helpers_files/figure-html/helper-to-plot-model-1.png" class="r-plt" alt="" width="768"></p>
+<p><code><a href="../reference/tidy_forest_model.html">tidy_forest_model()</a></code> remains available as a compatibility
+wrapper and returns the same <code>forest_data</code> object.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

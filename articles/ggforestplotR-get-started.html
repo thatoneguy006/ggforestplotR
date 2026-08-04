@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,9 +89,9 @@ plots that stay inside a normal <code>ggplot2</code> workflow.</p>
 <ol style="list-style-type: decimal">
 <li>Start from a coefficient table and map the required columns directly
 to the plot.</li>
-<li>Start from a fitted model and let <code><a href="../reference/tidy_forest_model.html">tidy_forest_model()</a></code>
-or <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code> call <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> and
-create the plot.</li>
+<li>Start from a fitted model and let its <code><a href="../reference/as_forest_data.html">as_forest_data()</a></code>
+method or <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code> create the validated forest data
+and plot.</li>
 </ol>
 <p>This article covers some basic examples and the minimum data you
 need.</p>
@@ -204,8 +204,9 @@ work directly from a fitted model.</p>
 <code>ggforestplotR-plot-customization</code> for enhanced
 customization of the plots and summary tables.</li>
 <li>
-<code>ggforestplotR-data-helpers</code> for
-<code><a href="../reference/as_forest_data.html">as_forest_data()</a></code> and <code><a href="../reference/tidy_forest_model.html">tidy_forest_model()</a></code>.</li>
+<code>ggforestplotR-data-helpers</code> for the
+<code>forest_data</code> contract, <code><a href="../reference/as_forest_data.html">as_forest_data()</a></code>, and
+<code><a href="../reference/forest_metadata.html">forest_metadata()</a></code>.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

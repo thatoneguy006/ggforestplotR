@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,6 +45,30 @@
       <small>Source: <a href="https://github.com/thatoneguy006/ggforestplotR/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.0" id="ggforestplotr-040">ggforestplotR 0.4.0<a class="anchor" aria-label="anchor" href="#ggforestplotr-040"></a></h2>
+<div class="section level3">
+<h3 id="major-changes-0-4-0">Major Changes<a class="anchor" aria-label="anchor" href="#major-changes-0-4-0"></a></h3>
+<ul><li>Added the <code>forest_data</code> S3 class as the package’s stable interchange format. It stores validated effect-scale, axis, confidence-level, reference-value, source-model, source-package, and source-column metadata.</li>
+<li>Converted <code><a href="../reference/as_forest_data.html">as_forest_data()</a></code> into an S3 generic with methods for data frames, existing <code>forest_data</code> objects, linear and generalized linear models, Cox models, and supported mixed-model classes.</li>
+<li>Refactored <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code> to consume the <code>forest_data</code> contract instead of determining plotting behavior from the original model class.</li>
+<li>Added <code><a href="../reference/forest_metadata.html">forest_metadata()</a></code> for inspecting the semantic and provenance metadata associated with a <code>forest_data</code> object.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="minor-changes-0-4-0">Minor Changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-4-0"></a></h3>
+<ul><li>Separated the semantic estimate scale from the plotting-axis transformation. Ratio estimates now use <code>estimate_scale = "ratio"</code> and <code>axis_transform = "log10"</code>; unexponentiated log-link coefficients use <code>estimate_scale = "log"</code> and an identity axis.</li>
+<li>
+<code><a href="../reference/bind_forest_models.html">bind_forest_models()</a></code> now returns <code>forest_data</code> and validates compatible estimate scales, axis transformations, reference values, and confidence levels before combining models.</li>
+<li>Fitted model objects and duplicate source data frames are not retained in <code>forest_data</code>; provenance records model classes, package names, and source column mappings instead.</li>
+<li>
+<code><a href="../reference/tidy_forest_model.html">tidy_forest_model()</a></code> remains available as a compatibility wrapper around the new <code><a href="../reference/as_forest_data.html">as_forest_data()</a></code> model methods.</li>
+<li>Legends positioned at the top or bottom are now collected at the patchwork level, centering them across the complete table-and-plot composition.</li>
+<li>Grouped tables now display model or group names in a dedicated, multiline column instead of prefixing every value. Include <code>"group"</code> wherever desired in <code>columns</code>, <code>left_columns</code>, or <code>right_columns</code>, and rename it through <code>column_labels</code> like any other table column.</li>
+<li>
+<code><a href="../reference/add_forest_table.html">add_forest_table()</a></code> now supports <code>table_width</code> and <code>plot_width</code> for controlling the relative widths of the two composed panels.</li>
+<li>Group table headers now use the source data-frame column supplied through <code>group =</code>; tables created from <code><a href="../reference/bind_forest_models.html">bind_forest_models()</a></code> continue to use <code>"Model"</code>. <code>column_labels</code> accepts either the canonical <code>"group"</code> key or the mapped source column name when overriding this header.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.1" id="ggforestplotr-031">ggforestplotR 0.3.1<a class="anchor" aria-label="anchor" href="#ggforestplotr-031"></a></h2>
 <div class="section level3">

@@ -56,7 +56,7 @@ tidy_forest_model(
 
 ## Value
 
-A standardized coefficient data frame ready for
+A `forest_data` object ready for
 [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md).
 
 ## Examples
@@ -79,6 +79,7 @@ if (requireNamespace("broom", quietly = TRUE)) {
 
   tidy_forest_model(logit_fit, exponentiate = TRUE)
 }
+#> <forest_data> OR; scale: ratio; reference: 1
 #>                 term estimate conf.low conf.high              label group
 #> 1                age 1.103890 1.061512  1.151411                age  <NA>
 #> 2                bmi 1.118858 1.043220  1.204389                bmi  <NA>

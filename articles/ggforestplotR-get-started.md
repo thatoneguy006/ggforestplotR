@@ -15,13 +15,11 @@ Use the package in one of two ways:
 
 1.  Start from a coefficient table and map the required columns directly
     to the plot.
-2.  Start from a fitted model and let
-    [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
-    or
+2.  Start from a fitted model and let its
+    [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
+    method or
     [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md)
-    call
-    [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
-    and create the plot.
+    create the validated forest data and plot.
 
 This article covers some basic examples and the minimum data you need.
 
@@ -149,7 +147,7 @@ For more detail, see:
 
 - `ggforestplotR-plot-customization` for enhanced customization of the
   plots and summary tables.
-- `ggforestplotR-data-helpers` for
-  [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
+- `ggforestplotR-data-helpers` for the `forest_data` contract,
+  [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md),
   and
-  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md).
+  [`forest_metadata()`](https://thatoneguy006.github.io/ggforestplotR/reference/forest_metadata.md).

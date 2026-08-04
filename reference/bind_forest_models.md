@@ -17,8 +17,9 @@ bind_forest_models(models, model_labels = NULL, exponentiate = NULL, ...)
 
 - models:
 
-  A non-empty list of fitted model objects supported by
-  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md).
+  A non-empty list of fitted model objects supported by an
+  [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
+  method.
 
 - model_labels:
 
@@ -30,13 +31,13 @@ bind_forest_models(models, model_labels = NULL, exponentiate = NULL, ...)
 
   `NULL`, a single logical value, or one logical value per model. `NULL`
   uses the canonical scale inferred by
-  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
+  [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
   for each model.
 
 - ...:
 
   Additional arguments passed to
-  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md),
+  [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md),
   such as `conf.level`, `intercept`, `term_labels`, or `sort_terms`.
 
 ## Value

@@ -9,7 +9,7 @@ fitted model."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,6 +73,7 @@ fitted model.</p>
 <span>  events <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  p.value <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  conf.level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
 <span>  point_size <span class="op">=</span> <span class="fl">2.3</span>,</span>
 <span>  point_shape <span class="op">=</span> <span class="fl">19</span>,</span>
@@ -182,6 +183,11 @@ axis on the log scale with the reference line at 1. For model objects,
 ratios for Cox models.</p></dd>
 
 
+<dt id="arg-conf-level">conf.level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
+<dd><p>Confidence level represented by model or data-frame
+interval columns. Defaults to <code>0.95</code>.</p></dd>
+
+
 <dt id="arg-sort-terms">sort_terms<a class="anchor" aria-label="anchor" href="#arg-sort-terms"></a></dt>
 <dd><p>How to sort rows: <code>"none"</code>, <code>"descending"</code>, or
 <code>"ascending"</code>.</p></dd>
@@ -268,8 +274,9 @@ around each labeled block identified by <code>separate_groups</code>.</p></dd>
 
 <dt id="arg-ref-line">ref_line<a class="anchor" aria-label="anchor" href="#arg-ref-line"></a></dt>
 <dd><p>Numeric x-value where the reference line is drawn, or
-<code>NULL</code> to hide it. When omitted, defaults to <code>0</code> for additive effects and
-<code>1</code> for exponentiated effects.</p></dd>
+<code>NULL</code> to hide it. When omitted, the value is taken from the
+<code>forest_data</code> metadata, such as <code>0</code> for additive effects and <code>1</code> for
+ratios.</p></dd>
 
 
 <dt id="arg-ref-label">ref_label<a class="anchor" aria-label="anchor" href="#arg-ref-label"></a></dt>

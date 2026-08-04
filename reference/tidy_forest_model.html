@@ -11,7 +11,7 @@ installed."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -107,7 +107,7 @@ Names should match model term names and values are the labels to display.</p></d
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A standardized coefficient data frame ready for <code><a href="ggforestplot.html">ggforestplot()</a></code>.</p>
+    <p>A <code>forest_data</code> object ready for <code><a href="ggforestplot.html">ggforestplot()</a></code>.</p>
     </div>
 
     <div class="section level2">
@@ -129,6 +129,7 @@ Names should match model term names and values are the labels to display.</p></d
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="fu">tidy_forest_model</span><span class="op">(</span><span class="va">logit_fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;forest_data&gt; OR; scale: ratio; reference: 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 term estimate conf.low conf.high              label group</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                age 1.103890 1.061512  1.151411                age  &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2                bmi 1.118858 1.043220  1.204389                bmi  &lt;NA&gt;</span>

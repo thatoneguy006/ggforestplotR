@@ -32,7 +32,9 @@ add_forest_table(
   grid_lines = FALSE,
   grid_line_colour = "black",
   grid_line_size = 0.3,
-  grid_line_linetype = 1
+  grid_line_linetype = 1,
+  table_width = NULL,
+  plot_width = NULL
 )
 ```
 
@@ -51,10 +53,15 @@ add_forest_table(
 - columns:
 
   Optional explicit columns to display in the side table, in the order
-  they should appear. Accepts built-in names such as `"term"`, `"n"`,
-  `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
-  dataframe columns, or numeric positions in the supplied data.
-  `"conf.low"` and `"conf.high"` are accepted as aliases for `"ci"`.
+  they should appear. Accepts built-in names such as `"term"`,
+  `"group"`, `"n"`, `"events"`, `"estimate"`, `"ci"`, and `"p"`,
+  arbitrary original dataframe columns, or numeric positions in the
+  supplied data. `"conf.low"` and `"conf.high"` are accepted as aliases
+  for `"ci"`. The default grouped table includes `"group"`; omit it from
+  an explicit selection to hide it. Its header defaults to the source
+  column supplied through `group =` for data frames and to `"Model"` for
+  [`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/reference/bind_forest_models.md)
+  output.
 
 - term_header:
 
@@ -81,8 +88,10 @@ add_forest_table(
 
   Optional named vector used to relabel table column headers. Names
   should match values supplied to `columns` after column resolution,
-  such as `"term"`, `"estimate"`, `"ci"`, `"p"`, or an arbitrary
-  original dataframe column.
+  such as `"term"`, `"group"`, `"estimate"`, `"ci"`, `"p"`, or an
+  arbitrary original dataframe column. For grouped data frames, either
+  `"group"` or the source column supplied through `group =` can relabel
+  the group column.
 
 - digits:
 
@@ -170,6 +179,16 @@ add_forest_table(
 - grid_line_linetype:
 
   Line type used for the table grid lines.
+
+- table_width:
+
+  Optional relative width allocated to the table panel. By default this
+  is calculated from the displayed table content.
+
+- plot_width:
+
+  Optional relative width allocated to the forest-plot panel. Defaults
+  to `2.4`.
 
 ## Value
 

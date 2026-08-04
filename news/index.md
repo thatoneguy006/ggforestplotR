@@ -1,5 +1,61 @@
 # Changelog
 
+## ggforestplotR 0.4.0
+
+### Major Changes
+
+- Added the `forest_data` S3 class as the package’s stable interchange
+  format. It stores validated effect-scale, axis, confidence-level,
+  reference-value, source-model, source-package, and source-column
+  metadata.
+- Converted
+  [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
+  into an S3 generic with methods for data frames, existing
+  `forest_data` objects, linear and generalized linear models, Cox
+  models, and supported mixed-model classes.
+- Refactored
+  [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md)
+  to consume the `forest_data` contract instead of determining plotting
+  behavior from the original model class.
+- Added
+  [`forest_metadata()`](https://thatoneguy006.github.io/ggforestplotR/reference/forest_metadata.md)
+  for inspecting the semantic and provenance metadata associated with a
+  `forest_data` object.
+
+### Minor Changes
+
+- Separated the semantic estimate scale from the plotting-axis
+  transformation. Ratio estimates now use `estimate_scale = "ratio"` and
+  `axis_transform = "log10"`; unexponentiated log-link coefficients use
+  `estimate_scale = "log"` and an identity axis.
+- [`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/reference/bind_forest_models.md)
+  now returns `forest_data` and validates compatible estimate scales,
+  axis transformations, reference values, and confidence levels before
+  combining models.
+- Fitted model objects and duplicate source data frames are not retained
+  in `forest_data`; provenance records model classes, package names, and
+  source column mappings instead.
+- [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
+  remains available as a compatibility wrapper around the new
+  [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
+  model methods.
+- Legends positioned at the top or bottom are now collected at the
+  patchwork level, centering them across the complete table-and-plot
+  composition.
+- Grouped tables now display model or group names in a dedicated,
+  multiline column instead of prefixing every value. Include `"group"`
+  wherever desired in `columns`, `left_columns`, or `right_columns`, and
+  rename it through `column_labels` like any other table column.
+- [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_forest_table.md)
+  now supports `table_width` and `plot_width` for controlling the
+  relative widths of the two composed panels.
+- Group table headers now use the source data-frame column supplied
+  through `group =`; tables created from
+  [`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/reference/bind_forest_models.md)
+  continue to use `"Model"`. `column_labels` accepts either the
+  canonical `"group"` key or the mapped source column name when
+  overriding this header.
+
 ## ggforestplotR 0.3.1
 
 ### Minor Changes

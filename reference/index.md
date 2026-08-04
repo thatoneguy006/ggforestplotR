@@ -17,6 +17,8 @@ Helpers for standardizing coefficient data and tidying model outputs.
 
 - [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
   : Standardize coefficient data for forest plots
+- [`forest_metadata()`](https://thatoneguy006.github.io/ggforestplotR/reference/forest_metadata.md)
+  : Inspect forest-data metadata
 - [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
   : Tidy a model object for forest plotting
 - [`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/reference/bind_forest_models.md)

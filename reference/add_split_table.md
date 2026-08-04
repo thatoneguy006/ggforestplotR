@@ -47,18 +47,23 @@ add_split_table(
 - left_columns:
 
   Optional explicit columns to place on the left side of the forest
-  plot. Accepts built-in names such as `"term"`, `"n"`, `"events"`,
-  `"estimate"`, `"ci"`, and `"p"`, arbitrary original dataframe columns,
-  or numeric positions in the supplied data. `"conf.low"` and
-  `"conf.high"` are accepted as aliases for `"ci"`.
+  plot. Accepts built-in names such as `"term"`, `"group"`, `"n"`,
+  `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
+  dataframe columns, or numeric positions in the supplied data.
+  `"conf.low"` and `"conf.high"` are accepted as aliases for `"ci"`. The
+  default grouped layout includes `"group"` on the left. Its header
+  defaults to the source column supplied through `group =` for data
+  frames and to `"Model"` for
+  [`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/reference/bind_forest_models.md)
+  output.
 
 - right_columns:
 
   Optional explicit columns to place on the right side of the forest
-  plot. Accepts built-in names such as `"estimate"`, `"ci"`, and `"p"`,
-  arbitrary original dataframe columns, or numeric positions in the
-  supplied data. `"conf.low"` and `"conf.high"` are accepted as aliases
-  for `"ci"`.
+  plot. Accepts built-in names such as `"group"`, `"estimate"`, `"ci"`,
+  and `"p"`, arbitrary original dataframe columns, or numeric positions
+  in the supplied data. `"conf.low"` and `"conf.high"` are accepted as
+  aliases for `"ci"`.
 
 - term_header:
 
@@ -85,8 +90,10 @@ add_split_table(
 
   Optional named vector used to relabel table column headers. Names
   should match values supplied to `left_columns` or `right_columns`
-  after column resolution, such as `"term"`, `"estimate"`, `"ci"`,
-  `"p"`, or an arbitrary original dataframe column.
+  after column resolution, such as `"term"`, `"group"`, `"estimate"`,
+  `"ci"`, `"p"`, or an arbitrary original dataframe column. For grouped
+  data frames, either `"group"` or the source column supplied through
+  `group =` can relabel the group column.
 
 - digits:
 

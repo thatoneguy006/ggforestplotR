@@ -13,7 +13,7 @@ grouping variable for dodged, color-coded estimates."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,8 +69,8 @@ grouping variable for dodged, color-coded estimates.</p>
 
 
 <dl><dt id="arg-models">models<a class="anchor" aria-label="anchor" href="#arg-models"></a></dt>
-<dd><p>A non-empty list of fitted model objects supported by
-<code><a href="tidy_forest_model.html">tidy_forest_model()</a></code>.</p></dd>
+<dd><p>A non-empty list of fitted model objects supported by an
+<code><a href="as_forest_data.html">as_forest_data()</a></code> method.</p></dd>
 
 
 <dt id="arg-model-labels">model_labels<a class="anchor" aria-label="anchor" href="#arg-model-labels"></a></dt>
@@ -81,12 +81,12 @@ forest plot. Defaults to list names when present, otherwise <code>"Model 1"</cod
 
 <dt id="arg-exponentiate">exponentiate<a class="anchor" aria-label="anchor" href="#arg-exponentiate"></a></dt>
 <dd><p><code>NULL</code>, a single logical value, or one logical value per
-model. <code>NULL</code> uses the canonical scale inferred by <code><a href="tidy_forest_model.html">tidy_forest_model()</a></code>
+model. <code>NULL</code> uses the canonical scale inferred by <code><a href="as_forest_data.html">as_forest_data()</a></code>
 for each model.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments passed to <code><a href="tidy_forest_model.html">tidy_forest_model()</a></code>, such as
+<dd><p>Additional arguments passed to <code><a href="as_forest_data.html">as_forest_data()</a></code>, such as
 <code>conf.level</code>, <code>intercept</code>, <code>term_labels</code>, or <code>sort_terms</code>.</p></dd>
 
 </dl></div>

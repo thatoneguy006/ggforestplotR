@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,7 +79,9 @@
 <span>  grid_lines <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  grid_line_colour <span class="op">=</span> <span class="st">"black"</span>,</span>
 <span>  grid_line_size <span class="op">=</span> <span class="fl">0.3</span>,</span>
-<span>  grid_line_linetype <span class="op">=</span> <span class="fl">1</span></span>
+<span>  grid_line_linetype <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  table_width <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  plot_width <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -100,9 +102,12 @@ forest plot.</p></dd>
 <dt id="arg-columns">columns<a class="anchor" aria-label="anchor" href="#arg-columns"></a></dt>
 <dd><p>Optional explicit columns to display in the side table, in
 the order they should appear. Accepts built-in names such as <code>"term"</code>,
-<code>"n"</code>, <code>"events"</code>, <code>"estimate"</code>, <code>"ci"</code>, and <code>"p"</code>, arbitrary original
+<code>"group"</code>, <code>"n"</code>, <code>"events"</code>, <code>"estimate"</code>, <code>"ci"</code>, and <code>"p"</code>, arbitrary original
 dataframe columns, or numeric positions in the supplied data. <code>"conf.low"</code>
-and <code>"conf.high"</code> are accepted as aliases for <code>"ci"</code>.</p></dd>
+and <code>"conf.high"</code> are accepted as aliases for <code>"ci"</code>. The default grouped
+table includes <code>"group"</code>; omit it from an explicit selection to hide it.
+Its header defaults to the source column supplied through <code>group =</code> for
+data frames and to <code>"Model"</code> for <code><a href="bind_forest_models.html">bind_forest_models()</a></code> output.</p></dd>
 
 
 <dt id="arg-term-header">term_header<a class="anchor" aria-label="anchor" href="#arg-term-header"></a></dt>
@@ -129,8 +134,9 @@ model-derived label when available.</p></dd>
 <dt id="arg-column-labels">column_labels<a class="anchor" aria-label="anchor" href="#arg-column-labels"></a></dt>
 <dd><p>Optional named vector used to relabel table column
 headers. Names should match values supplied to <code>columns</code> after column
-resolution, such as <code>"term"</code>, <code>"estimate"</code>, <code>"ci"</code>, <code>"p"</code>, or an arbitrary
-original dataframe column.</p></dd>
+resolution, such as <code>"term"</code>, <code>"group"</code>, <code>"estimate"</code>, <code>"ci"</code>, <code>"p"</code>, or an arbitrary
+original dataframe column. For grouped data frames, either <code>"group"</code> or
+the source column supplied through <code>group =</code> can relabel the group column.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
@@ -218,6 +224,16 @@ alpha used in <code><a href="ggforestplot.html">ggforestplot()</a></code>.</p></
 
 <dt id="arg-grid-line-linetype">grid_line_linetype<a class="anchor" aria-label="anchor" href="#arg-grid-line-linetype"></a></dt>
 <dd><p>Line type used for the table grid lines.</p></dd>
+
+
+<dt id="arg-table-width">table_width<a class="anchor" aria-label="anchor" href="#arg-table-width"></a></dt>
+<dd><p>Optional relative width allocated to the table panel.
+By default this is calculated from the displayed table content.</p></dd>
+
+
+<dt id="arg-plot-width">plot_width<a class="anchor" aria-label="anchor" href="#arg-plot-width"></a></dt>
+<dd><p>Optional relative width allocated to the forest-plot
+panel. Defaults to <code>2.4</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

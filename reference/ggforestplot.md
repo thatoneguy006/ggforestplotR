@@ -24,6 +24,7 @@ ggforestplot(
   events = NULL,
   p.value = NULL,
   exponentiate = NULL,
+  conf.level = 0.95,
   sort_terms = c("none", "descending", "ascending"),
   point_size = 2.3,
   point_shape = 19,
@@ -129,6 +130,11 @@ ggforestplot(
   the canonical scale when it can be inferred, such as hazard ratios for
   Cox models.
 
+- conf.level:
+
+  Confidence level represented by model or data-frame interval columns.
+  Defaults to `0.95`.
+
 - sort_terms:
 
   How to sort rows: `"none"`, `"descending"`, or `"ascending"`.
@@ -214,8 +220,8 @@ ggforestplot(
 - ref_line:
 
   Numeric x-value where the reference line is drawn, or `NULL` to hide
-  it. When omitted, defaults to `0` for additive effects and `1` for
-  exponentiated effects.
+  it. When omitted, the value is taken from the `forest_data` metadata,
+  such as `0` for additive effects and `1` for ratios.
 
 - ref_label:
 

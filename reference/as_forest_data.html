@@ -9,7 +9,7 @@ structure used throughout ggforestplotR."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,7 @@ structure used throughout ggforestplotR."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Standardize coefficient data for forest plots</h1>
-      <small class="dont-index">Source: <a href="https://github.com/thatoneguy006/ggforestplotR/blob/HEAD/R/as_forest_data.R" class="external-link"><code>R/as_forest_data.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/thatoneguy006/ggforestplotR/blob/HEAD/R/as_forest_data.R" class="external-link"><code>R/as_forest_data.R</code></a>, <a href="https://github.com/thatoneguy006/ggforestplotR/blob/HEAD/R/tidy_forest_model.R" class="external-link"><code>R/tidy_forest_model.R</code></a></small>
       <div class="d-none name"><code>as_forest_data.Rd</code></div>
     </div>
 
@@ -55,7 +55,19 @@ structure used throughout <code>ggforestplotR</code>.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">as_forest_data</span><span class="op">(</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">as_forest_data</span><span class="op">(</span><span class="va">data</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'forest_data'</span></span>
+<span><span class="fu">as_forest_data</span><span class="op">(</span></span>
+<span>  <span class="va">data</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
+<span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'data.frame'</span></span>
+<span><span class="fu">as_forest_data</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">term</span>,</span>
 <span>  <span class="va">estimate</span>,</span>
@@ -69,7 +81,99 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span>  n <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  events <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  p.value <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  exponentiate <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  estimate_scale <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  axis_transform <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  effect_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  conf.level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  reference_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  source_model <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  source_package <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'lm'</span></span>
+<span><span class="fu">as_forest_data</span><span class="op">(</span></span>
+<span>  <span class="va">data</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  conf.int <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  conf.level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'glm'</span></span>
+<span><span class="fu">as_forest_data</span><span class="op">(</span></span>
+<span>  <span class="va">data</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  conf.int <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  conf.level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'coxph'</span></span>
+<span><span class="fu">as_forest_data</span><span class="op">(</span></span>
+<span>  <span class="va">data</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  conf.int <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  conf.level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'merMod'</span></span>
+<span><span class="fu">as_forest_data</span><span class="op">(</span></span>
+<span>  <span class="va">data</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  conf.int <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  conf.level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'lme'</span></span>
+<span><span class="fu">as_forest_data</span><span class="op">(</span></span>
+<span>  <span class="va">data</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  conf.int <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  conf.level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'glmmTMB'</span></span>
+<span><span class="fu">as_forest_data</span><span class="op">(</span></span>
+<span>  <span class="va">data</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  conf.int <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  conf.level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Default S3 method</span></span>
+<span><span class="fu">as_forest_data</span><span class="op">(</span></span>
+<span>  <span class="va">data</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  conf.int <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  conf.level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -79,7 +183,29 @@ structure used throughout <code>ggforestplotR</code>.</p>
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>A data frame containing coefficient estimates and intervals.</p></dd>
+<dd><p>A data frame or data-frame subclass containing coefficient
+estimates and intervals. Tibbles and <code>data.table</code> objects are supported.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Arguments passed to an <code>as_forest_data()</code> method.</p></dd>
+
+
+<dt id="arg-term-labels">term_labels<a class="anchor" aria-label="anchor" href="#arg-term-labels"></a></dt>
+<dd><p>Optional named vector used to relabel displayed terms.
+Names should match values in the term column and values are the labels to
+display.</p></dd>
+
+
+<dt id="arg-sort-terms">sort_terms<a class="anchor" aria-label="anchor" href="#arg-sort-terms"></a></dt>
+<dd><p>How to sort rows: <code>"none"</code>, <code>"descending"</code>, or
+<code>"ascending"</code>.</p></dd>
+
+
+<dt id="arg-exponentiate">exponentiate<a class="anchor" aria-label="anchor" href="#arg-exponentiate"></a></dt>
+<dd><p>Compatibility argument. <code>TRUE</code> is equivalent to
+<code>estimate_scale = "ratio"</code>; <code>FALSE</code> is equivalent to
+<code>estimate_scale = "identity"</code> when <code>estimate_scale</code> is not supplied.</p></dd>
 
 
 <dt id="arg-term">term<a class="anchor" aria-label="anchor" href="#arg-term"></a></dt>
@@ -100,12 +226,6 @@ structure used throughout <code>ggforestplotR</code>.</p>
 
 <dt id="arg-label">label<a class="anchor" aria-label="anchor" href="#arg-label"></a></dt>
 <dd><p>Optional column name used for the displayed row label.</p></dd>
-
-
-<dt id="arg-term-labels">term_labels<a class="anchor" aria-label="anchor" href="#arg-term-labels"></a></dt>
-<dd><p>Optional named vector used to relabel displayed terms.
-Names should match values in the term column and values are the labels to
-display.</p></dd>
 
 
 <dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
@@ -137,21 +257,57 @@ table helpers.</p></dd>
 <dd><p>Optional column name holding p-values.</p></dd>
 
 
-<dt id="arg-exponentiate">exponentiate<a class="anchor" aria-label="anchor" href="#arg-exponentiate"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, require positive values for
-estimates and intervals.</p></dd>
+<dt id="arg-estimate-scale">estimate_scale<a class="anchor" aria-label="anchor" href="#arg-estimate-scale"></a></dt>
+<dd><p>Semantic scale of the stored estimates. One of
+<code>"identity"</code>, <code>"log"</code>, <code>"ratio"</code>, <code>"probability"</code>, or
+<code>"risk_difference"</code>.</p></dd>
 
 
-<dt id="arg-sort-terms">sort_terms<a class="anchor" aria-label="anchor" href="#arg-sort-terms"></a></dt>
-<dd><p>How to sort rows: <code>"none"</code>, <code>"descending"</code>, or
-<code>"ascending"</code>.</p></dd>
+<dt id="arg-axis-transform">axis_transform<a class="anchor" aria-label="anchor" href="#arg-axis-transform"></a></dt>
+<dd><p>Transformation used for the plotting axis. Defaults
+to <code>"log10"</code> for ratios and <code>"identity"</code> otherwise.</p></dd>
+
+
+<dt id="arg-effect-label">effect_label<a class="anchor" aria-label="anchor" href="#arg-effect-label"></a></dt>
+<dd><p>Short label for the effect measure, such as <code>"Beta"</code>,
+<code>"OR"</code>, <code>"HR"</code>, <code>"RR"</code>, or <code>"RD"</code>.</p></dd>
+
+
+<dt id="arg-conf-level">conf.level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
+<dd><p>Confidence level represented by the interval columns, or
+<code>NA</code> when it is unknown.</p></dd>
+
+
+<dt id="arg-reference-value">reference_value<a class="anchor" aria-label="anchor" href="#arg-reference-value"></a></dt>
+<dd><p>Numeric null/reference value, or <code>NULL</code> when the
+effect measure has no universal reference value.</p></dd>
+
+
+<dt id="arg-source-model">source_model<a class="anchor" aria-label="anchor" href="#arg-source-model"></a></dt>
+<dd><p>Optional character vector identifying the source model
+class. The complete fitted model is not retained.</p></dd>
+
+
+<dt id="arg-source-package">source_package<a class="anchor" aria-label="anchor" href="#arg-source-package"></a></dt>
+<dd><p>Optional package name identifying the model source.</p></dd>
+
+
+<dt id="arg-conf-int">conf.int<a class="anchor" aria-label="anchor" href="#arg-conf-int"></a></dt>
+<dd><p>Logical; model methods require <code>TRUE</code> because forest data
+include confidence-interval columns.</p></dd>
+
+
+<dt id="arg-intercept">intercept<a class="anchor" aria-label="anchor" href="#arg-intercept"></a></dt>
+<dd><p>Logical; for model methods, whether to retain the
+intercept term.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A standardized data frame ready for <code><a href="ggforestplot.html">ggforestplot()</a></code> and the table
-composition helpers. Original dataframe columns are retained for table
-helpers so they can be displayed with <code>add_forest_table(columns = ...)</code>.</p>
+    <p>A <code>forest_data</code> data-frame subclass ready for <code><a href="ggforestplot.html">ggforestplot()</a></code> and
+the table composition helpers. Original data-frame columns are retained
+for table helpers so they can be displayed with
+<code>add_forest_table(columns = ...)</code>.</p>
     </div>
 
     <div class="section level2">
@@ -170,6 +326,7 @@ helpers so they can be displayed with <code>add_forest_table(columns = ...)</cod
 <span class="r-in"><span>  conf.low <span class="op">=</span> <span class="st">"lower"</span>,</span></span>
 <span class="r-in"><span>  conf.high <span class="op">=</span> <span class="st">"upper"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;forest_data&gt; Estimate; scale: identity; reference: 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        term estimate conf.low conf.high     label group grouping</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1       Age     0.10     0.02      0.18       Age  &lt;NA&gt;     &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2       BMI    -0.08    -0.16      0.00       BMI  &lt;NA&gt;     &lt;NA&gt;</span>
