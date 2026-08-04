@@ -29,6 +29,10 @@
   the new `as_forest_data()` model methods.
 - Legends positioned at the top or bottom are now collected at the patchwork
   level, centering them across the complete table-and-plot composition.
+- Grouped tables now display model or group names in a dedicated, multiline
+  column instead of prefixing every value. `group_position` controls its
+  placement in `add_forest_table()` and `add_split_table()`, and
+  `group_header` customizes its heading.
 
 # ggforestplotR 0.3.1
 

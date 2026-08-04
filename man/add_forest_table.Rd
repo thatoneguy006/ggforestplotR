@@ -31,7 +31,9 @@ add_forest_table(
   grid_lines = FALSE,
   grid_line_colour = "black",
   grid_line_size = 0.3,
-  grid_line_linetype = 1
+  grid_line_linetype = 1,
+  group_header = NULL,
+  group_position = NULL
 )
 }
 \arguments{
@@ -43,7 +45,7 @@ forest plot.}
 
 \item{columns}{Optional explicit columns to display in the side table, in
 the order they should appear. Accepts built-in names such as \code{"term"},
-\code{"n"}, \code{"events"}, \code{"estimate"}, \code{"ci"}, and \code{"p"}, arbitrary original
+\code{"group"}, \code{"n"}, \code{"events"}, \code{"estimate"}, \code{"ci"}, and \code{"p"}, arbitrary original
 dataframe columns, or numeric positions in the supplied data. \code{"conf.low"}
 and \code{"conf.high"} are accepted as aliases for \code{"ci"}.}
 
@@ -113,6 +115,15 @@ alpha used in \code{\link[=ggforestplot]{ggforestplot()}}.}
 \item{grid_line_size}{Line width used for the table grid lines.}
 
 \item{grid_line_linetype}{Line type used for the table grid lines.}
+
+\item{group_header}{Header text for the dedicated group column. Defaults to
+\code{"Model"} for data created by \code{\link[=bind_forest_models]{bind_forest_models()}} and \code{"Group"} for
+other grouped forest data.}
+
+\item{group_position}{Optional whole-number position for the dedicated group
+column. Grouped tables include this column after \code{term} by default. Use
+\code{FALSE} to omit it. When \code{columns} is supplied, its explicit \code{"group"}
+placement is respected unless \code{group_position} is also supplied.}
 }
 \value{
 A patchwork-composed plot containing the forest plot and side

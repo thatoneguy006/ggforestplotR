@@ -67,6 +67,81 @@ test_that("add_split_table ggplot add syntax preserves a forest-plot center pane
   expect_true(!is.null(center_plot$ggforestplotR_state))
 })
 
+test_that("group_position moves the dedicated group column", {
+  data <- make_contract_data()
+  data$model <- c("Base", "Adjusted", "Base")
+  p <- ggforestplot(
+    data,
+    group = "model",
+    n = "sample_size",
+    events = "event_count"
+  )
+  forest_data <- p$ggforestplotR_state$forest_data
+  default_columns <- default_forest_table_columns(forest_data)
+
+  expect_equal(default_columns, c("term", "group", "n", "events", "estimate"))
+  expect_equal(
+    resolve_group_position(default_columns, 4, forest_data),
+    c("term", "n", "events", "group", "estimate")
+  )
+  expect_equal(
+    resolve_group_position(default_columns, FALSE, forest_data),
+    c("term", "n", "events", "estimate")
+  )
+
+  split_columns <- resolve_split_group_position(
+    default_split_left_columns(forest_data),
+    default_split_right_columns(forest_data),
+    c(right = 1),
+    forest_data
+  )
+  expect_equal(split_columns$left, c("term", "n", "events"))
+  expect_equal(split_columns$right, c("group", "estimate"))
+
+  single_table <- add_forest_table(p, group_position = 4)
+  split_table <- add_split_table(p, group_position = c(right = 1))
+
+  expect_s3_class(single_table, "patchwork")
+  expect_equal(
+    unique(single_table$patches$plots[[1L]]$data$column_key),
+    c("term", "n", "events", "group", "estimate")
+  )
+  expect_s3_class(split_table, "patchwork")
+  expect_equal(
+    unique(split_table$patches$plots[[1L]]$data$column_key),
+    c("term", "n", "events")
+  )
+  expect_equal(unique(split_table$data$column_key), c("group", "estimate"))
+})
+
+test_that("group_position validates grouped data and table positions", {
+  p <- ggforestplot(make_contract_data())
+  forest_data <- p$ggforestplotR_state$forest_data
+
+  expect_error(
+    resolve_group_position(c("term", "estimate"), 1, forest_data),
+    "requires grouped forest data"
+  )
+
+  grouped <- make_contract_data()
+  grouped$model <- c("Base", "Adjusted", "Base")
+  grouped_data <- ggforestplot(grouped, group = "model")$ggforestplotR_state$forest_data
+
+  expect_error(
+    resolve_group_position(c("term", "estimate"), 4, grouped_data),
+    "between 1 and 3"
+  )
+  expect_error(
+    resolve_split_group_position(
+      c("term"),
+      c("estimate"),
+      c(center = 1),
+      grouped_data
+    ),
+    "name `group_position` either `left` or `right`"
+  )
+})
+
 test_that("outer legends span the full table and plot composition", {
   data <- make_contract_data()
   data$cohort <- c("Base", "Adjusted", "Base")

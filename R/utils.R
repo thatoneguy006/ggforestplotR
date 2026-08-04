@@ -95,6 +95,7 @@ normalize_table_columns <- function(columns, data = NULL) {
   aliases <- c(
     term = "term", terms = "term", label = "term", labels = "term",
     subgroup = "term", subgroups = "term",
+    group = "group", groups = "group", model = "group", models = "group",
     n = "n", samplesize = "n", sample_size = "n",
     events = "events", event = "events", cases = "events", count = "events",
     estimate = "estimate", estimates = "estimate",
@@ -163,6 +164,7 @@ has_table_values <- function(data, column) {
 default_forest_table_columns <- function(data) {
   c(
     "term",
+    if (has_table_values(data, "group")) "group",
     if (has_table_values(data, "n")) "n",
     if (has_table_values(data, "events")) "events",
     "estimate"
@@ -172,6 +174,7 @@ default_forest_table_columns <- function(data) {
 default_split_left_columns <- function(data) {
   c(
     "term",
+    if (has_table_values(data, "group")) "group",
     if (has_table_values(data, "n")) "n",
     if (has_table_values(data, "events")) "events"
   )
@@ -179,6 +182,129 @@ default_split_left_columns <- function(data) {
 
 default_split_right_columns <- function(data) {
   "estimate"
+}
+
+table_columns_include_group <- function(columns, data) {
+  if (is.null(columns)) {
+    return(has_table_values(data, "group"))
+  }
+
+  resolved <- tryCatch(
+    normalize_table_columns(columns, data = data),
+    error = function(e) NULL
+  )
+
+  if (!is.null(resolved)) {
+    return("group" %in% resolved)
+  }
+
+  is.character(columns) && any(
+    gsub("\\s+", "", tolower(columns)) %in% c("group", "groups")
+  )
+}
+
+insert_table_column <- function(columns, column, position, arg = "group_position") {
+  columns <- columns[columns != column]
+
+  if (!is.numeric(position) || length(position) != 1L || is.na(position) ||
+      position != as.integer(position) || position < 1L || position > length(columns) + 1L) {
+    stop(
+      sprintf(
+        "`%s` must be a whole-number position between 1 and %s.",
+        arg,
+        length(columns) + 1L
+      ),
+      call. = FALSE
+    )
+  }
+
+  position <- as.integer(position)
+  append(columns, column, after = position - 1L)
+}
+
+resolve_group_position <- function(columns, group_position, data) {
+  if (is.null(group_position)) {
+    return(columns)
+  }
+
+  if (identical(group_position, FALSE)) {
+    return(columns[columns != "group"])
+  }
+
+  if (!has_table_values(data, "group")) {
+    stop("`group_position` requires grouped forest data.", call. = FALSE)
+  }
+
+  position_names <- names(group_position)
+  if (!is.null(position_names) &&
+      (anyNA(position_names) || any(nzchar(position_names)))) {
+    stop("`group_position` must be an unnamed position in `add_forest_table()`.", call. = FALSE)
+  }
+
+  insert_table_column(columns, "group", group_position)
+}
+
+resolve_split_group_position <- function(left_columns,
+                                         right_columns,
+                                         group_position,
+                                         data) {
+  if (is.null(group_position)) {
+    return(list(left = left_columns, right = right_columns))
+  }
+
+  if (identical(group_position, FALSE)) {
+    return(list(
+      left = left_columns[left_columns != "group"],
+      right = right_columns[right_columns != "group"]
+    ))
+  }
+
+  if (!has_table_values(data, "group")) {
+    stop("`group_position` requires grouped forest data.", call. = FALSE)
+  }
+
+  position_names <- names(group_position)
+  if (!is.null(position_names) && anyNA(position_names)) {
+    stop(
+      "For `add_split_table()`, name `group_position` either `left` or `right`, such as `c(right = 1)`.",
+      call. = FALSE
+    )
+  }
+  named_position <- !is.null(position_names) && any(nzchar(position_names))
+
+  if (isTRUE(named_position)) {
+    if (length(group_position) != 1L ||
+        !position_names[[1L]] %in% c("left", "right")) {
+      stop(
+        "For `add_split_table()`, name `group_position` either `left` or `right`, such as `c(right = 1)`.",
+        call. = FALSE
+      )
+    }
+    side <- position_names[[1L]]
+  } else {
+    side <- if ("group" %in% right_columns) "right" else "left"
+  }
+
+  left_columns <- left_columns[left_columns != "group"]
+  right_columns <- right_columns[right_columns != "group"]
+
+  if (identical(side, "left")) {
+    left_columns <- insert_table_column(
+      left_columns,
+      "group",
+      group_position,
+      arg = "group_position"
+    )
+  } else {
+    right_columns <- insert_table_column(
+      right_columns,
+      "group",
+      group_position,
+      arg = "group_position"
+    )
+  }
+
+  list(left = left_columns, right = right_columns)
 }
 
 normalize_digits <- function(value, arg) {
@@ -345,7 +471,15 @@ infer_model_estimate_info <- function(model,
 #' handles that single concern.
 #' @keywords internal
 #' @noRd
-collapse_grouped_values <- function(formatted, group = NULL, force_group_labels = FALSE) {
+collapse_grouped_values <- function(formatted,
+                                    group = NULL,
+                                    force_group_labels = FALSE,
+                                    align_groups = FALSE) {
+  if (isTRUE(align_groups)) {
+    formatted[is.na(formatted)] <- ""
+    return(paste(formatted, collapse = "\n"))
+  }
+
   keep <- !is.na(formatted) & nzchar(formatted)
 
   if (!any(keep)) {
@@ -376,7 +510,7 @@ collapse_grouped_values <- function(formatted, group = NULL, force_group_labels 
 }
 
 format_forest_p_values <- function(values, group = NULL, digits = 2, p_digits = digits,
-                                   force_group_labels = FALSE) {
+                                   force_group_labels = FALSE, align_groups = FALSE) {
   p_digits <- resolve_table_digits(digits = digits, p_digits = p_digits)$p_digits
   values <- as.numeric(values)
   eps <- 10^(-p_digits)
@@ -387,7 +521,12 @@ format_forest_p_values <- function(values, group = NULL, digits = 2, p_digits = 
       sprintf(paste0("%.", p_digits, "f"), values)
     )
   )
-  collapse_grouped_values(formatted, group, force_group_labels = force_group_labels)
+  collapse_grouped_values(
+    formatted,
+    group,
+    force_group_labels = force_group_labels,
+    align_groups = align_groups
+  )
 }
 
 format_forest_estimates <- function(estimate, conf.low, conf.high,
@@ -395,7 +534,8 @@ format_forest_estimates <- function(estimate, conf.low, conf.high,
                                     estimate_digits = digits,
                                     interval_digits = digits,
                                     estimate_fmt = NULL,
-                                    force_group_labels = FALSE) {
+                                    force_group_labels = FALSE,
+                                    align_groups = FALSE) {
   digits <- resolve_table_digits(
     digits = digits,
     estimate_digits = estimate_digits,
@@ -429,14 +569,20 @@ format_forest_estimates <- function(estimate, conf.low, conf.high,
     },
     character(1)
   )
-  collapse_grouped_values(formatted, group, force_group_labels = force_group_labels)
+  collapse_grouped_values(
+    formatted,
+    group,
+    force_group_labels = force_group_labels,
+    align_groups = align_groups
+  )
 }
 
 format_forest_intervals <- function(conf.low, conf.high,
                                     group = NULL, digits = 2,
                                     interval_digits = digits,
                                     ci_fmt = NULL,
-                                    force_group_labels = FALSE) {
+                                    force_group_labels = FALSE,
+                                    align_groups = FALSE) {
   digits <- resolve_table_digits(
     digits = digits,
     interval_digits = interval_digits
@@ -467,13 +613,26 @@ format_forest_intervals <- function(conf.low, conf.high,
     },
     character(1)
   )
-  collapse_grouped_values(formatted, group, force_group_labels = force_group_labels)
+  collapse_grouped_values(
+    formatted,
+    group,
+    force_group_labels = force_group_labels,
+    align_groups = align_groups
+  )
 }
 
-format_forest_table_values <- function(values, group = NULL, force_group_labels = FALSE) {
+format_forest_table_values <- function(values,
+                                       group = NULL,
+                                       force_group_labels = FALSE,
+                                       align_groups = FALSE) {
   formatted <- as.character(values)
   formatted[is.na(formatted)] <- ""
-  collapse_grouped_values(formatted, group, force_group_labels = force_group_labels)
+  collapse_grouped_values(
+    formatted,
+    group,
+    force_group_labels = force_group_labels,
+    align_groups = align_groups
+  )
 }
 
 # ─── Plot data construction (decomposed into single-purpose passes) ──────────
@@ -807,6 +966,8 @@ align_forest_state_to_plot_y_scale <- function(state, plot) {
 
 build_forest_table_data <- function(data,
                                     term_header = "Term",
+                                    group_header = NULL,
+                                    dedicated_group_column = NULL,
                                     n_header = "N",
                                     events_header = "Events",
                                     estimate_label = "Estimate",
@@ -855,7 +1016,16 @@ build_forest_table_data <- function(data,
   if (is.list(column_mapping)) {
     column_mapping <- NULL
   }
-  force_group_labels <- any(!is.na(data$group) & nzchar(data$group))
+  has_groups <- any(!is.na(data$group) & nzchar(data$group))
+  if (is.null(dedicated_group_column)) {
+    dedicated_group_column <- table_columns_include_group(columns, data)
+  }
+  dedicated_group_column <- has_groups && isTRUE(dedicated_group_column)
+  force_group_labels <- has_groups && !dedicated_group_column
+  align_groups <- dedicated_group_column
+  if (is.null(group_header)) {
+    group_header <- if (inherits(data, "ggforestplot_bound_models")) "Model" else "Group"
+  }
   row_levels <- levels(data$row_key)
   row_parts <- vector("list", length(row_levels))
 
@@ -866,19 +1036,31 @@ build_forest_table_data <- function(data,
     if (length(idx) == 0L) next
 
     rd <- data[idx, , drop = FALSE]
+    group_values <- if (!has_groups && "group" %in% names(source_storage)) {
+      rd[[source_storage[["group"]]]]
+    } else {
+      rd$group
+    }
     row_parts[[i]] <- data.frame(
       row_key = row_key,
       grouping_panel = rd$grouping_panel[1L],
       term_text = rd$label[1L],
+      group_text = format_forest_table_values(
+        group_values,
+        rd$group,
+        align_groups = align_groups
+      ),
       n_text = format_forest_table_values(
         rd$n,
         rd$group,
-        force_group_labels = force_group_labels
+        force_group_labels = force_group_labels,
+        align_groups = align_groups
       ),
       events_text = format_forest_table_values(
         rd$events,
         rd$group,
-        force_group_labels = force_group_labels
+        force_group_labels = force_group_labels,
+        align_groups = align_groups
       ),
       estimate_text = format_forest_estimates(
         rd$estimate,
@@ -888,7 +1070,8 @@ build_forest_table_data <- function(data,
         estimate_digits = digits$estimate_digits,
         interval_digits = digits$interval_digits,
         estimate_fmt = estimate_fmt,
-        force_group_labels = force_group_labels
+        force_group_labels = force_group_labels,
+        align_groups = align_groups
       ),
       estimate_value_text = format_forest_estimates(
         rd$estimate,
@@ -898,7 +1081,8 @@ build_forest_table_data <- function(data,
         estimate_digits = digits$estimate_digits,
         interval_digits = digits$interval_digits,
         estimate_fmt = if (is.null(estimate_fmt)) "{estimate}" else estimate_fmt,
-        force_group_labels = force_group_labels
+        force_group_labels = force_group_labels,
+        align_groups = align_groups
       ),
       ci_text = format_forest_intervals(
         rd$conf.low,
@@ -906,13 +1090,15 @@ build_forest_table_data <- function(data,
         rd$group,
         interval_digits = digits$interval_digits,
         ci_fmt = ci_fmt,
-        force_group_labels = force_group_labels
+        force_group_labels = force_group_labels,
+        align_groups = align_groups
       ),
       p_text = format_forest_p_values(
         rd$p.value,
         rd$group,
         p_digits = digits$p_digits,
-        force_group_labels = force_group_labels
+        force_group_labels = force_group_labels,
+        align_groups = align_groups
       ),
       stringsAsFactors = FALSE
     )
@@ -924,7 +1110,7 @@ build_forest_table_data <- function(data,
     )
     extra_columns <- setdiff(
       extra_columns,
-      c("row_key", "grouping_panel")
+      c("row_key", "grouping_panel", "group")
     )
 
     for (extra in extra_columns) {
@@ -936,7 +1122,8 @@ build_forest_table_data <- function(data,
       row_parts[[i]][[extra]] <- format_forest_table_values(
         values,
         rd$group,
-        force_group_labels = force_group_labels
+        force_group_labels = force_group_labels,
+        align_groups = align_groups
       )
     }
   }
@@ -958,6 +1145,7 @@ build_forest_table_data <- function(data,
 
   column_field_lookup <- c(
     term = "term_text",
+    group = "group_text",
     n = "n_text",
     events = "events_text",
     estimate = if ("ci" %in% column_keys) "estimate_value_text" else "estimate_text",
@@ -966,6 +1154,7 @@ build_forest_table_data <- function(data,
   )
   header_lookup <- c(
     term = term_header,
+    group = group_header,
     n = n_header,
     events = events_header,
     estimate = if ("ci" %in% column_keys) estimate_label else sprintf("%s (%s)", estimate_label, confidence_label),

@@ -222,6 +222,7 @@ ggforestplot(bound_models, striped_rows = T, p.value = "p.value") +
   theme(legend.position = "top") +
   scale_color_manual(values = c("#1F968BFF", "#453781FF", "#FDE725FF")) +
   add_forest_table(columns = c("term", "estimate", "p.value"),
+                   group_position = 2,
                    p_digits = 4)
 ```
 
