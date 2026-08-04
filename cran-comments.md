@@ -1,6 +1,6 @@
 ## Test environments
 
-- Windows 11 x64, R 4.6.0
+- Windows 11 x64, R 4.6.1
 
 ## R CMD check results
 

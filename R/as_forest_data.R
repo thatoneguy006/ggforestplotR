@@ -3,7 +3,8 @@
 #' Standardizes a coefficient table into the internal forest-plot data
 #' structure used throughout `ggforestplotR`.
 #'
-#' @param data A data frame containing coefficient estimates and intervals.
+#' @param data A data frame or data-frame subclass containing coefficient
+#'   estimates and intervals. Tibbles and `data.table` objects are supported.
 #' @param term Column name holding the model term identifier.
 #' @param estimate Column name holding the point estimate.
 #' @param conf.low Column name holding the lower confidence bound.
@@ -23,14 +24,35 @@
 #' @param events Optional column name holding event counts or event labels for
 #'   table helpers.
 #' @param p.value Optional column name holding p-values.
-#' @param exponentiate Logical; if `TRUE`, require positive values for
-#'   estimates and intervals.
+#' @param exponentiate Compatibility argument. `TRUE` is equivalent to
+#'   `estimate_scale = "ratio"`; `FALSE` is equivalent to
+#'   `estimate_scale = "identity"` when `estimate_scale` is not supplied.
+#' @param estimate_scale Semantic scale of the stored estimates. One of
+#'   `"identity"`, `"log"`, `"ratio"`, `"probability"`, or
+#'   `"risk_difference"`.
+#' @param axis_transform Transformation used for the plotting axis. Defaults
+#'   to `"log10"` for ratios and `"identity"` otherwise.
+#' @param effect_label Short label for the effect measure, such as `"Beta"`,
+#'   `"OR"`, `"HR"`, `"RR"`, or `"RD"`.
+#' @param conf.level Confidence level represented by the interval columns, or
+#'   `NA` when it is unknown.
+#' @param reference_value Numeric null/reference value, or `NULL` when the
+#'   effect measure has no universal reference value.
+#' @param source_model Optional character vector identifying the source model
+#'   class. The complete fitted model is not retained.
+#' @param source_package Optional package name identifying the model source.
+#' @param conf.int Logical; model methods require `TRUE` because forest data
+#'   include confidence-interval columns.
+#' @param intercept Logical; for model methods, whether to retain the
+#'   intercept term.
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
 #'   `"ascending"`.
+#' @param ... Arguments passed to an `as_forest_data()` method.
 #'
-#' @return A standardized data frame ready for [ggforestplot()] and the table
-#'   composition helpers. Original dataframe columns are retained for table
-#'   helpers so they can be displayed with `add_forest_table(columns = ...)`.
+#' @return A `forest_data` data-frame subclass ready for [ggforestplot()] and
+#'   the table composition helpers. Original data-frame columns are retained
+#'   for table helpers so they can be displayed with
+#'   `add_forest_table(columns = ...)`.
 #' @export
 #'
 #' @examples
@@ -48,26 +70,106 @@
 #'   conf.low = "lower",
 #'   conf.high = "upper"
 #' )
-as_forest_data <- function(data,
-                           term,
-                           estimate,
-                           conf.low,
-                           conf.high,
-                           label = term,
-                           term_labels = NULL,
-                           group = NULL,
-                           grouping = NULL,
-                           separate_groups = NULL,
-                           n = NULL,
-                           events = NULL,
-                           p.value = NULL,
-                           exponentiate = FALSE,
-                           sort_terms = c("none", "descending", "ascending")) {
-  if (!is.data.frame(data)) {
-    stop("`data` must be a data frame.", call. = FALSE)
+as_forest_data <- function(data, ...) {
+  UseMethod("as_forest_data")
+}
+
+#' @rdname as_forest_data
+#' @export
+as_forest_data.forest_data <- function(data,
+                                       term_labels = NULL,
+                                       sort_terms = c("none", "descending", "ascending"),
+                                       exponentiate = NULL,
+                                       ...) {
+  if (!is.null(exponentiate)) {
+    stop(
+      "`exponentiate` is already defined by the `forest_data` metadata.",
+      call. = FALSE
+    )
   }
 
   sort_terms <- match.arg(sort_terms)
+  metadata <- forest_metadata(data)
+  validate_forest_metadata(data, metadata)
+
+  out <- data
+  if (!"label" %in% names(out)) {
+    out$label <- out$term
+  }
+  out$label <- apply_term_labels(out$term, out$label, term_labels)
+
+  out <- sort_forest_data(out, sort_terms = sort_terms)
+  rownames(out) <- NULL
+  set_forest_metadata(out, forest_metadata(out))
+}
+
+#' @rdname as_forest_data
+#' @export
+as_forest_data.data.frame <- function(data,
+                                      term,
+                                      estimate,
+                                      conf.low,
+                                      conf.high,
+                                      label = term,
+                                      term_labels = NULL,
+                                      group = NULL,
+                                      grouping = NULL,
+                                      separate_groups = NULL,
+                                      n = NULL,
+                                      events = NULL,
+                                      p.value = NULL,
+                                      exponentiate = NULL,
+                                      estimate_scale = NULL,
+                                      axis_transform = NULL,
+                                      effect_label = NULL,
+                                      conf.level = 0.95,
+                                      reference_value = NULL,
+                                      source_model = NULL,
+                                      source_package = NULL,
+                                      sort_terms = c("none", "descending", "ascending"),
+                                      ...) {
+  if (!inherits(data, "data.frame")) {
+    stop(
+      "`data` must be a data frame or data-frame subclass, such as a tibble or `data.table`.",
+      call. = FALSE
+    )
+  }
+  if (anyNA(names(data)) || any(!nzchar(names(data))) || anyDuplicated(names(data))) {
+    stop("`data` must have unique, non-empty column names.", call. = FALSE)
+  }
+
+  source_column_names <- names(data)
+  reference_value_missing <- missing(reference_value)
+  sort_terms <- match.arg(sort_terms)
+
+  if (!is.null(exponentiate) &&
+      (!is.logical(exponentiate) || length(exponentiate) != 1L || is.na(exponentiate))) {
+    stop("`exponentiate` must be `NULL`, `TRUE`, or `FALSE`.", call. = FALSE)
+  }
+
+  if (is.null(estimate_scale)) {
+    estimate_scale <- if (isTRUE(exponentiate)) "ratio" else "identity"
+  } else {
+    estimate_scale <- match.arg(estimate_scale, forest_estimate_scales())
+
+    if (!is.null(exponentiate) &&
+        !identical(isTRUE(exponentiate), identical(estimate_scale, "ratio"))) {
+      stop(
+        "`exponentiate` and `estimate_scale` describe incompatible scales.",
+        call. = FALSE
+      )
+    }
+  }
+
+  if (is.null(axis_transform)) {
+    axis_transform <- default_axis_transform(estimate_scale)
+  }
+  if (is.null(effect_label)) {
+    effect_label <- default_effect_label(estimate_scale)
+  }
+  if (reference_value_missing) {
+    reference_value <- default_reference_value(estimate_scale)
+  }
 
   cols <- list(
     term = resolve_column(data, term, "term"),
@@ -141,26 +243,49 @@ as_forest_data <- function(data,
     as.numeric(data[[cols$p.value]])
   }
 
-  extra_cols <- setdiff(names(data), names(out))
+  canonical_columns <- names(out)
+  extra_cols <- setdiff(source_column_names, canonical_columns)
 
   for (extra in extra_cols) {
     out[[extra]] <- data[[extra]]
   }
 
-  out$.source_row <- seq_len(nrow(out))
+  source_storage <- stats::setNames(source_column_names, source_column_names)
+  conflicting_columns <- intersect(source_column_names, canonical_columns)
+
+  for (source_name in conflicting_columns) {
+    canonical_uses_source <- source_name %in% names(column_mapping) &&
+      identical(unname(column_mapping[[source_name]]), source_name)
+
+    if (!canonical_uses_source) {
+      stored_name <- paste0("..source..", source_name)
+      while (stored_name %in% names(out)) {
+        stored_name <- paste0(stored_name, ".")
+      }
+      out[[stored_name]] <- data[[source_name]]
+      source_storage[[source_name]] <- stored_name
+    }
+  }
+
   attr(out, "grouping_levels") <- grouping_levels
 
-  validate_forest_data(out, exponentiate = exponentiate)
+  validate_forest_data(out, exponentiate = identical(estimate_scale, "ratio"))
 
   out <- sort_forest_data(out, sort_terms = sort_terms)
-  source_columns <- data[out$.source_row, , drop = FALSE]
-  out$.source_row <- NULL
 
   rownames(out) <- NULL
-  attr(out, "exponentiate") <- isTRUE(exponentiate)
-  attr(out, "source_columns") <- source_columns
-  attr(out, "column_mapping") <- column_mapping
-  attr(out, "grouping_levels") <- grouping_levels
+  metadata <- new_forest_metadata(
+    estimate_scale = estimate_scale,
+    axis_transform = axis_transform,
+    effect_label = effect_label,
+    conf_level = conf.level,
+    reference_value = reference_value,
+    source_model = source_model,
+    source_package = source_package,
+    source_columns = source_storage,
+    column_mapping = column_mapping,
+    grouping_levels = grouping_levels
+  )
 
-  out
+  new_forest_data(out, metadata)
 }

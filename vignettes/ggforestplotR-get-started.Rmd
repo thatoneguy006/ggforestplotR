@@ -31,7 +31,8 @@ normal `ggplot2` workflow.
 Use the package in one of two ways:
 
 1. Start from a coefficient table and map the required columns directly to the plot.
-2. Start from a fitted model and let `tidy_forest_model()` or `ggforestplot()` call `broom::tidy()` and create the plot.
+2. Start from a fitted model and let its `as_forest_data()` method or
+   `ggforestplot()` create the validated forest data and plot.
 
 This article covers some basic examples and the minimum data you need.
 
@@ -133,4 +134,5 @@ ggforestplot(fit, sort_terms = "descending",
 For more detail, see:
 
 - `ggforestplotR-plot-customization` for enhanced customization of the plots and summary tables.
-- `ggforestplotR-data-helpers` for `as_forest_data()` and `tidy_forest_model()`.
+- `ggforestplotR-data-helpers` for the `forest_data` contract,
+  `as_forest_data()`, and `forest_metadata()`.

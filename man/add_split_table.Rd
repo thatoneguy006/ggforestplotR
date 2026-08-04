@@ -38,14 +38,17 @@ add_split_table(
 \code{+ add_split_table(...)} syntax.}
 
 \item{left_columns}{Optional explicit columns to place on the left side of
-the forest plot. Accepts built-in names such as \code{"term"}, \code{"n"},
+the forest plot. Accepts built-in names such as \code{"term"}, \code{"group"}, \code{"n"},
 \code{"events"}, \code{"estimate"}, \code{"ci"}, and \code{"p"}, arbitrary original
 dataframe columns, or numeric positions in the supplied data. \code{"conf.low"}
-and \code{"conf.high"} are accepted as aliases for \code{"ci"}.}
+and \code{"conf.high"} are accepted as aliases for \code{"ci"}. The default grouped
+layout includes \code{"group"} on the left. Its header defaults to the source
+column supplied through \verb{group =} for data frames and to \code{"Model"} for
+\code{\link[=bind_forest_models]{bind_forest_models()}} output.}
 
 \item{right_columns}{Optional explicit columns to place on the right side
-of the forest plot. Accepts built-in names such as \code{"estimate"}, \code{"ci"},
-and \code{"p"}, arbitrary original dataframe columns, or numeric positions in
+of the forest plot. Accepts built-in names such as \code{"group"}, \code{"estimate"},
+\code{"ci"}, and \code{"p"}, arbitrary original dataframe columns, or numeric positions in
 the supplied data. \code{"conf.low"} and \code{"conf.high"} are accepted as aliases
 for \code{"ci"}.}
 
@@ -62,8 +65,10 @@ model-derived label when available.}
 
 \item{column_labels}{Optional named vector used to relabel table column
 headers. Names should match values supplied to \code{left_columns} or
-\code{right_columns} after column resolution, such as \code{"term"}, \code{"estimate"},
-\code{"ci"}, \code{"p"}, or an arbitrary original dataframe column.}
+\code{right_columns} after column resolution, such as \code{"term"}, \code{"group"}, \code{"estimate"},
+\code{"ci"}, \code{"p"}, or an arbitrary original dataframe column. For grouped
+data frames, either \code{"group"} or the source column supplied through
+\verb{group =} can relabel the group column.}
 
 \item{digits}{Deprecated. Number of digits used when formatting estimates
 and p-values. Defaults to \code{2}. Use \code{estimate_digits}, \code{interval_digits},

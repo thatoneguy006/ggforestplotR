@@ -31,6 +31,8 @@
 #'   axis on the log scale with the reference line at 1. For model objects,
 #'   `NULL` uses the canonical scale when it can be inferred, such as hazard
 #'   ratios for Cox models.
+#' @param conf.level Confidence level represented by model or data-frame
+#'   interval columns. Defaults to `0.95`.
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
 #'   `"ascending"`.
 #' @param point_size Point size for coefficient markers.
@@ -59,8 +61,9 @@
 #' @param stripe_colour Border color for shaded rows.
 #' @param stripe_alpha Transparency for shaded rows.
 #' @param ref_line Numeric x-value where the reference line is drawn, or
-#'   `NULL` to hide it. When omitted, defaults to `0` for additive effects and
-#'   `1` for exponentiated effects.
+#'   `NULL` to hide it. When omitted, the value is taken from the
+#'   `forest_data` metadata, such as `0` for additive effects and `1` for
+#'   ratios.
 #' @param ref_label Optional label drawn alongside the reference line.
 #' @param ref_linetype Line type for the reference line.
 #' @param ref_color Color for the reference line.
@@ -98,6 +101,7 @@ ggforestplot <- function(data,
                          events = NULL,
                          p.value = NULL,
                          exponentiate = NULL,
+                         conf.level = 0.95,
                          sort_terms = c("none", "descending", "ascending"),
                          point_size = 2.3,
                          point_shape = 19,
@@ -122,6 +126,7 @@ ggforestplot <- function(data,
                          ref_linetype = 2,
                          ref_color = "grey60") {
   ref_line_missing <- missing(ref_line)
+  conf_level_missing <- missing(conf.level)
 
   if (!missing(line_size)) {
     if (!missing(linewidth)) {
@@ -157,30 +162,20 @@ ggforestplot <- function(data,
   facet_strip_position <- match.arg(facet_strip_position)
   ci_arrow_type <- match.arg(ci_arrow_type)
 
-  forest_data <- if (inherits(data, "ggforestplot_bound_models")) {
-    if (!is.null(exponentiate)) {
-      stop("`exponentiate` is set by `bind_forest_models()`; pass it there instead.", call. = FALSE)
-    }
+  if (inherits(data, "ggforestplot_bound_models") && !is.null(exponentiate)) {
+    stop("`exponentiate` is set by `bind_forest_models()`; pass it there instead.", call. = FALSE)
+  }
+  if (inherits(data, "forest_data") && !conf_level_missing) {
+    stop("`conf.level` is already defined by the `forest_data` metadata.", call. = FALSE)
+  }
 
-    bound_data <- data
-    bound_data$label <- apply_term_labels(bound_data$term, bound_data$label, term_labels)
-    validate_forest_data(bound_data, exponentiate = isTRUE(attr(bound_data, "exponentiate")))
-
-    source_columns <- attr(bound_data, "source_columns")
-    bound_data$.source_row <- seq_len(nrow(bound_data))
-    bound_data <- sort_forest_data(bound_data, sort_terms = sort_terms)
-
-    if (!is.null(source_columns)) {
-      attr(bound_data, "source_columns") <- source_columns[bound_data$.source_row, , drop = FALSE]
-    }
-
-    bound_data$.source_row <- NULL
-    attr(bound_data, "exponentiate") <- isTRUE(attr(data, "exponentiate"))
-    attr(bound_data, "estimate_label") <- attr(data, "estimate_label")
-    attr(bound_data, "axis_label") <- attr(data, "axis_label")
-    attr(bound_data, "conf.level") <- attr(data, "conf.level")
-    attr(bound_data, "grouping_levels") <- attr(data, "grouping_levels")
-    bound_data
+  forest_data <- if (inherits(data, "forest_data")) {
+    as_forest_data(
+      data,
+      exponentiate = exponentiate,
+      term_labels = term_labels,
+      sort_terms = sort_terms
+    )
   } else if (is.data.frame(data)) {
     as_forest_data(
       data = data,
@@ -196,31 +191,26 @@ ggforestplot <- function(data,
       n = n,
       events = events,
       p.value = p.value,
-      exponentiate = isTRUE(exponentiate),
+      exponentiate = exponentiate,
+      conf.level = conf.level,
       sort_terms = sort_terms
     )
   } else {
-    tidy_forest_model(
-      model = data,
+    as_forest_data(
+      data,
       exponentiate = exponentiate,
+      conf.level = conf.level,
       term_labels = term_labels,
       sort_terms = sort_terms
     )
   }
-  plot_exponentiate <- isTRUE(attr(forest_data, "exponentiate"))
-  estimate_label <- attr(forest_data, "estimate_label")
-  axis_label <- attr(forest_data, "axis_label")
-  column_mapping <- attr(forest_data, "column_mapping")
+  metadata <- forest_metadata(forest_data)
+  plot_exponentiate <- identical(metadata$axis_transform, "log10")
+  estimate_label <- metadata$effect_label
+  axis_label <- forest_axis_label(metadata)
+  column_mapping <- metadata$column_mapping
 
-  if (is.null(estimate_label)) {
-    estimate_label <- "Estimate"
-  }
-
-  if (is.null(axis_label)) {
-    axis_label <- if (isTRUE(plot_exponentiate)) "Estimate (log scale)" else "Estimate"
-  }
-
-  default_ref_line <- if (isTRUE(plot_exponentiate)) 1 else 0
+  default_ref_line <- metadata$reference_value
 
   if (ref_line_missing) {
     ref_line <- default_ref_line
@@ -580,6 +570,7 @@ ggforestplot <- function(data,
       exponentiate = plot_exponentiate,
       estimate_label = estimate_label,
       axis_label = axis_label,
+      conf.level = metadata$conf_level,
       ref_line = ref_line,
       ref_label = ref_label,
       ci_limits = ci_limits,

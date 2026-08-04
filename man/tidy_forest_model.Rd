@@ -34,7 +34,7 @@ Names should match model term names and values are the labels to display.}
 \code{"ascending"}.}
 }
 \value{
-A standardized coefficient data frame ready for \code{\link[=ggforestplot]{ggforestplot()}}.
+A \code{forest_data} object ready for \code{\link[=ggforestplot]{ggforestplot()}}.
 }
 \description{
 Uses \code{\link[broom:tidy]{broom::tidy()}} to convert a fitted model into forest-plot data. Mixed

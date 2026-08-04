@@ -262,13 +262,16 @@
 #' @param plot A plot created by [ggforestplot()]. Leave as `NULL` to use
 #'   `+ add_split_table(...)` syntax.
 #' @param left_columns Optional explicit columns to place on the left side of
-#'   the forest plot. Accepts built-in names such as `"term"`, `"n"`,
+#'   the forest plot. Accepts built-in names such as `"term"`, `"group"`, `"n"`,
 #'   `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
 #'   dataframe columns, or numeric positions in the supplied data. `"conf.low"`
-#'   and `"conf.high"` are accepted as aliases for `"ci"`.
+#'   and `"conf.high"` are accepted as aliases for `"ci"`. The default grouped
+#'   layout includes `"group"` on the left. Its header defaults to the source
+#'   column supplied through `group =` for data frames and to `"Model"` for
+#'   [bind_forest_models()] output.
 #' @param right_columns Optional explicit columns to place on the right side
-#'   of the forest plot. Accepts built-in names such as `"estimate"`, `"ci"`,
-#'   and `"p"`, arbitrary original dataframe columns, or numeric positions in
+#'   of the forest plot. Accepts built-in names such as `"group"`, `"estimate"`,
+#'   `"ci"`, and `"p"`, arbitrary original dataframe columns, or numeric positions in
 #'   the supplied data. `"conf.low"` and `"conf.high"` are accepted as aliases
 #'   for `"ci"`.
 #' @param term_header Header text for the term column.
@@ -279,8 +282,10 @@
 #' @param p_header Header text for the p-value column.
 #' @param column_labels Optional named vector used to relabel table column
 #'   headers. Names should match values supplied to `left_columns` or
-#'   `right_columns` after column resolution, such as `"term"`, `"estimate"`,
-#'   `"ci"`, `"p"`, or an arbitrary original dataframe column.
+#'   `right_columns` after column resolution, such as `"term"`, `"group"`, `"estimate"`,
+#'   `"ci"`, `"p"`, or an arbitrary original dataframe column. For grouped
+#'   data frames, either `"group"` or the source column supplied through
+#'   `group =` can relabel the group column.
 #' @param digits Deprecated. Number of digits used when formatting estimates
 #'   and p-values. Defaults to `2`. Use `estimate_digits`, `interval_digits`,
 #'   and `p_digits` for separate control.

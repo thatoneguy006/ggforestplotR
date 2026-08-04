@@ -7,11 +7,19 @@ test_that("bind_forest_models stacks model terms with model labels", {
   out <- bind_forest_models(list(Base = fit1, Adjusted = fit2))
 
   expect_s3_class(out, "ggforestplot_bound_models")
+  expect_s3_class(out, "forest_data")
   expect_equal(unique(out$group), c("Base", "Adjusted"))
   expect_false("(Intercept)" %in% out$term)
   expect_true(all(c("term", "estimate", "conf.low", "conf.high", "group") %in% names(out)))
-  expect_equal(attr(out, "estimate_label"), "Estimate")
+  expect_equal(attr(out, "estimate_label"), "Beta")
   expect_false(isTRUE(attr(out, "exponentiate")))
+
+  metadata <- forest_metadata(out)
+  expect_equal(metadata$estimate_scale, "identity")
+  expect_equal(metadata$effect_label, "Beta")
+  expect_equal(metadata$reference_value, 0)
+  expect_named(metadata$source_model, c("Base", "Adjusted"))
+  expect_named(metadata$source_package, c("Base", "Adjusted"))
 })
 
 test_that("ggforestplot uses bound model labels as groups", {
@@ -31,7 +39,7 @@ test_that("ggforestplot uses bound model labels as groups", {
   expect_s3_class(p, "ggplot")
 })
 
-test_that("bound model tables label terms that appear in only one model", {
+test_that("bound model tables use a dedicated model column", {
   skip_if_not_installed("broom")
 
   fit1 <- lm(mpg ~ cyl, data = mtcars)
@@ -47,11 +55,50 @@ test_that("bound model tables label terms that appear in only one model", {
     table_spec$table_data$column_key == "estimate" &
       as.character(table_spec$table_data$row_key) == "wt"
   ]
+  model_text <- table_spec$table_data$text[
+    table_spec$table_data$column_key == "group" &
+      as.character(table_spec$table_data$row_key) == "wt"
+  ]
 
-  expect_match(estimate_text, "^Fully Adjusted: ")
+  expect_equal(table_spec$column_keys, c("term", "group", "estimate"))
+  expect_equal(table_spec$headers[[2L]], "Model")
+  expect_equal(model_text, "Fully Adjusted")
+  expect_false(grepl("Fully Adjusted:", estimate_text, fixed = TRUE))
 })
 
-test_that("bound model tables format p.value aliases with p_digits", {
+test_that("dedicated model columns preserve multiline value alignment", {
+  data <- data.frame(
+    term = rep("Age", 2),
+    estimate = c(0.2, 0.4),
+    conf.low = c(0.1, 0.3),
+    conf.high = c(0.3, 0.5),
+    model = c("Base", "Adjusted"),
+    sample_size = c(100, 100),
+    note = c(NA, "Primary")
+  )
+  p <- ggforestplot(data, group = "model", n = "sample_size")
+  table_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = c("term", "group", "n", "note")
+  )
+  table_text <- stats::setNames(
+    table_spec$table_data$text,
+    table_spec$table_data$column_key
+  )
+
+  expect_equal(table_text[["group"]], "Base\nAdjusted")
+  expect_equal(table_text[["n"]], "100\n100")
+  expect_equal(table_text[["note"]], "\nPrimary")
+
+  estimate_spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = "estimate"
+  )
+  expect_false(grepl("Base:", estimate_spec$table_data$text, fixed = TRUE))
+  expect_equal(length(strsplit(estimate_spec$table_data$text, "\n", fixed = TRUE)[[1L]]), 2L)
+})
+
+test_that("bound model tables omit prefixes when the model column is omitted", {
   skip_if_not_installed("broom")
 
   fit1 <- lm(mpg ~ cyl, data = mtcars)
@@ -74,8 +121,8 @@ test_that("bound model tables format p.value aliases with p_digits", {
 
   expect_true("p" %in% table_spec$column_keys)
   expect_false("p.value" %in% table_spec$column_keys)
-  expect_match(p_text, "^Fully Adjusted: ")
-  expect_equal(p_text, "Fully Adjusted: 0.002")
+  expect_false(grepl("Fully Adjusted:", p_text, fixed = TRUE))
+  expect_equal(p_text, "0.002")
 })
 
 test_that("bind_forest_models supports common exponentiated scales", {
@@ -102,6 +149,11 @@ test_that("bind_forest_models supports common exponentiated scales", {
   expect_true(all(out$estimate > 0))
   expect_true(all(out$conf.low > 0))
   expect_true(all(out$conf.high > 0))
+
+  metadata <- forest_metadata(out)
+  expect_equal(metadata$estimate_scale, "ratio")
+  expect_equal(metadata$axis_transform, "log10")
+  expect_equal(metadata$reference_value, 1)
 })
 
 test_that("bind_forest_models validates model labels and scales", {

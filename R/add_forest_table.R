@@ -24,7 +24,9 @@
                                   grid_lines = FALSE,
                                   grid_line_colour = "black",
                                   grid_line_size = 0.3,
-                                  grid_line_linetype = 1) {
+                                  grid_line_linetype = 1,
+                                  table_width = NULL,
+                                  plot_width = NULL) {
   position <- match.arg(position)
 
   if (!inherits(plot, "ggplot")) {
@@ -136,7 +138,14 @@
     header_fontface = header_fontface,
     header_family = if (is.null(header_family)) "" else header_family
   )
-  table_width <- max(2.4, table_spec$content_width + 0.15)
+  if (is.null(table_width)) {
+    table_width <- max(2.4, table_spec$content_width + 0.15)
+  }
+  if (is.null(plot_width)) {
+    plot_width <- 2.4
+  }
+  validate_composition_width(table_width, "table_width")
+  validate_composition_width(plot_width, "plot_width")
 
   table_plot <- build_forest_table_plot(
     table_spec = table_spec,
@@ -165,7 +174,8 @@
     plot = plot_out,
     table_plot = table_plot,
     table_position = position,
-    table_width = table_width
+    table_width = table_width,
+    plot_width = plot_width
   )
 }
 
@@ -179,9 +189,12 @@
 #'   forest plot.
 #' @param columns Optional explicit columns to display in the side table, in
 #'   the order they should appear. Accepts built-in names such as `"term"`,
-#'   `"n"`, `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
+#'   `"group"`, `"n"`, `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
 #'   dataframe columns, or numeric positions in the supplied data. `"conf.low"`
-#'   and `"conf.high"` are accepted as aliases for `"ci"`.
+#'   and `"conf.high"` are accepted as aliases for `"ci"`. The default grouped
+#'   table includes `"group"`; omit it from an explicit selection to hide it.
+#'   Its header defaults to the source column supplied through `group =` for
+#'   data frames and to `"Model"` for [bind_forest_models()] output.
 #' @param term_header Header text for the term column.
 #' @param n_header Header text for the `N` column.
 #' @param events_header Header text for the `Events` column.
@@ -190,8 +203,9 @@
 #' @param p_header Header text for the p-value column.
 #' @param column_labels Optional named vector used to relabel table column
 #'   headers. Names should match values supplied to `columns` after column
-#'   resolution, such as `"term"`, `"estimate"`, `"ci"`, `"p"`, or an arbitrary
-#'   original dataframe column.
+#'   resolution, such as `"term"`, `"group"`, `"estimate"`, `"ci"`, `"p"`, or an arbitrary
+#'   original dataframe column. For grouped data frames, either `"group"` or
+#'   the source column supplied through `group =` can relabel the group column.
 #' @param digits Deprecated. Number of digits used when formatting estimates
 #'   and p-values. Defaults to `2`. Use `estimate_digits`, `interval_digits`,
 #'   and `p_digits` for separate control.
@@ -225,6 +239,10 @@
 #' @param grid_line_colour Colour used for the table grid lines.
 #' @param grid_line_size Line width used for the table grid lines.
 #' @param grid_line_linetype Line type used for the table grid lines.
+#' @param table_width Optional relative width allocated to the table panel.
+#'   By default this is calculated from the displayed table content.
+#' @param plot_width Optional relative width allocated to the forest-plot
+#'   panel. Defaults to `2.4`.
 #'
 #' @return A patchwork-composed plot containing the forest plot and side
 #'   table, or a ggplot add-on object when `plot = NULL`.
@@ -280,7 +298,9 @@ add_forest_table <- function(plot = NULL,
                              grid_lines = FALSE,
                              grid_line_colour = "black",
                              grid_line_size = 0.3,
-                             grid_line_linetype = 1) {
+                             grid_line_linetype = 1,
+                             table_width = NULL,
+                             plot_width = NULL) {
   if (!missing(digits)) {
     warn_deprecated_argument("digits", "`estimate_digits`, `interval_digits`, and `p_digits`")
   }
@@ -315,7 +335,9 @@ add_forest_table <- function(plot = NULL,
         grid_lines = grid_lines,
         grid_line_colour = grid_line_colour,
         grid_line_size = grid_line_size,
-        grid_line_linetype = grid_line_linetype
+        grid_line_linetype = grid_line_linetype,
+        table_width = table_width,
+        plot_width = plot_width
       ),
       class = "ggforestplot_table_adder"
     ))
@@ -348,7 +370,9 @@ add_forest_table <- function(plot = NULL,
     grid_lines = grid_lines,
     grid_line_colour = grid_line_colour,
     grid_line_size = grid_line_size,
-    grid_line_linetype = grid_line_linetype
+    grid_line_linetype = grid_line_linetype,
+    table_width = table_width,
+    plot_width = plot_width
   )
 }
 
