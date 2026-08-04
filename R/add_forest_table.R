@@ -196,8 +196,9 @@
 #'   other grouped forest data.
 #' @param group_position Optional whole-number position for the dedicated group
 #'   column. Grouped tables include this column after `term` by default. Use
-#'   `FALSE` to omit it. When `columns` is supplied, its explicit `"group"`
-#'   placement is respected unless `group_position` is also supplied.
+#'   `FALSE` to omit it without prefixing model or group names onto other
+#'   values. When `columns` is supplied, its explicit `"group"` placement is
+#'   respected unless `group_position` is also supplied.
 #' @param n_header Header text for the `N` column.
 #' @param events_header Header text for the `Events` column.
 #' @param estimate_label Header label for the estimate column. Defaults to the

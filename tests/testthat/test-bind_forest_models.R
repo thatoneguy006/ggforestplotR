@@ -92,14 +92,13 @@ test_that("dedicated model columns preserve multiline value alignment", {
 
   estimate_spec <- build_forest_table_data(
     p$ggforestplotR_state$forest_data,
-    columns = "estimate",
-    dedicated_group_column = TRUE
+    columns = "estimate"
   )
   expect_false(grepl("Base:", estimate_spec$table_data$text, fixed = TRUE))
   expect_equal(length(strsplit(estimate_spec$table_data$text, "\n", fixed = TRUE)[[1L]]), 2L)
 })
 
-test_that("bound model tables format p.value aliases with p_digits", {
+test_that("bound model tables omit prefixes when the model column is omitted", {
   skip_if_not_installed("broom")
 
   fit1 <- lm(mpg ~ cyl, data = mtcars)
@@ -122,8 +121,8 @@ test_that("bound model tables format p.value aliases with p_digits", {
 
   expect_true("p" %in% table_spec$column_keys)
   expect_false("p.value" %in% table_spec$column_keys)
-  expect_match(p_text, "^Fully Adjusted: ")
-  expect_equal(p_text, "Fully Adjusted: 0.002")
+  expect_false(grepl("Fully Adjusted:", p_text, fixed = TRUE))
+  expect_equal(p_text, "0.002")
 })
 
 test_that("bind_forest_models supports common exponentiated scales", {

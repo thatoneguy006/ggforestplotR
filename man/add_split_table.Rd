@@ -130,8 +130,9 @@ other grouped forest data.}
 Grouped tables place it after \code{term} on the left by default. Supply an
 unnamed whole number to move it within its current side, a named value
 such as \code{c(right = 1)} to move it to an exact position on either side, or
-\code{FALSE} to omit it. Explicit \code{"group"} placement in \code{left_columns} or
-\code{right_columns} is respected when this argument is \code{NULL}.}
+\code{FALSE} to omit it without prefixing model or group names onto other
+values. Explicit \code{"group"} placement in \code{left_columns} or \code{right_columns}
+is respected when this argument is \code{NULL}.}
 }
 \value{
 A patchwork-composed plot containing a left table, the forest plot,

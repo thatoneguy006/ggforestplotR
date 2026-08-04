@@ -122,8 +122,9 @@ other grouped forest data.}
 
 \item{group_position}{Optional whole-number position for the dedicated group
 column. Grouped tables include this column after \code{term} by default. Use
-\code{FALSE} to omit it. When \code{columns} is supplied, its explicit \code{"group"}
-placement is respected unless \code{group_position} is also supplied.}
+\code{FALSE} to omit it without prefixing model or group names onto other
+values. When \code{columns} is supplied, its explicit \code{"group"} placement is
+respected unless \code{group_position} is also supplied.}
 }
 \value{
 A patchwork-composed plot containing the forest plot and side

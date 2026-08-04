@@ -93,7 +93,6 @@
   )
   resolved_left <- resolved_group_columns$left
   resolved_right <- resolved_group_columns$right
-  has_dedicated_group_column <- "group" %in% c(resolved_left, resolved_right)
 
   if (length(resolved_left) == 0L) {
     stop(
@@ -135,7 +134,6 @@
     state$forest_data,
     term_header = term_header,
     group_header = group_header,
-    dedicated_group_column = has_dedicated_group_column,
     n_header = n_header,
     events_header = events_header,
     estimate_label = estimate_label,
@@ -153,7 +151,6 @@
     state$forest_data,
     term_header = term_header,
     group_header = group_header,
-    dedicated_group_column = has_dedicated_group_column,
     n_header = n_header,
     events_header = events_header,
     estimate_label = estimate_label,
@@ -294,8 +291,9 @@
 #'   Grouped tables place it after `term` on the left by default. Supply an
 #'   unnamed whole number to move it within its current side, a named value
 #'   such as `c(right = 1)` to move it to an exact position on either side, or
-#'   `FALSE` to omit it. Explicit `"group"` placement in `left_columns` or
-#'   `right_columns` is respected when this argument is `NULL`.
+#'   `FALSE` to omit it without prefixing model or group names onto other
+#'   values. Explicit `"group"` placement in `left_columns` or `right_columns`
+#'   is respected when this argument is `NULL`.
 #' @param n_header Header text for the `N` column.
 #' @param events_header Header text for the `Events` column.
 #' @param estimate_label Header label for the estimate column. Defaults to the

@@ -112,6 +112,12 @@ test_that("group_position moves the dedicated group column", {
     c("term", "n", "events")
   )
   expect_equal(unique(split_table$data$column_key), c("group", "estimate"))
+
+  omitted_table <- add_forest_table(p, group_position = FALSE)
+  omitted_estimates <- omitted_table$patches$plots[[1L]]$data$text[
+    omitted_table$patches$plots[[1L]]$data$column_key == "estimate"
+  ]
+  expect_false(any(grepl("Base:|Adjusted:", omitted_estimates)))
 })
 
 test_that("group_position validates grouped data and table positions", {
