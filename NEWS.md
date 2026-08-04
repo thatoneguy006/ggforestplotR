@@ -27,6 +27,8 @@
   column mappings instead.
 - `tidy_forest_model()` remains available as a compatibility wrapper around
   the new `as_forest_data()` model methods.
+- Legends positioned at the top or bottom are now collected at the patchwork
+  level, centering them across the complete table-and-plot composition.
 
 # ggforestplotR 0.3.1
 

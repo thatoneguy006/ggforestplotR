@@ -66,3 +66,35 @@ test_that("add_split_table ggplot add syntax preserves a forest-plot center pane
   expect_s3_class(center_plot, "ggplot")
   expect_true(!is.null(center_plot$ggforestplotR_state))
 })
+
+test_that("outer legends span the full table and plot composition", {
+  data <- make_contract_data()
+  data$cohort <- c("Base", "Adjusted", "Base")
+
+  top_plot <- ggforestplot(data, group = "cohort") +
+    ggplot2::theme(legend.position = "top")
+  bottom_plot <- ggforestplot(data, group = "cohort") +
+    ggplot2::theme(legend.position = "bottom")
+
+  compositions <- list(
+    top = top_plot + add_forest_table(position = "left"),
+    bottom = bottom_plot + add_split_table(
+      left_columns = "term",
+      right_columns = "estimate"
+    )
+  )
+
+  for (position in names(compositions)) {
+    out <- compositions[[position]]
+    expect_equal(out$patches$layout$guides, "collect")
+    expect_equal(out$patches$annotation$theme$legend.position, position)
+
+    layout <- patchwork::patchworkGrob(out)$layout
+    panels <- layout[grepl("^panel-[0-9]+$", layout$name), , drop = FALSE]
+    guide <- layout[layout$name == "guide-box", , drop = FALSE]
+
+    expect_equal(nrow(guide), 1L)
+    expect_equal(guide$l, min(panels$l))
+    expect_equal(guide$r, max(panels$r))
+  }
+})

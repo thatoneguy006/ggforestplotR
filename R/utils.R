@@ -1486,6 +1486,38 @@ build_forest_table_plot <- function(table_spec,
 
 # ─── Final assembly ──────────────────────────────────────────────────────────
 
+resolved_plot_legend_position <- function(plot) {
+  position <- plot$theme$legend.position
+
+  if (is.null(position)) {
+    position <- ggplot2::theme_get()$legend.position
+  }
+
+  if (!is.character(position) || length(position) != 1L || is.na(position)) {
+    return(NULL)
+  }
+
+  position
+}
+
+wrap_forest_composition <- function(panels, widths, plot) {
+  legend_position <- resolved_plot_legend_position(plot)
+  collect_outer_legend <- legend_position %in% c("top", "bottom")
+
+  out <- patchwork::wrap_plots(
+    panels,
+    nrow = 1,
+    widths = widths,
+    guides = if (collect_outer_legend) "collect" else "keep"
+  )
+
+  if (collect_outer_legend) {
+    out <- out & ggplot2::theme(legend.position = legend_position)
+  }
+
+  out
+}
+
 #' Combine a forest plot with one table on either side.
 #'
 #' The key idea: both table panels are given the same patchwork width (the max
@@ -1525,7 +1557,7 @@ combine_split_forest_plot <- function(plot,
     widths <- c(widths, right_w)
   }
 
-  patchwork::wrap_plots(panels, nrow = 1, widths = widths)
+  wrap_forest_composition(panels, widths = widths, plot = plot)
 }
 
 #' Convenience wrapper for single-table layouts (table on one side only).
@@ -1539,8 +1571,11 @@ combine_forest_plot_and_table <- function(plot, table_plot,
   widths <- c(table_width, plot_width)
 
   if (table_position == "left") {
-    patchwork::wrap_plots(table_plot, plot, nrow = 1, widths = widths)
+    panels <- list(table_plot, plot)
   } else {
-    patchwork::wrap_plots(plot, table_plot, nrow = 1, widths = rev(widths))
+    panels <- list(plot, table_plot)
+    widths <- rev(widths)
   }
+
+  wrap_forest_composition(panels, widths = widths, plot = plot)
 }
