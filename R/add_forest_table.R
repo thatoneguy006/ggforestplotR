@@ -204,7 +204,8 @@
 #' @param column_labels Optional named vector used to relabel table column
 #'   headers. Names should match values supplied to `columns` after column
 #'   resolution, such as `"term"`, `"group"`, `"estimate"`, `"ci"`, `"p"`, or an arbitrary
-#'   original dataframe column.
+#'   original dataframe column. For grouped data frames, either `"group"` or
+#'   the source column supplied through `group =` can relabel the group column.
 #' @param digits Deprecated. Number of digits used when formatting estimates
 #'   and p-values. Defaults to `2`. Use `estimate_digits`, `interval_digits`,
 #'   and `p_digits` for separate control.

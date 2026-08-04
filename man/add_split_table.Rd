@@ -66,7 +66,9 @@ model-derived label when available.}
 \item{column_labels}{Optional named vector used to relabel table column
 headers. Names should match values supplied to \code{left_columns} or
 \code{right_columns} after column resolution, such as \code{"term"}, \code{"group"}, \code{"estimate"},
-\code{"ci"}, \code{"p"}, or an arbitrary original dataframe column.}
+\code{"ci"}, \code{"p"}, or an arbitrary original dataframe column. For grouped
+data frames, either \code{"group"} or the source column supplied through
+\verb{group =} can relabel the group column.}
 
 \item{digits}{Deprecated. Number of digits used when formatting estimates
 and p-values. Defaults to \code{2}. Use \code{estimate_digits}, \code{interval_digits},

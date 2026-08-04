@@ -100,14 +100,26 @@ test_that("group columns use the standard table column syntax", {
   forest_data <- p$ggforestplotR_state$forest_data
   default_columns <- default_forest_table_columns(forest_data)
   default_spec <- build_forest_table_data(forest_data, columns = "group")
+  relabeled_spec <- build_forest_table_data(
+    forest_data,
+    column_labels = c(
+      term = "Term",
+      model = "Model",
+      estimate = "Estimate (95% CI)"
+    )
+  )
 
   expect_equal(default_columns, c("term", "group", "n", "events", "estimate"))
   expect_equal(default_spec$headers, "model")
+  expect_equal(
+    relabeled_spec$headers,
+    c("Term", "Model", "N", "Events", "Estimate (95% CI)")
+  )
 
   single_table <- add_forest_table(
     p,
     columns = c("term", "n", "events", "group", "estimate"),
-    column_labels = c(group = "Analysis")
+    column_labels = c(model = "Analysis")
   )
   split_table <- add_split_table(
     p,

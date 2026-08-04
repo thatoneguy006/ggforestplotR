@@ -148,6 +148,26 @@ normalize_column_labels <- function(column_labels, data = NULL) {
   out[!duplicated(names(out), fromLast = TRUE)]
 }
 
+map_source_group_column_label <- function(column_labels,
+                                          column_mapping,
+                                          column_keys) {
+  if (is.null(column_labels) || is.null(names(column_labels)) ||
+      !"group" %in% column_keys || !is.character(column_mapping) ||
+      !"group" %in% names(column_mapping)) {
+    return(column_labels)
+  }
+
+  source_group <- unname(column_mapping[["group"]])
+
+  if (length(source_group) != 1L || is.na(source_group) || !nzchar(source_group)) {
+    return(column_labels)
+  }
+
+  source_matches <- names(column_labels) == source_group
+  names(column_labels)[source_matches] <- "group"
+  column_labels
+}
+
 has_table_values <- function(data, column) {
   if (!column %in% names(data)) {
     return(FALSE)
@@ -1051,6 +1071,11 @@ build_forest_table_data <- function(data,
   mapped_row_label_columns <- intersect(mapped_row_label_columns, column_keys)
   header_lookup[mapped_row_label_columns] <- term_header
 
+  column_labels <- map_source_group_column_label(
+    column_labels,
+    column_mapping = column_mapping,
+    column_keys = column_keys
+  )
   resolved_column_labels <- normalize_column_labels(column_labels, data = table_rows)
   if (!is.null(resolved_column_labels)) {
     header_lookup[names(resolved_column_labels)] <- unname(resolved_column_labels)
