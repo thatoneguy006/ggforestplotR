@@ -31,6 +31,10 @@ remotes::install_github("thatoneguy006/ggforestplotR")
 - Plot directly from a table of coefficient data.
 - Plot using data from a fitted model object.
 
+Both workflows are converted to a validated `forest_data` object before
+plotting. This object records the effect scale, confidence level, reference
+value, and source provenance independently of the fitted-model class.
+
 ## Basic example
 
 ```r
@@ -92,5 +96,7 @@ ggforestplot(
 - `add_forest_table()` attaches a summary table to the left or right side of the plot.
 - `add_split_table()` creates a more traditional forestplot layout with table columns on both sides of the plot.
 - `bind_forest_models()` binds output from several models for grouped plotting.
-- `as_forest_data()` standardizes custom coefficient data.
-- `tidy_forest_model()` converts fitted models into plotting-ready coefficient data.
+- `as_forest_data()` is the S3 conversion interface for custom coefficient data
+  and supported fitted models.
+- `forest_metadata()` inspects effect-scale and source metadata.
+- `tidy_forest_model()` is the compatibility wrapper for model conversion.

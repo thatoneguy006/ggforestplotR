@@ -46,6 +46,56 @@ test_that("tidy_forest_model exponentiates logistic regression coefficients", {
   expect_true(all(out$conf.low > 0))
   expect_true(all(out$conf.high > 0))
   expect_true(all(!is.na(out$p.value)))
+  expect_s3_class(out, "forest_data")
+
+  metadata <- forest_metadata(out)
+  expect_equal(metadata$estimate_scale, "ratio")
+  expect_equal(metadata$axis_transform, "log10")
+  expect_equal(metadata$effect_label, "OR")
+  expect_equal(metadata$reference_value, 1)
+  expect_equal(metadata$source_model, c("glm", "lm"))
+  expect_equal(metadata$source_package, "stats")
+})
+
+test_that("model methods retain accurate link-scale metadata", {
+  fit <- glm(
+    event ~ age + bmi + treatment,
+    data = make_logistic_example_data(),
+    family = binomial()
+  )
+
+  out <- as_forest_data(fit, exponentiate = FALSE)
+  metadata <- forest_metadata(out)
+
+  expect_equal(metadata$estimate_scale, "log")
+  expect_equal(metadata$axis_transform, "identity")
+  expect_equal(metadata$effect_label, "log(OR)")
+  expect_equal(metadata$reference_value, 0)
+  expect_equal(
+    unname(out$estimate),
+    unname(stats::coef(fit)[names(stats::coef(fit)) != "(Intercept)"])
+  )
+})
+
+test_that("linear-model methods produce beta metadata", {
+  fit <- lm(mpg ~ wt + hp, data = mtcars)
+  out <- as_forest_data(fit)
+  metadata <- forest_metadata(out)
+
+  expect_equal(metadata$estimate_scale, "identity")
+  expect_equal(metadata$effect_label, "Beta")
+  expect_equal(metadata$conf_level, 0.95)
+  expect_equal(metadata$reference_value, 0)
+  expect_false(any(vapply(metadata, inherits, logical(1), what = "lm")))
+})
+
+test_that("model conversion requires confidence intervals", {
+  fit <- lm(mpg ~ wt, data = mtcars)
+
+  expect_error(
+    as_forest_data(fit, conf.int = FALSE),
+    "require confidence intervals"
+  )
 })
 
 test_that("tidy_forest_model supports lme4 mixed models", {
@@ -131,6 +181,11 @@ test_that("ggforestplot labels Cox models as hazard ratios", {
   expect_equal(p$ggforestplotR_state$defaults$estimate_label, "HR")
   expect_equal(p$ggforestplotR_state$defaults$ref_line, 1)
   expect_true(all(p$ggforestplotR_state$forest_data$estimate > 0))
+
+  metadata <- forest_metadata(p$ggforestplotR_state$forest_data)
+  expect_equal(metadata$estimate_scale, "ratio")
+  expect_equal(metadata$effect_label, "HR")
+  expect_equal(metadata$source_package, "survival")
 })
 
 test_that("add_forest_table works for exponentiated logistic regression output", {

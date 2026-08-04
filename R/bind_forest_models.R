@@ -2,6 +2,9 @@ bind_model_frames <- function(parts) {
   all_names <- unique(unlist(lapply(parts, names), use.names = FALSE))
 
   aligned <- lapply(parts, function(part) {
+    if (inherits(part, "forest_data")) {
+      part <- strip_forest_data_class(part)
+    }
     part <- as.data.frame(part, stringsAsFactors = FALSE)
     missing <- setdiff(all_names, names(part))
 
@@ -61,18 +64,6 @@ resolve_model_exponentiate <- function(exponentiate = NULL, n_models) {
   as.list(rep(exponentiate, length.out = n_models))
 }
 
-bind_forest_source_columns <- function(part, label) {
-  source_columns <- attr(part, "source_columns")
-
-  if (is.null(source_columns)) {
-    source_columns <- part
-  }
-
-  source_columns <- as.data.frame(source_columns, stringsAsFactors = FALSE)
-  source_columns$group <- label
-  source_columns
-}
-
 #' Bind multiple model summaries for a grouped forest plot
 #'
 #' Tidies multiple fitted models and stacks their fixed-effect coefficient
@@ -80,15 +71,15 @@ bind_forest_source_columns <- function(part, label) {
 #' passed directly to [ggforestplot()], where model labels are used as the
 #' grouping variable for dodged, color-coded estimates.
 #'
-#' @param models A non-empty list of fitted model objects supported by
-#'   [tidy_forest_model()].
+#' @param models A non-empty list of fitted model objects supported by an
+#'   [as_forest_data()] method.
 #' @param model_labels Optional labels used to identify each model in the
 #'   forest plot. Defaults to list names when present, otherwise `"Model 1"`,
 #'   `"Model 2"`, and so on.
 #' @param exponentiate `NULL`, a single logical value, or one logical value per
-#'   model. `NULL` uses the canonical scale inferred by [tidy_forest_model()]
+#'   model. `NULL` uses the canonical scale inferred by [as_forest_data()]
 #'   for each model.
-#' @param ... Additional arguments passed to [tidy_forest_model()], such as
+#' @param ... Additional arguments passed to [as_forest_data()], such as
 #'   `conf.level`, `intercept`, `term_labels`, or `sort_terms`.
 #'
 #' @return A standardized forest-plot data frame with one row per model term
@@ -118,10 +109,9 @@ bind_forest_models <- function(models,
   exponentiate <- resolve_model_exponentiate(exponentiate, length(models))
 
   parts <- vector("list", length(models))
-  source_parts <- vector("list", length(models))
 
   for (i in seq_along(models)) {
-    part <- tidy_forest_model(
+    part <- as_forest_data(
       models[[i]],
       exponentiate = exponentiate[[i]],
       ...
@@ -129,10 +119,10 @@ bind_forest_models <- function(models,
     part$group <- model_labels[[i]]
 
     parts[[i]] <- part
-    source_parts[[i]] <- bind_forest_source_columns(part, model_labels[[i]])
   }
 
-  scales <- vapply(parts, function(part) isTRUE(attr(part, "exponentiate")), logical(1))
+  metadata <- lapply(parts, forest_metadata)
+  scales <- vapply(metadata, `[[`, character(1), "estimate_scale")
 
   if (length(unique(scales)) > 1L) {
     stop(
@@ -142,34 +132,67 @@ bind_forest_models <- function(models,
     )
   }
 
-  estimate_labels <- vapply(parts, function(part) {
-    label <- attr(part, "estimate_label")
-    if (is.null(label)) "Estimate" else label
-  }, character(1))
-  axis_labels <- vapply(parts, function(part) {
-    label <- attr(part, "axis_label")
-    if (is.null(label)) "Estimate" else label
-  }, character(1))
+  axis_transforms <- vapply(metadata, `[[`, character(1), "axis_transform")
+  if (length(unique(axis_transforms)) > 1L) {
+    stop("All bound models must use the same axis transformation.", call. = FALSE)
+  }
+
+  reference_values <- lapply(metadata, `[[`, "reference_value")
+  compatible_references <- vapply(
+    reference_values[-1L],
+    identical,
+    logical(1),
+    reference_values[[1L]]
+  )
+  if (length(compatible_references) > 0L && !all(compatible_references)) {
+    stop("All bound models must use the same reference value.", call. = FALSE)
+  }
+
+  conf_levels <- vapply(metadata, `[[`, numeric(1), "conf_level")
+  if (length(unique(conf_levels)) > 1L) {
+    stop("All bound models must use the same confidence level.", call. = FALSE)
+  }
+
+  estimate_labels <- vapply(metadata, `[[`, character(1), "effect_label")
 
   out <- bind_model_frames(parts)
-  source_columns <- bind_model_frames(source_parts)
-
-  attr(out, "source_columns") <- source_columns
-  attr(out, "exponentiate") <- scales[[1]]
-  attr(out, "estimate_label") <- if (length(unique(estimate_labels)) == 1L) {
+  effect_label <- if (length(unique(estimate_labels)) == 1L) {
     estimate_labels[[1]]
-  } else if (isTRUE(scales[[1]])) {
+  } else if (identical(scales[[1]], "ratio")) {
     "Ratio"
   } else {
     "Estimate"
   }
-  attr(out, "axis_label") <- if (length(unique(axis_labels)) == 1L) {
-    axis_labels[[1]]
-  } else {
-    attr(out, "estimate_label")
-  }
-  attr(out, "conf.level") <- attr(parts[[1]], "conf.level")
 
-  class(out) <- c("ggforestplot_bound_models", class(out))
-  out
+  column_mappings <- lapply(metadata, `[[`, "column_mapping")
+  same_mapping <- length(column_mappings) == 1L || all(vapply(
+    column_mappings[-1L],
+    identical,
+    logical(1),
+    column_mappings[[1L]]
+  ))
+  column_mapping <- if (same_mapping) column_mappings[[1L]] else {
+    stats::setNames(column_mappings, model_labels)
+  }
+
+  source_mappings <- lapply(metadata, `[[`, "source_columns")
+  source_storage <- unlist(source_mappings, use.names = TRUE)
+  source_storage <- source_storage[!duplicated(names(source_storage))]
+  source_storage[["group"]] <- "group"
+
+  bound_metadata <- new_forest_metadata(
+    estimate_scale = scales[[1L]],
+    axis_transform = axis_transforms[[1L]],
+    effect_label = effect_label,
+    conf_level = conf_levels[[1L]],
+    reference_value = reference_values[[1L]],
+    source_model = stats::setNames(lapply(metadata, `[[`, "source_model"), model_labels),
+    source_package = stats::setNames(lapply(metadata, `[[`, "source_package"), model_labels),
+    source_columns = source_storage,
+    column_mapping = column_mapping
+  )
+
+  out <- new_forest_data(out, bound_metadata)
+  class(out) <- unique(c("ggforestplot_bound_models", class(out)))
+  set_forest_metadata(out, bound_metadata)
 }

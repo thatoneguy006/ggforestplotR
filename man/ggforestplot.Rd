@@ -22,6 +22,7 @@ ggforestplot(
   events = NULL,
   p.value = NULL,
   exponentiate = NULL,
+  conf.level = 0.95,
   sort_terms = c("none", "descending", "ascending"),
   point_size = 2.3,
   point_shape = 19,
@@ -93,6 +94,9 @@ axis on the log scale with the reference line at 1. For model objects,
 \code{NULL} uses the canonical scale when it can be inferred, such as hazard
 ratios for Cox models.}
 
+\item{conf.level}{Confidence level represented by model or data-frame
+interval columns. Defaults to \code{0.95}.}
+
 \item{sort_terms}{How to sort rows: \code{"none"}, \code{"descending"}, or
 \code{"ascending"}.}
 
@@ -140,8 +144,9 @@ around each labeled block identified by \code{separate_groups}.}
 \item{stripe_alpha}{Transparency for shaded rows.}
 
 \item{ref_line}{Numeric x-value where the reference line is drawn, or
-\code{NULL} to hide it. When omitted, defaults to \code{0} for additive effects and
-\code{1} for exponentiated effects.}
+\code{NULL} to hide it. When omitted, the value is taken from the
+\code{forest_data} metadata, such as \code{0} for additive effects and \code{1} for
+ratios.}
 
 \item{ref_label}{Optional label drawn alongside the reference line.}
 

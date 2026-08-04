@@ -7,11 +7,19 @@ test_that("bind_forest_models stacks model terms with model labels", {
   out <- bind_forest_models(list(Base = fit1, Adjusted = fit2))
 
   expect_s3_class(out, "ggforestplot_bound_models")
+  expect_s3_class(out, "forest_data")
   expect_equal(unique(out$group), c("Base", "Adjusted"))
   expect_false("(Intercept)" %in% out$term)
   expect_true(all(c("term", "estimate", "conf.low", "conf.high", "group") %in% names(out)))
-  expect_equal(attr(out, "estimate_label"), "Estimate")
+  expect_equal(attr(out, "estimate_label"), "Beta")
   expect_false(isTRUE(attr(out, "exponentiate")))
+
+  metadata <- forest_metadata(out)
+  expect_equal(metadata$estimate_scale, "identity")
+  expect_equal(metadata$effect_label, "Beta")
+  expect_equal(metadata$reference_value, 0)
+  expect_named(metadata$source_model, c("Base", "Adjusted"))
+  expect_named(metadata$source_package, c("Base", "Adjusted"))
 })
 
 test_that("ggforestplot uses bound model labels as groups", {
@@ -102,6 +110,11 @@ test_that("bind_forest_models supports common exponentiated scales", {
   expect_true(all(out$estimate > 0))
   expect_true(all(out$conf.low > 0))
   expect_true(all(out$conf.high > 0))
+
+  metadata <- forest_metadata(out)
+  expect_equal(metadata$estimate_scale, "ratio")
+  expect_equal(metadata$axis_transform, "log10")
+  expect_equal(metadata$reference_value, 1)
 })
 
 test_that("bind_forest_models validates model labels and scales", {

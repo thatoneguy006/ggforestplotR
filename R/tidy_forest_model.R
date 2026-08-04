@@ -74,7 +74,7 @@ keep_fixed_effects <- function(out) {
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
 #'   `"ascending"`.
 #'
-#' @return A standardized coefficient data frame ready for [ggforestplot()].
+#' @return A `forest_data` object ready for [ggforestplot()].
 #' @export
 #'
 #' @examples
@@ -102,6 +102,32 @@ tidy_forest_model <- function(model,
                               intercept = FALSE,
                               term_labels = NULL,
                               sort_terms = c("none", "descending", "ascending")) {
+  as_forest_data(
+    model,
+    conf.int = conf.int,
+    conf.level = conf.level,
+    exponentiate = exponentiate,
+    intercept = intercept,
+    term_labels = term_labels,
+    sort_terms = sort_terms
+  )
+}
+
+tidy_forest_model_impl <- function(model,
+                                   conf.int = TRUE,
+                                   conf.level = 0.95,
+                                   exponentiate = NULL,
+                                   intercept = FALSE,
+                                   term_labels = NULL,
+                                   sort_terms = c("none", "descending", "ascending"),
+                                   source_package = NULL) {
+  if (!is.logical(conf.int) || length(conf.int) != 1L || is.na(conf.int)) {
+    stop("`conf.int` must be `TRUE` or `FALSE`.", call. = FALSE)
+  }
+  if (!isTRUE(conf.int)) {
+    stop("Forest data require confidence intervals; use `conf.int = TRUE`.", call. = FALSE)
+  }
+
   sort_terms <- match.arg(sort_terms)
   estimate_info <- infer_model_estimate_info(
     model,
@@ -145,11 +171,168 @@ tidy_forest_model <- function(model,
     term_labels = term_labels,
     n = NULL,
     p.value = if ("p.value" %in% names(out)) "p.value" else NULL,
-    exponentiate = estimate_info$exponentiate,
+    estimate_scale = estimate_info$estimate_scale,
+    axis_transform = estimate_info$axis_transform,
+    effect_label = estimate_info$effect_label,
+    conf.level = conf.level,
+    reference_value = estimate_info$reference_value,
+    source_model = class(model),
+    source_package = source_package,
     sort_terms = sort_terms
   )
-  attr(out, "estimate_label") <- estimate_info$estimate_label
-  attr(out, "axis_label") <- estimate_info$axis_label
-  attr(out, "conf.level") <- conf.level
   out
+}
+
+model_as_forest_data <- function(data,
+                                 conf.int = TRUE,
+                                 conf.level = 0.95,
+                                 exponentiate = NULL,
+                                 intercept = FALSE,
+                                 term_labels = NULL,
+                                 sort_terms = c("none", "descending", "ascending"),
+                                 source_package = NULL,
+                                 ...) {
+  tidy_forest_model_impl(
+    model = data,
+    conf.int = conf.int,
+    conf.level = conf.level,
+    exponentiate = exponentiate,
+    intercept = intercept,
+    term_labels = term_labels,
+    sort_terms = sort_terms,
+    source_package = source_package
+  )
+}
+
+#' @rdname as_forest_data
+#' @export
+as_forest_data.lm <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
+                              exponentiate = NULL, intercept = FALSE,
+                              term_labels = NULL,
+                              sort_terms = c("none", "descending", "ascending")) {
+  model_as_forest_data(
+    data,
+    conf.int = conf.int,
+    conf.level = conf.level,
+    exponentiate = exponentiate,
+    intercept = intercept,
+    term_labels = term_labels,
+    sort_terms = sort_terms,
+    source_package = "stats",
+    ...
+  )
+}
+
+#' @rdname as_forest_data
+#' @export
+as_forest_data.glm <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
+                               exponentiate = NULL, intercept = FALSE,
+                               term_labels = NULL,
+                               sort_terms = c("none", "descending", "ascending")) {
+  model_as_forest_data(
+    data,
+    conf.int = conf.int,
+    conf.level = conf.level,
+    exponentiate = exponentiate,
+    intercept = intercept,
+    term_labels = term_labels,
+    sort_terms = sort_terms,
+    source_package = "stats",
+    ...
+  )
+}
+
+#' @rdname as_forest_data
+#' @export
+as_forest_data.coxph <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
+                                 exponentiate = NULL, intercept = FALSE,
+                                 term_labels = NULL,
+                                 sort_terms = c("none", "descending", "ascending")) {
+  model_as_forest_data(
+    data,
+    conf.int = conf.int,
+    conf.level = conf.level,
+    exponentiate = exponentiate,
+    intercept = intercept,
+    term_labels = term_labels,
+    sort_terms = sort_terms,
+    source_package = "survival",
+    ...
+  )
+}
+
+#' @rdname as_forest_data
+#' @export
+as_forest_data.merMod <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
+                                  exponentiate = NULL, intercept = FALSE,
+                                  term_labels = NULL,
+                                  sort_terms = c("none", "descending", "ascending")) {
+  model_as_forest_data(
+    data,
+    conf.int = conf.int,
+    conf.level = conf.level,
+    exponentiate = exponentiate,
+    intercept = intercept,
+    term_labels = term_labels,
+    sort_terms = sort_terms,
+    source_package = "lme4",
+    ...
+  )
+}
+
+#' @rdname as_forest_data
+#' @export
+as_forest_data.lme <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
+                               exponentiate = NULL, intercept = FALSE,
+                               term_labels = NULL,
+                               sort_terms = c("none", "descending", "ascending")) {
+  model_as_forest_data(
+    data,
+    conf.int = conf.int,
+    conf.level = conf.level,
+    exponentiate = exponentiate,
+    intercept = intercept,
+    term_labels = term_labels,
+    sort_terms = sort_terms,
+    source_package = "nlme",
+    ...
+  )
+}
+
+#' @rdname as_forest_data
+#' @export
+as_forest_data.glmmTMB <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
+                                   exponentiate = NULL, intercept = FALSE,
+                                   term_labels = NULL,
+                                   sort_terms = c("none", "descending", "ascending")) {
+  model_as_forest_data(
+    data,
+    conf.int = conf.int,
+    conf.level = conf.level,
+    exponentiate = exponentiate,
+    intercept = intercept,
+    term_labels = term_labels,
+    sort_terms = sort_terms,
+    source_package = "glmmTMB",
+    ...
+  )
+}
+
+#' @rdname as_forest_data
+#' @export
+as_forest_data.default <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
+                                   exponentiate = NULL, intercept = FALSE,
+                                   term_labels = NULL,
+                                   sort_terms = c("none", "descending", "ascending")) {
+  model_as_forest_data(
+    data,
+    conf.int = conf.int,
+    conf.level = conf.level,
+    exponentiate = exponentiate,
+    intercept = intercept,
+    term_labels = term_labels,
+    sort_terms = sort_terms,
+    source_package = NULL,
+    ...
+  )
 }

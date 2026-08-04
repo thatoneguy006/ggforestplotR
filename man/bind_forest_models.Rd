@@ -7,18 +7,18 @@
 bind_forest_models(models, model_labels = NULL, exponentiate = NULL, ...)
 }
 \arguments{
-\item{models}{A non-empty list of fitted model objects supported by
-\code{\link[=tidy_forest_model]{tidy_forest_model()}}.}
+\item{models}{A non-empty list of fitted model objects supported by an
+\code{\link[=as_forest_data]{as_forest_data()}} method.}
 
 \item{model_labels}{Optional labels used to identify each model in the
 forest plot. Defaults to list names when present, otherwise \code{"Model 1"},
 \code{"Model 2"}, and so on.}
 
 \item{exponentiate}{\code{NULL}, a single logical value, or one logical value per
-model. \code{NULL} uses the canonical scale inferred by \code{\link[=tidy_forest_model]{tidy_forest_model()}}
+model. \code{NULL} uses the canonical scale inferred by \code{\link[=as_forest_data]{as_forest_data()}}
 for each model.}
 
-\item{...}{Additional arguments passed to \code{\link[=tidy_forest_model]{tidy_forest_model()}}, such as
+\item{...}{Additional arguments passed to \code{\link[=as_forest_data]{as_forest_data()}}, such as
 \code{conf.level}, \code{intercept}, \code{term_labels}, or \code{sort_terms}.}
 }
 \value{

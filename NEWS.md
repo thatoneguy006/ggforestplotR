@@ -1,3 +1,33 @@
+# ggforestplotR 0.4.0
+
+## Major Changes
+
+- Added the `forest_data` S3 class as the package's stable interchange format.
+  It stores validated effect-scale, axis, confidence-level, reference-value,
+  source-model, source-package, and source-column metadata.
+- Converted `as_forest_data()` into an S3 generic with methods for data frames,
+  existing `forest_data` objects, linear and generalized linear models, Cox
+  models, and supported mixed-model classes.
+- Refactored `ggforestplot()` to consume the `forest_data` contract instead of
+  determining plotting behavior from the original model class.
+- Added `forest_metadata()` for inspecting the semantic and provenance
+  metadata associated with a `forest_data` object.
+
+## Minor Changes
+
+- Separated the semantic estimate scale from the plotting-axis transformation.
+  Ratio estimates now use `estimate_scale = "ratio"` and
+  `axis_transform = "log10"`; unexponentiated log-link coefficients use
+  `estimate_scale = "log"` and an identity axis.
+- `bind_forest_models()` now returns `forest_data` and validates compatible
+  estimate scales, axis transformations, reference values, and confidence
+  levels before combining models.
+- Fitted model objects and duplicate source data frames are not retained in
+  `forest_data`; provenance records model classes, package names, and source
+  column mappings instead.
+- `tidy_forest_model()` remains available as a compatibility wrapper around
+  the new `as_forest_data()` model methods.
+
 # ggforestplotR 0.3.1
 
 ## Minor Changes

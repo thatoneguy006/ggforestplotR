@@ -41,7 +41,7 @@ validate_forest_data <- function(data, exponentiate = FALSE) {
 
     if (isTRUE(exponentiate) && any(data[[col]] <= 0)) {
       stop(
-        "Exponentiated forest plots require strictly positive `estimate`, `conf.low`, and `conf.high` values.",
+        "Ratio estimates and logarithmic axes require strictly positive `estimate`, `conf.low`, and `conf.high` values.",
         call. = FALSE
       )
     }
@@ -62,7 +62,14 @@ normalize_table_columns <- function(columns, data = NULL) {
   }
 
   if (is.numeric(columns)) {
-    source_names <- if (!is.null(data)) names(attr(data, "source_columns")) else NULL
+    source_names <- if (!is.null(data) && inherits(data, "forest_data")) {
+      names(forest_source_columns(data))
+    } else if (!is.null(data)) {
+      source_columns <- attr(data, "source_columns")
+      if (is.character(source_columns)) source_columns else names(source_columns)
+    } else {
+      NULL
+    }
     available <- if (length(source_names) > 0L) source_names else names(data)
 
     if (is.null(available)) {
@@ -244,7 +251,11 @@ sort_forest_data <- function(data, sort_terms = c("none", "descending", "ascendi
     "(Ungrouped)",
     data$grouping
   )
-  grouping_levels <- attr(data, "grouping_levels")
+  grouping_levels <- if (inherits(data, "forest_data")) {
+    forest_metadata(data)$grouping_levels
+  } else {
+    attr(data, "grouping_levels")
+  }
   group_levels <- if (is.null(grouping_levels)) {
     unique(group_key)
   } else {
@@ -271,7 +282,8 @@ infer_model_estimate_info <- function(model,
                                       exponentiate = NULL,
                                       conf.level = 0.95) {
   auto_exponentiate <- FALSE
-  estimate_label <- "Estimate"
+  canonical_label <- "Beta"
+  estimate_scale <- "identity"
   model_family <- if (inherits(model, "glm") && !is.null(model$family)) {
     model$family
   } else {
@@ -280,33 +292,45 @@ infer_model_estimate_info <- function(model,
 
   if (inherits(model, "coxph")) {
     auto_exponentiate <- TRUE
-    estimate_label <- "HR"
+    canonical_label <- "HR"
   } else if (!is.null(model_family)) {
     family <- model_family$family
     link <- model_family$link
 
     if (identical(family, "binomial") && identical(link, "logit")) {
       auto_exponentiate <- TRUE
-      estimate_label <- "OR"
-    } else if (link == "log") {
+      canonical_label <- "OR"
+    } else if (identical(family, "binomial") && identical(link, "log")) {
       auto_exponentiate <- TRUE
-      estimate_label <- if (family %in% c("poisson", "quasipoisson")) "IRR" else "RR"
+      canonical_label <- "RR"
+    } else if (identical(family, "binomial") && identical(link, "identity")) {
+      estimate_scale <- "risk_difference"
+      canonical_label <- "RD"
+    } else if (identical(link, "log")) {
+      auto_exponentiate <- TRUE
+      canonical_label <- if (family %in% c("poisson", "quasipoisson")) "IRR" else "Ratio"
     }
   }
 
   resolved_exponentiate <- if (is.null(exponentiate)) auto_exponentiate else isTRUE(exponentiate)
 
   if (isTRUE(resolved_exponentiate)) {
-    if (identical(estimate_label, "Estimate")) {
-      estimate_label <- "Ratio"
-    }
+    estimate_scale <- "ratio"
+    estimate_label <- if (isTRUE(auto_exponentiate)) canonical_label else "Ratio"
+  } else if (isTRUE(auto_exponentiate)) {
+    estimate_scale <- "log"
+    estimate_label <- sprintf("log(%s)", canonical_label)
   } else {
-    estimate_label <- "Estimate"
+    estimate_label <- canonical_label
   }
 
   list(
     exponentiate = resolved_exponentiate,
+    estimate_scale = estimate_scale,
+    axis_transform = default_axis_transform(estimate_scale),
     estimate_label = estimate_label,
+    effect_label = estimate_label,
+    reference_value = default_reference_value(estimate_scale),
     axis_label = sprintf("%s (%s CI)", estimate_label, format_conf_level_label(conf.level))
   )
 }
@@ -492,7 +516,11 @@ assign_grouping_panels <- function(data, has_groupings) {
       data$grouping
     )
 
-    grouping_levels <- attr(data, "grouping_levels")
+    grouping_levels <- if (inherits(data, "forest_data")) {
+      forest_metadata(data)$grouping_levels
+    } else {
+      attr(data, "grouping_levels")
+    }
     if (is.null(grouping_levels)) {
       panels
     } else {
@@ -703,13 +731,10 @@ build_separate_lines <- function(data, has_groupings) {
 build_forest_plot_data <- function(data) {
   has_groupings <- any(!is.na(data$grouping) & nzchar(data$grouping))
   plot_data <- data
-  attr(plot_data, "source_columns") <- attr(data, "source_columns")
   plot_data$grouping_panel <- assign_grouping_panels(plot_data, has_groupings)
 
   plot_data <- prefix_ambiguous_labels(plot_data, has_groupings)
-  attr(plot_data, "source_columns") <- attr(data, "source_columns")
   plot_data <- assign_row_keys(plot_data, has_groupings)
-  attr(plot_data, "source_columns") <- attr(data, "source_columns")
 
   stripe_data <- build_stripe_rectangles(plot_data, has_groupings)
   separator_data <- build_separate_lines(plot_data, has_groupings)
@@ -774,12 +799,6 @@ align_forest_state_to_plot_y_scale <- function(state, plot) {
   aligned_data <- state$forest_data[keep_rows, , drop = FALSE]
   aligned_data$row_key <- factor(as.character(aligned_data$row_key), levels = matched_limits)
 
-  source_columns <- attr(state$forest_data, "source_columns")
-  if (!is.null(source_columns)) {
-    source_columns <- source_columns[keep_rows, , drop = FALSE]
-    attr(aligned_data, "source_columns") <- source_columns
-  }
-
   aligned_state <- state
   aligned_state$forest_data <- aligned_data
   aligned_state$stripe_data <- build_stripe_rectangles(aligned_data, state$has_groupings)
@@ -791,6 +810,7 @@ build_forest_table_data <- function(data,
                                     n_header = "N",
                                     events_header = "Events",
                                     estimate_label = "Estimate",
+                                    conf.level = NULL,
                                     p_header = "P-value",
                                     digits = 2,
                                     estimate_digits = NULL,
@@ -806,11 +826,35 @@ build_forest_table_data <- function(data,
     interval_digits = interval_digits,
     p_digits = p_digits
   )
-  source_columns <- attr(data, "source_columns")
-  if (is.null(source_columns)) {
-    source_columns <- data
+  if (is.null(conf.level) && inherits(data, "forest_data")) {
+    conf.level <- forest_metadata(data)$conf_level
   }
-  column_mapping <- attr(data, "column_mapping")
+  confidence_label <- if (is.null(conf.level) || is.na(conf.level)) {
+    "CI"
+  } else {
+    sprintf("%s CI", format_conf_level_label(conf.level))
+  }
+  source_storage <- if (inherits(data, "forest_data")) {
+    forest_source_columns(data)
+  } else {
+    source_columns <- attr(data, "source_columns")
+    if (is.character(source_columns) && !is.null(names(source_columns))) {
+      source_columns
+    } else {
+      source_names <- if (is.character(source_columns)) source_columns else names(source_columns)
+      stats::setNames(source_names, source_names)
+    }
+  }
+  source_column_names <- names(source_storage)
+  source_columns <- data
+  column_mapping <- if (inherits(data, "forest_data")) {
+    forest_column_mapping(data)
+  } else {
+    attr(data, "column_mapping")
+  }
+  if (is.list(column_mapping)) {
+    column_mapping <- NULL
+  }
   force_group_labels <- any(!is.na(data$group) & nzchar(data$group))
   row_levels <- levels(data$row_key)
   row_parts <- vector("list", length(row_levels))
@@ -873,15 +917,19 @@ build_forest_table_data <- function(data,
       stringsAsFactors = FALSE
     )
 
-    extra_columns <- setdiff(unique(c(names(data), names(source_columns))), names(row_parts[[i]]))
+    visible_data_columns <- names(data)[!startsWith(names(data), "..source..")]
+    extra_columns <- setdiff(
+      unique(c(visible_data_columns, source_column_names)),
+      names(row_parts[[i]])
+    )
     extra_columns <- setdiff(
       extra_columns,
       c("row_key", "grouping_panel")
     )
 
     for (extra in extra_columns) {
-      values <- if (extra %in% names(source_columns)) {
-        source_columns[[extra]][idx]
+      values <- if (extra %in% names(source_storage)) {
+        rd[[source_storage[[extra]]]]
       } else {
         rd[[extra]]
       }
@@ -895,7 +943,7 @@ build_forest_table_data <- function(data,
 
   table_rows <- do.call(rbind, row_parts)
   table_rows$row_key <- factor(table_rows$row_key, levels = row_levels)
-  attr(table_rows, "source_columns") <- source_columns
+  attr(table_rows, "source_columns") <- source_column_names
 
   # Determine which columns to show
   if (is.null(columns)) {
@@ -920,8 +968,8 @@ build_forest_table_data <- function(data,
     term = term_header,
     n = n_header,
     events = events_header,
-    estimate = if ("ci" %in% column_keys) estimate_label else sprintf("%s (95%% CI)", estimate_label),
-    ci = "95% CI",
+    estimate = if ("ci" %in% column_keys) estimate_label else sprintf("%s (%s)", estimate_label, confidence_label),
+    ci = confidence_label,
     p = p_header
   )
   extra_column_keys <- setdiff(column_keys, names(column_field_lookup))
