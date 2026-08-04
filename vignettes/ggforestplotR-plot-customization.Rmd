@@ -190,7 +190,7 @@ comparison_coefs <- data.frame(
   estimate = c(0.12, -0.10, 0.18, 0.30, 0.46, 0.08, -0.05, 0.24, 0.40, 0.58),
   conf.low = c(0.03, -0.18, 0.04, 0.10, 0.18, 0.00, -0.13, 0.10, 0.20, 0.30),
   conf.high = c(0.21, -0.02, 0.32, 0.50, 0.74, 0.16, 0.03, 0.38, 0.60, 0.86),
-  model = rep(c("Model A", "Model B"), each = 5),
+  model = rep(c("A", "B"), each = 5),
   section = rep(c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor"), 2)
 )
 
@@ -204,7 +204,8 @@ ggforestplot(
 ) +
   theme(legend.position = "top") +
   scale_color_manual(values = c("#1F968BFF", "#453781FF")) +
-  add_forest_table()
+  labs(color = "Model") +
+  add_forest_table(column_labels = c("term" = "Term", "model" = "Model", "estimate"  = "Estimate (95% CI)"))
 ```
 
 You can also use `bind_forest_models()` to plot estimates from several fit models at once.
@@ -221,7 +222,8 @@ ggforestplot(bound_models, striped_rows = T, p.value = "p.value") +
   scale_x_continuous(limits = c(-6,1)) +
   theme(legend.position = "top") +
   scale_color_manual(values = c("#1F968BFF", "#453781FF", "#FDE725FF")) +
-  add_forest_table(columns = c("term", "group", "estimate", "p.value"),
-                   p_digits = 4)
+  add_forest_table(columns = c("term", "model","estimate", "p.value"),
+                   p_digits = 4,
+                   )
 ```
 
