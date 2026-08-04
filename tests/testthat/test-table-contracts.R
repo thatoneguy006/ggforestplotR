@@ -38,6 +38,27 @@ test_that("add_forest_table supports ggplot add syntax as a terminal step", {
   expect_length(out$patches$plots, 1L)
 })
 
+test_that("add_forest_table supports explicit table and plot widths", {
+  p <- ggforestplot(make_contract_data())
+
+  left <- add_forest_table(
+    p,
+    position = "left",
+    table_width = 3.5,
+    plot_width = 5
+  )
+  right <- p + add_forest_table(
+    position = "right",
+    table_width = 2,
+    plot_width = 4
+  )
+
+  expect_equal(left$patches$layout$widths, c(3.5, 5))
+  expect_equal(right$patches$layout$widths, c(4, 2))
+  expect_error(add_forest_table(p, table_width = 0), "single positive number")
+  expect_error(add_forest_table(p, plot_width = c(1, 2)), "single positive number")
+})
+
 test_that("add_split_table returns left plot right panels in order", {
   p <- ggforestplot(make_contract_data(), n = "sample_size", events = "event_count", p.value = "p_value")
 
@@ -78,8 +99,10 @@ test_that("group columns use the standard table column syntax", {
   )
   forest_data <- p$ggforestplotR_state$forest_data
   default_columns <- default_forest_table_columns(forest_data)
+  default_spec <- build_forest_table_data(forest_data, columns = "group")
 
   expect_equal(default_columns, c("term", "group", "n", "events", "estimate"))
+  expect_equal(default_spec$headers, "model")
 
   single_table <- add_forest_table(
     p,

@@ -266,7 +266,9 @@
 #'   `"events"`, `"estimate"`, `"ci"`, and `"p"`, arbitrary original
 #'   dataframe columns, or numeric positions in the supplied data. `"conf.low"`
 #'   and `"conf.high"` are accepted as aliases for `"ci"`. The default grouped
-#'   layout includes `"group"` on the left.
+#'   layout includes `"group"` on the left. Its header defaults to the source
+#'   column supplied through `group =` for data frames and to `"Model"` for
+#'   [bind_forest_models()] output.
 #' @param right_columns Optional explicit columns to place on the right side
 #'   of the forest plot. Accepts built-in names such as `"group"`, `"estimate"`,
 #'   `"ci"`, and `"p"`, arbitrary original dataframe columns, or numeric positions in

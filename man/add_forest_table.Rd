@@ -31,7 +31,9 @@ add_forest_table(
   grid_lines = FALSE,
   grid_line_colour = "black",
   grid_line_size = 0.3,
-  grid_line_linetype = 1
+  grid_line_linetype = 1,
+  table_width = NULL,
+  plot_width = NULL
 )
 }
 \arguments{
@@ -46,7 +48,9 @@ the order they should appear. Accepts built-in names such as \code{"term"},
 \code{"group"}, \code{"n"}, \code{"events"}, \code{"estimate"}, \code{"ci"}, and \code{"p"}, arbitrary original
 dataframe columns, or numeric positions in the supplied data. \code{"conf.low"}
 and \code{"conf.high"} are accepted as aliases for \code{"ci"}. The default grouped
-table includes \code{"group"}; omit it from an explicit selection to hide it.}
+table includes \code{"group"}; omit it from an explicit selection to hide it.
+Its header defaults to the source column supplied through \verb{group =} for
+data frames and to \code{"Model"} for \code{\link[=bind_forest_models]{bind_forest_models()}} output.}
 
 \item{term_header}{Header text for the term column.}
 
@@ -114,6 +118,12 @@ alpha used in \code{\link[=ggforestplot]{ggforestplot()}}.}
 \item{grid_line_size}{Line width used for the table grid lines.}
 
 \item{grid_line_linetype}{Line type used for the table grid lines.}
+
+\item{table_width}{Optional relative width allocated to the table panel.
+By default this is calculated from the displayed table content.}
+
+\item{plot_width}{Optional relative width allocated to the forest-plot
+panel. Defaults to \code{2.4}.}
 }
 \value{
 A patchwork-composed plot containing the forest plot and side

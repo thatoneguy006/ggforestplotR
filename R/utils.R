@@ -184,6 +184,26 @@ default_split_right_columns <- function(data) {
   "estimate"
 }
 
+default_group_table_header <- function(data) {
+  if (inherits(data, "ggforestplot_bound_models")) {
+    return("Model")
+  }
+
+  if (inherits(data, "forest_data")) {
+    column_mapping <- forest_column_mapping(data)
+
+    if (is.character(column_mapping) && "group" %in% names(column_mapping)) {
+      source_name <- unname(column_mapping[["group"]])
+
+      if (length(source_name) == 1L && !is.na(source_name) && nzchar(source_name)) {
+        return(source_name)
+      }
+    }
+  }
+
+  "Group"
+}
+
 normalize_digits <- function(value, arg) {
   if (is.null(value)) {
     return(NULL)
@@ -893,7 +913,7 @@ build_forest_table_data <- function(data,
   }
   has_groups <- any(!is.na(data$group) & nzchar(data$group))
   align_groups <- has_groups
-  group_header <- if (inherits(data, "ggforestplot_bound_models")) "Model" else "Group"
+  group_header <- default_group_table_header(data)
   row_levels <- levels(data$row_key)
   row_parts <- vector("list", length(row_levels))
 
@@ -1326,6 +1346,15 @@ split_table_width_multiplier <- function(n_columns) {
   }
 
   1 + (n_columns - 2L) / 3
+}
+
+validate_composition_width <- function(value, arg) {
+  if (!is.numeric(value) || length(value) != 1L || is.na(value) ||
+      !is.finite(value) || value <= 0) {
+    stop(sprintf("`%s` must be a single positive number.", arg), call. = FALSE)
+  }
+
+  invisible(value)
 }
 
 # ─── Plot limits ─────────────────────────────────────────────────────────────

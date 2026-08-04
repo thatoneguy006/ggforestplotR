@@ -42,7 +42,9 @@ the forest plot. Accepts built-in names such as \code{"term"}, \code{"group"}, \
 \code{"events"}, \code{"estimate"}, \code{"ci"}, and \code{"p"}, arbitrary original
 dataframe columns, or numeric positions in the supplied data. \code{"conf.low"}
 and \code{"conf.high"} are accepted as aliases for \code{"ci"}. The default grouped
-layout includes \code{"group"} on the left.}
+layout includes \code{"group"} on the left. Its header defaults to the source
+column supplied through \verb{group =} for data frames and to \code{"Model"} for
+\code{\link[=bind_forest_models]{bind_forest_models()}} output.}
 
 \item{right_columns}{Optional explicit columns to place on the right side
 of the forest plot. Accepts built-in names such as \code{"group"}, \code{"estimate"},
