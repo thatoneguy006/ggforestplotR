@@ -35,10 +35,6 @@
   `column_labels` like any other table column.
 - `add_forest_table()` now supports `table_width` and `plot_width` for
   controlling the relative widths of the two composed panels.
-- Group table headers now use the source data-frame column supplied through
-  `group =`; tables created from `bind_forest_models()` continue to use
-  `"Model"`. `column_labels` accepts either the canonical `"group"` key or the
-  mapped source column name when overriding this header.
 
 # ggforestplotR 0.3.1
 
