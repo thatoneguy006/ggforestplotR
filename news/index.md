@@ -58,6 +58,8 @@
 
 ## ggforestplotR 0.3.1
 
+CRAN release: 2026-08-04
+
 ### Minor Changes
 
 - Fixed unintended behavior when passing custom columns to
