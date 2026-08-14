@@ -1,4 +1,4 @@
-# ggforestplotR ![](reference/figures/ggforestplotR_logo.png)
+# ggforestplotR ![](reference/figures/ggforestplotR_favicon.png)
 
 ------------------------------------------------------------------------
 
