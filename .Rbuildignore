@@ -32,4 +32,5 @@
 ^vignettes/.*\.html$
 ^NEWS\.html$
 ^CRAN-SUBMISSION$
+^CITATION\.cff$
 ^revdep$
