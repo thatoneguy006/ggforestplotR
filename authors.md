@@ -4,6 +4,7 @@
 
 - **[Carson Richardson](https://github.com/thatoneguy006)**. Author,
   maintainer, copyright holder.
+  [](https://orcid.org/0009-0004-8710-1097)
 
 ## Citation
 
