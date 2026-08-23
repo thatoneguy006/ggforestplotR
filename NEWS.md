@@ -1,3 +1,11 @@
+# ggforestplotR 0.5.0
+
+## Major Changes
+
+- Added explicit `subgroup` mappings for mixed hierarchical displays, allowing
+  standalone covariates and contiguous categorical blocks to share a forest
+  plot.
+
 # ggforestplotR 0.4.0
 
 ## Major Changes
@@ -15,9 +23,6 @@
 
 ## Minor Changes
 
-- Added explicit `subgroup` mappings for mixed hierarchical displays, allowing
-  standalone covariates and contiguous categorical blocks to share a forest
-  plot while keeping synthetic headers out of validated `forest_data` rows.
 - Separated the semantic estimate scale from the plotting-axis transformation.
   Ratio estimates now use `estimate_scale = "ratio"` and
   `axis_transform = "log10"`; unexponentiated log-link coefficients use
