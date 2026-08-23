@@ -150,6 +150,14 @@
     header_fontface = header_fontface,
     header_family = if (is.null(header_family)) "" else header_family
   )
+  has_subgroup_mapping <- is.character(state$column_mapping) &&
+    "subgroup" %in% names(state$column_mapping)
+  if (isTRUE(has_subgroup_mapping)) {
+    table_spec <- left_align_center_table_columns(
+      table_spec,
+      columns = intersect(table_columns, row_label_columns)
+    )
+  }
   if (is.null(table_width)) {
     table_width <- max(2.4, table_spec$content_width + 0.15)
   }

@@ -196,6 +196,9 @@ class. The complete fitted model is not retained.}
 \item{subgroup}{Optional column name defining hierarchical subgroup blocks.
 Missing or empty values identify ordinary standalone estimates. Rows with
 the same non-empty value must form one contiguous block within each facet.
+When \code{p.value} is mapped, the first nonmissing value for each subgroup and
+estimate group, when applicable, is displayed on its parent row; child
+p-value cells are suppressed.
 Subgroups are never inferred and do not calculate model contrasts.}
 
 \item{conf.int}{Logical; model methods require \code{TRUE} because forest data

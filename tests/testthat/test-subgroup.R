@@ -7,7 +7,7 @@ make_mixed_subgroup_data <- function() {
     conf.high = c(1.05, 1.07, 0.99, 1.00, 1.04, 1.06),
     sample_size = c(500, 310, 190, 500, 280, 220),
     event_count = c(120, 80, 40, 120, 68, 52),
-    p_value = c(0.002, 0.72, 0.03, 0.06, 0.31, 0.58),
+    p_value = c(0.002, 0.04, 0.04, 0.06, 0.31, 0.31),
     note = c("linear", "level", "level", "linear", "level", "level"),
     stringsAsFactors = FALSE
   )
@@ -84,7 +84,11 @@ expect_subgroup_header_blanks <- function(table_data, display_data) {
   for (row_key in header_keys) {
     cells <- table_data[as.character(table_data$row_key) == row_key, , drop = FALSE]
     term_cells <- cells[cells$column_key == "term", , drop = FALSE]
-    other_cells <- cells[cells$column_key != "term", , drop = FALSE]
+    other_cells <- cells[
+      !cells$column_key %in% c("term", "p"),
+      ,
+      drop = FALSE
+    ]
 
     if (nrow(term_cells) > 0L) {
       expect_equal(term_cells$text, unname(expected_labels[[row_key]]))
@@ -156,6 +160,11 @@ test_that("mixed standalone and subgroup rows preserve source order", {
   expect_equal(
     as.character(display_data$term[display_data$row_type == "estimate"]),
     raw$term
+  )
+  expect_equal(forest_data$p.value, raw$p_value)
+  expect_equal(
+    display_data$p.value,
+    c(0.002, 0.04, NA, NA, 0.06, 0.31, NA, NA)
   )
   expect_equal(
     names(subgroup_axis_lookup(p)),
@@ -340,7 +349,7 @@ test_that("striping counts subgroup headers and aligns with a forest table", {
   expect_equal(plot_rect_data$stripe_id, c(1L, 3L, 5L, 7L))
 })
 
-test_that("add_forest_table aligns headers and blanks non-term cells", {
+test_that("add_forest_table aligns subgroup terms and promotes p-values", {
   p <- subgroup_plot(striped_rows = TRUE)
   display_data <- p$ggforestplotR_state$display_data
   out <- add_forest_table(
@@ -364,6 +373,21 @@ test_that("add_forest_table aligns headers and blanks non-term cells", {
     unname(term_lookup[as.character(display_data$row_key)]),
     display_data$display_label
   )
+  expect_true(all(term_cells$text_hjust == 0))
+  expect_length(unique(term_cells$column_position), 1L)
+  child_term_cells <- term_cells[term_cells$row_type == "estimate" &
+    grepl("^   ", term_cells$text), , drop = FALSE]
+  expect_gt(nrow(child_term_cells), 0L)
+
+  other_cells <- table_data[table_data$column_key != "term", , drop = FALSE]
+  expect_true(all(other_cells$text_hjust == 0.5))
+
+  p_cells <- table_data[table_data$column_key == "p", , drop = FALSE]
+  p_lookup <- stats::setNames(p_cells$text, as.character(p_cells$row_key))
+  expect_equal(
+    unname(p_lookup[as.character(display_data$row_key)]),
+    c("0.002", "0.040", "", "", "0.060", "0.310", "", "")
+  )
 
   header_keys <- as.character(
     display_data$row_key[display_data$row_type == "subgroup_header"]
@@ -376,6 +400,48 @@ test_that("add_forest_table aligns headers and blanks non-term cells", {
   ]
   expect_true(all(is.na(arbitrary_header_cells$text) |
     !nzchar(arbitrary_header_cells$text)))
+})
+
+test_that("mapped p-value source names use subgroup parent rows", {
+  p <- subgroup_plot()
+  display_data <- p$ggforestplotR_state$display_data
+  expected <- c("0.002", "0.040", "", "", "0.060", "0.310", "", "")
+
+  forest_out <- add_forest_table(
+    p,
+    columns = c("term", "p_value")
+  )
+  forest_table <- subgroup_table_plots(forest_out)[[1L]]$data
+  forest_p <- forest_table[forest_table$column_key == "p", , drop = FALSE]
+  forest_lookup <- stats::setNames(
+    forest_p$text,
+    as.character(forest_p$row_key)
+  )
+
+  expect_equal(unique(forest_table$column_key), c("term", "p"))
+  expect_equal(
+    unname(forest_lookup[as.character(display_data$row_key)]),
+    expected
+  )
+
+  split_out <- add_split_table(
+    p,
+    left_columns = "term",
+    right_columns = "p_value"
+  )
+  split_tables <- subgroup_table_plots(split_out)
+  split_p <- do.call(rbind, lapply(split_tables, function(table_plot) {
+    table_plot$data[table_plot$data$column_key == "p", , drop = FALSE]
+  }))
+  split_lookup <- stats::setNames(
+    split_p$text,
+    as.character(split_p$row_key)
+  )
+
+  expect_equal(
+    unname(split_lookup[as.character(display_data$row_key)]),
+    expected
+  )
 })
 
 test_that("add_split_table keeps both tables aligned with subgroup rows", {
@@ -434,14 +500,33 @@ test_that("add_split_table keeps both tables aligned with subgroup rows", {
     display_data$display_label
   )
   expect_subgroup_header_blanks(right_table$data, display_data)
+
+  left_text_layer <- subgroup_layer_indices(left_table, "GeomText")[[1L]]
+  right_text_layer <- subgroup_layer_indices(right_table, "GeomText")[[1L]]
+  expect_true(all(ggplot2::ggplot_build(left_table)$data[[left_text_layer]]$hjust == 0))
+  expect_true(all(ggplot2::ggplot_build(right_table)$data[[right_text_layer]]$hjust == 1))
+
+  split_p_cells <- right_table$data[
+    right_table$data$column_key == "p",
+    ,
+    drop = FALSE
+  ]
+  split_p_lookup <- stats::setNames(
+    split_p_cells$text,
+    as.character(split_p_cells$row_key)
+  )
+  expect_equal(
+    unname(split_p_lookup[as.character(display_data$row_key)]),
+    c("0.002", "0.040", "", "", "0.060", "0.310", "", "")
+  )
 })
 
 test_that("subgroup NULL retains ordinary forest-plot row behavior", {
   raw <- make_mixed_subgroup_data()
   raw$subgroup_name <- NULL
 
-  omitted <- ggforestplot(raw)
-  explicit_null <- ggforestplot(raw, subgroup = NULL)
+  omitted <- ggforestplot(raw, p.value = "p_value")
+  explicit_null <- ggforestplot(raw, subgroup = NULL, p.value = "p_value")
   omitted_display <- omitted$ggforestplotR_state$display_data
   null_display <- explicit_null$ggforestplotR_state$display_data
 
@@ -463,6 +548,89 @@ test_that("subgroup NULL retains ordinary forest-plot row behavior", {
     ),
     "term"
   )
+
+  ordinary_spec <- build_forest_table_data(
+    explicit_null$ggforestplotR_state$forest_data,
+    columns = c("term", "p"),
+    display_data = explicit_null$ggforestplotR_state$display_data
+  )
+  ordinary_p <- ordinary_spec$table_data[
+    ordinary_spec$table_data$column_key == "p",
+    ,
+    drop = FALSE
+  ]
+  expect_equal(
+    ordinary_p$text,
+    c("0.002", "0.040", "0.040", "0.060", "0.310", "0.310")
+  )
+})
+
+test_that("explicit subgroup mappings left-align all-standalone term cells", {
+  raw <- make_mixed_subgroup_data()[c(1L, 4L), , drop = FALSE]
+  out <- add_forest_table(
+    subgroup_plot(raw),
+    columns = c("term", "estimate")
+  )
+  table_plot <- subgroup_table_plots(out)[[1L]]
+  term_cells <- table_plot$data[
+    table_plot$data$column_key == "term",
+    ,
+    drop = FALSE
+  ]
+
+  expect_true(all(term_cells$text_hjust == 0))
+  expect_length(unique(term_cells$column_position), 1L)
+  expect_true(all(
+    table_plot$data$text_hjust[table_plot$data$column_key == "estimate"] == 0.5
+  ))
+})
+
+test_that("subgroup parent p-values respect facets and estimate groups", {
+  raw <- data.frame(
+    term = rep(c("White", "Black"), each = 2L, times = 2L),
+    parent = "Race",
+    section = rep(c("A", "B"), each = 4L),
+    model = rep(c("M1", "M2"), times = 4L),
+    estimate = seq(0.1, 0.8, by = 0.1),
+    conf.low = seq(0.0, 0.7, by = 0.1),
+    conf.high = seq(0.2, 0.9, by = 0.1),
+    p_value = c(0.04, 0.05, 0.04, 0.05, 0.06, 0.07, 0.06, 0.07)
+  )
+  p <- ggforestplot(
+    raw,
+    subgroup = "parent",
+    facet = "section",
+    group = "model",
+    p.value = "p_value",
+    ref_line = NULL
+  )
+  spec <- build_forest_table_data(
+    p$ggforestplotR_state$full_forest_data,
+    columns = c("term", "p"),
+    display_data = p$ggforestplotR_state$display_data
+  )
+  parent_p <- spec$table_data[
+    spec$table_data$row_type == "subgroup_header" &
+      spec$table_data$column_key == "p",
+    ,
+    drop = FALSE
+  ]
+  child_p <- spec$table_data[
+    spec$table_data$row_type == "estimate" &
+      spec$table_data$column_key == "p",
+    ,
+    drop = FALSE
+  ]
+  parent_lookup <- stats::setNames(
+    parent_p$text,
+    as.character(parent_p$grouping_panel)
+  )
+
+  expect_equal(unname(parent_lookup[c("A", "B")]), c(
+    "0.040\n0.050",
+    "0.060\n0.070"
+  ))
+  expect_true(all(!nzchar(child_p$text)))
 })
 
 test_that("custom y limits preserve hierarchy and attached row layers", {
@@ -616,15 +784,16 @@ test_that("header-only y limits still support forest and split tables", {
   )
 
   expect_equal(nrow(p$ggforestplotR_state$forest_data), 0L)
-  forest_out <- add_forest_table(p, columns = c("term", "n"))
+  forest_out <- add_forest_table(p, columns = c("term", "n", "p"))
   forest_table <- subgroup_table_plots(forest_out)[[1L]]$data
   expect_equal(forest_table$text[forest_table$column_key == "term"], "Race")
   expect_equal(forest_table$text[forest_table$column_key == "n"], "")
+  expect_equal(forest_table$text[forest_table$column_key == "p"], "0.040")
 
   split_out <- add_split_table(
     p,
     left_columns = c("term", "n"),
-    right_columns = "estimate"
+    right_columns = c("estimate", "p")
   )
   split_tables <- subgroup_table_plots(split_out)
   expect_length(split_tables, 2L)
@@ -633,6 +802,10 @@ test_that("header-only y limits still support forest and split tables", {
     function(table) all(table$data$row_type == "subgroup_header"),
     logical(1)
   )))
+  split_p <- unlist(lapply(split_tables, function(table) {
+    table$data$text[table$data$column_key == "p"]
+  }), use.names = FALSE)
+  expect_equal(split_p, "0.040")
 })
 
 test_that("custom y limits immediately realign separator layers", {

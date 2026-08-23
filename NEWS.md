@@ -4,7 +4,9 @@
 
 - Added explicit `subgroup` mappings for mixed hierarchical displays, allowing
   standalone covariates and contiguous categorical blocks to share a forest
-  plot.
+  plot. Subgroup p-values now appear once on the parent row, and hierarchical
+  term labels in `add_forest_table()` are left-aligned while child levels remain
+  indented.
 
 # ggforestplotR 0.4.0
 

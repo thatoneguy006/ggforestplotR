@@ -18,6 +18,9 @@
 #'   Missing or empty values identify ordinary standalone estimates. Each
 #'   non-empty subgroup must form one contiguous block within a facet. This is
 #'   a presentation-only mapping; subgroups and contrasts are not inferred.
+#'   When `p.value` is mapped, the first nonmissing value for each subgroup and
+#'   estimate group, when applicable, is displayed on its parent row; child
+#'   p-value cells are suppressed.
 #' @param facet Optional column name used to split rows into faceted plot
 #'   sections. If this column is a factor, its levels control facet order.
 #' @param facet_strip_position Positioning for facet strip labels.

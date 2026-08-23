@@ -115,6 +115,14 @@ normalize_table_columns <- function(columns, data = NULL) {
   )
 
   if (!is.null(data)) {
+    column_mapping <- if (inherits(data, "forest_data")) {
+      forest_column_mapping(data)
+    } else {
+      attr(data, "column_mapping", exact = TRUE)
+    }
+    if (!is.character(column_mapping)) {
+      column_mapping <- NULL
+    }
     source_names <- if (inherits(data, "forest_data")) {
       names(forest_source_columns(data))
     } else {
@@ -129,20 +137,30 @@ normalize_table_columns <- function(columns, data = NULL) {
   } else {
     exact <- rep(FALSE, length(columns))
     source_names <- character()
+    column_mapping <- NULL
   }
 
   normalized <- gsub("\\s+", "", tolower(columns))
   resolved <- unname(aliases[normalized])
   interval_alias <- normalized %in% c("conf.low", "conflow", "conf.high", "confhigh")
   p_value_alias <- normalized %in% "p.value"
+  mapped_p_value <- rep(FALSE, length(columns))
+  if (!is.null(column_mapping) && "p.value" %in% names(column_mapping)) {
+    source_p_value <- unname(column_mapping[["p.value"]])
+    if (length(source_p_value) == 1L && !is.na(source_p_value) &&
+        nzchar(source_p_value)) {
+      mapped_p_value <- columns == source_p_value
+    }
+  }
   subgroup_alias <- normalized %in% c("subgroup", "subgroups")
   has_subgroup_values <- !is.null(data) && has_table_values(data, "subgroup")
   has_source_subgroup <- columns %in% source_names
   preserve_subgroup_alias <- subgroup_alias &
     !has_subgroup_values & !has_source_subgroup
-  exact_override <- exact & !interval_alias & !p_value_alias &
+  exact_override <- exact & !interval_alias & !p_value_alias & !mapped_p_value &
     !preserve_subgroup_alias
   resolved[exact_override] <- columns[exact_override]
+  resolved[mapped_p_value] <- "p"
 
   if (anyNA(resolved)) {
     bad <- unique(columns[is.na(resolved)])
@@ -926,6 +944,7 @@ expand_subgroup_display_rows <- function(data, has_groupings) {
         header <- blank_display_row(display_data[row_index, , drop = FALSE])
         header$term <- subgroup
         header$label <- subgroup
+        header$subgroup <- subgroup
         header$grouping_panel <- display_data$grouping_panel[row_index]
         header$row_type <- "subgroup_header"
         header$display_label <- subgroup
@@ -940,6 +959,12 @@ expand_subgroup_display_rows <- function(data, has_groupings) {
           block_end <- block_end + 1L
         }
         block_rows <- idx[seq.int(position, block_end)]
+        block_p_values <- display_data$p.value[block_rows]
+        block_p_values <- block_p_values[!is.na(block_p_values)]
+        if (length(block_p_values) > 0L) {
+          header$p.value <- block_p_values[[1L]]
+        }
+        display_data$p.value[block_rows] <- NA_real_
         block_separators <- display_data$separate_groups[block_rows]
         separator_present <- !is.na(block_separators) &
           nzchar(block_separators)
@@ -964,6 +989,55 @@ expand_subgroup_display_rows <- function(data, has_groupings) {
     attr(out, attribute) <- attr(display_data, attribute, exact = TRUE)
   }
   out
+}
+
+format_subgroup_header_p_values <- function(data,
+                                            header_row,
+                                            p_digits,
+                                            align_groups) {
+  subgroup <- as.character(header_row$subgroup[[1L]])
+  if (is.na(subgroup) || !nzchar(subgroup)) {
+    subgroup <- as.character(header_row$term[[1L]])
+  }
+
+  same_subgroup <- !is.na(data$subgroup) & data$subgroup == subgroup
+  header_panel <- as.character(header_row$grouping_panel[[1L]])
+  data_panel <- as.character(data$grouping_panel)
+  same_panel <- if (is.na(header_panel) || !nzchar(header_panel)) {
+    is.na(data_panel) | !nzchar(data_panel)
+  } else {
+    !is.na(data_panel) & data_panel == header_panel
+  }
+  block <- data[same_subgroup & same_panel, , drop = FALSE]
+
+  if (nrow(block) == 0L) {
+    return("")
+  }
+
+  has_groups <- any(!is.na(block$group) & nzchar(block$group))
+  if (!isTRUE(has_groups)) {
+    values <- block$p.value[!is.na(block$p.value)]
+    value <- if (length(values) == 0L) NA_real_ else values[[1L]]
+    return(format_forest_p_values(value, p_digits = p_digits))
+  }
+
+  group_key <- ifelse(
+    is.na(block$group) | !nzchar(block$group),
+    "(Ungrouped)",
+    block$group
+  )
+  group_levels <- unique(group_key)
+  values <- vapply(group_levels, function(group) {
+    candidates <- block$p.value[group_key == group & !is.na(block$p.value)]
+    if (length(candidates) == 0L) NA_real_ else candidates[[1L]]
+  }, numeric(1))
+
+  format_forest_p_values(
+    values,
+    group = group_levels,
+    p_digits = p_digits,
+    align_groups = align_groups
+  )
 }
 
 #' Build a data frame of alternating stripe rectangles for each panel.
@@ -1348,6 +1422,8 @@ build_forest_table_data <- function(data,
     }
     row_types[[row_key]] <- row_type
     is_header <- identical(row_type, "subgroup_header")
+    is_child <- !is_header &&
+      any(!is.na(rd$subgroup) & nzchar(rd$subgroup))
     term_text <- if ("display_label" %in% names(rd)) {
       rd$display_label[[1L]]
     } else {
@@ -1391,11 +1467,22 @@ build_forest_table_data <- function(data,
         ci_fmt = ci_fmt,
         align_groups = align_groups
       ),
-      p_text = if (is_header) "" else format_forest_p_values(
-        rd$p.value, rd$group,
-        p_digits = digits$p_digits,
-        align_groups = align_groups
-      ),
+      p_text = if (is_header) {
+        format_subgroup_header_p_values(
+          data,
+          rd,
+          p_digits = digits$p_digits,
+          align_groups = align_groups
+        )
+      } else if (is_child) {
+        ""
+      } else {
+        format_forest_p_values(
+          rd$p.value, rd$group,
+          p_digits = digits$p_digits,
+          align_groups = align_groups
+        )
+      },
       stringsAsFactors = FALSE
     )
 
@@ -1417,7 +1504,6 @@ build_forest_table_data <- function(data,
           rd$group,
           align_groups = FALSE
         )
-        is_child <- any(!is.na(rd$subgroup) & nzchar(rd$subgroup))
         if (is_child) {
           label_text <- paste0(
             "   ",
@@ -1449,6 +1535,7 @@ build_forest_table_data <- function(data,
   table_rows <- do.call(rbind, row_parts)
   table_rows$row_key <- factor(table_rows$row_key, levels = row_levels)
   attr(table_rows, "source_columns") <- source_column_names
+  attr(table_rows, "column_mapping") <- column_mapping
 
   # Determine which columns to show
   if (is.null(columns)) {
@@ -1756,6 +1843,27 @@ layout_center_table_spec <- function(table_spec,
   table_spec
 }
 
+left_align_center_table_columns <- function(table_spec,
+                                            columns,
+                                            inset = 0.02) {
+  columns <- intersect(columns, table_spec$column_keys)
+  if (length(columns) == 0L) {
+    return(table_spec)
+  }
+
+  table_spec$table_data$text_hjust <- 0.5
+  for (column in columns) {
+    column_index <- match(column, table_spec$column_keys)
+    left_position <- table_spec$positions[[column_index]] -
+      table_spec$estimated_column_widths[[column_index]] / 2 + inset
+    rows <- table_spec$table_data$column_key == column
+    table_spec$table_data$column_position[rows] <- left_position
+    table_spec$table_data$text_hjust[rows] <- 0
+  }
+
+  table_spec
+}
+
 compute_table_x_limits <- function(table_spec, pad = 0.03) {
   widths <- if (!is.null(table_spec$displayed_column_widths)) {
     table_spec$displayed_column_widths
@@ -1961,8 +2069,22 @@ build_forest_table_plot <- function(table_spec,
     }
   }
 
+  text_layer <- if ("text_hjust" %in% names(table_spec$table_data)) {
+    ggplot2::geom_text(
+      mapping = ggplot2::aes(hjust = .data$text_hjust),
+      size = text_size,
+      lineheight = 0.95
+    )
+  } else {
+    ggplot2::geom_text(
+      hjust = text_hjust,
+      size = text_size,
+      lineheight = 0.95
+    )
+  }
+
   p <- p +
-    ggplot2::geom_text(hjust = text_hjust, size = text_size, lineheight = 0.95) +
+    text_layer +
     ggplot2::scale_x_continuous(
       breaks = table_spec$header_positions,
       labels = table_spec$headers,

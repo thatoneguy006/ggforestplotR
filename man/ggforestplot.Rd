@@ -159,7 +159,10 @@ ratios.}
 \item{subgroup}{Optional column name defining hierarchical subgroup blocks.
 Missing or empty values identify ordinary standalone estimates. Each
 non-empty subgroup must form one contiguous block within a facet. This is
-a presentation-only mapping; subgroups and contrasts are not inferred.}
+a presentation-only mapping; subgroups and contrasts are not inferred.
+When \code{p.value} is mapped, the first nonmissing value for each subgroup and
+estimate group, when applicable, is displayed on its parent row; child
+p-value cells are suppressed.}
 }
 \value{
 A \code{ggplot} object. Use standard \code{ggplot2} functions such as
