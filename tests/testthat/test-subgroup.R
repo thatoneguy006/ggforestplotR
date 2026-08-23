@@ -402,6 +402,70 @@ test_that("add_forest_table aligns subgroup terms and promotes p-values", {
     !nzchar(arbitrary_header_cells$text)))
 })
 
+test_that("add_forest_table renders mapped subgroup term labels", {
+  raw <- data.frame(
+    variable = c(
+      "History of ESA use", "History of ESA use",
+      "Race", "Race", "Race",
+      "Age group", "Age group",
+      "Sex", "Sex"
+    ),
+    level = c(
+      "No", "Yes", "White", "Black", "Others",
+      "18 to 64 y", "65 and above", "Female", "Male"
+    ),
+    estimate = c(
+      1.00, 0.97, 1.01, 0.89, 0.99, 0.93, 0.99, 0.96, 0.98
+    ),
+    conf.low = c(
+      0.86, 0.92, 0.95, 0.80, 0.79, 0.85, 0.91, 0.89, 0.92
+    ),
+    conf.high = c(
+      1.16, 1.02, 1.07, 0.99, 1.23, 1.02, 1.05, 1.04, 1.06
+    ),
+    p_interaction = c(
+      0.745, 0.745, 0.203, 0.203, 0.203,
+      0.244, 0.244, 0.664, 0.664
+    )
+  )
+  p <- ggforestplot(
+    raw,
+    term = "level",
+    subgroup = "variable",
+    p.value = "p_interaction",
+    exponentiate = TRUE,
+    striped_rows = TRUE
+  )
+  display_data <- p$ggforestplotR_state$display_data
+  expected_labels <- stats::setNames(
+    display_data$display_label,
+    as.character(display_data$row_key)
+  )
+
+  for (term_column in c("term", "level")) {
+    out <- p + add_forest_table(columns = c(term_column, "estimate"))
+    table_plot <- subgroup_table_plots(out)[[1L]]
+    term_cells <- table_plot$data[
+      table_plot$data$column_key == term_column,
+      ,
+      drop = FALSE
+    ]
+    text_layer <- subgroup_layer_indices(table_plot, "GeomText")[[1L]]
+    built_text <- ggplot2::ggplot_build(table_plot)$data[[text_layer]]
+    built_terms <- built_text[built_text$hjust == 0, , drop = FALSE]
+    x_limits <- table_plot$scales$get_scales("x")$limits
+
+    expect_equal(
+      term_cells$text,
+      unname(expected_labels[as.character(term_cells$row_key)])
+    )
+    expect_equal(as.character(built_terms$label), term_cells$text)
+    expect_true(all(is.finite(built_terms$x)))
+    expect_true(all(term_cells$column_position >= x_limits[[1L]]))
+    expect_true(all(term_cells$column_position <= x_limits[[2L]]))
+  }
+})
+
 test_that("mapped p-value source names use subgroup parent rows", {
   p <- subgroup_plot()
   display_data <- p$ggforestplotR_state$display_data

@@ -1874,17 +1874,37 @@ compute_table_x_limits <- function(table_spec, pad = 0.03) {
   alignment <- if (!is.null(table_spec$alignment)) table_spec$alignment else "center"
 
   if (alignment == "left") {
-    xmin <- min(positions) - pad
-    xmax <- max(positions + widths) + pad
+    xmin <- min(positions)
+    xmax <- max(positions + widths)
   } else if (alignment == "right") {
-    xmin <- min(positions - widths) - pad
-    xmax <- max(positions) + pad
+    xmin <- min(positions - widths)
+    xmax <- max(positions)
   } else {
-    xmin <- min(positions - widths / 2) - pad
-    xmax <- max(positions + widths / 2) + pad
+    xmin <- min(positions - widths / 2)
+    xmax <- max(positions + widths / 2)
   }
 
-  c(xmin, xmax)
+  cell_fields <- c("column_key", "column_position", "text_hjust")
+  if (all(cell_fields %in% names(table_spec$table_data))) {
+    column_index <- match(
+      table_spec$table_data$column_key,
+      table_spec$column_keys
+    )
+    cell_widths <- widths[column_index]
+    cell_positions <- table_spec$table_data$column_position
+    cell_hjust <- table_spec$table_data$text_hjust
+    valid_cells <- is.finite(cell_widths) & is.finite(cell_positions) &
+      is.finite(cell_hjust)
+
+    if (any(valid_cells)) {
+      cell_left <- cell_positions - cell_hjust * cell_widths
+      cell_right <- cell_positions + (1 - cell_hjust) * cell_widths
+      xmin <- min(xmin, cell_left[valid_cells])
+      xmax <- max(xmax, cell_right[valid_cells])
+    }
+  }
+
+  c(xmin - pad, xmax + pad)
 }
 
 split_table_width_multiplier <- function(n_columns) {
