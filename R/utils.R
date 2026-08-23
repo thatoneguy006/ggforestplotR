@@ -19,6 +19,13 @@ resolve_column <- function(data, column, arg, required = TRUE) {
   column
 }
 
+forest_display_reserved_columns <- function() {
+  c(
+    "row_key", "grouping_panel", "row_type", "display_label",
+    ".forest_source_row", ".display_identity"
+  )
+}
+
 # ─── Data validation ──────────────────────────────────────────────────────────
 
 validate_forest_data <- function(data, exponentiate = FALSE) {
@@ -108,16 +115,34 @@ normalize_table_columns <- function(columns, data = NULL) {
   )
 
   if (!is.null(data)) {
-    exact <- columns %in% names(data)
+    source_names <- if (inherits(data, "forest_data")) {
+      names(forest_source_columns(data))
+    } else {
+      source_columns <- attr(data, "source_columns", exact = TRUE)
+      if (is.character(source_columns) && is.null(names(source_columns))) {
+        source_columns
+      } else {
+        names(source_columns)
+      }
+    }
+    exact <- columns %in% c(names(data), source_names)
   } else {
     exact <- rep(FALSE, length(columns))
+    source_names <- character()
   }
 
   normalized <- gsub("\\s+", "", tolower(columns))
   resolved <- unname(aliases[normalized])
   interval_alias <- normalized %in% c("conf.low", "conflow", "conf.high", "confhigh")
   p_value_alias <- normalized %in% "p.value"
-  resolved[exact & !interval_alias & !p_value_alias] <- columns[exact & !interval_alias & !p_value_alias]
+  subgroup_alias <- normalized %in% c("subgroup", "subgroups")
+  has_subgroup_values <- !is.null(data) && has_table_values(data, "subgroup")
+  has_source_subgroup <- columns %in% source_names
+  preserve_subgroup_alias <- subgroup_alias &
+    !has_subgroup_values & !has_source_subgroup
+  exact_override <- exact & !interval_alias & !p_value_alias &
+    !preserve_subgroup_alias
+  resolved[exact_override] <- columns[exact_override]
 
   if (anyNA(resolved)) {
     bad <- unique(columns[is.na(resolved)])
@@ -282,6 +307,16 @@ sort_forest_data <- function(data, sort_terms = c("none", "descending", "ascendi
     return(data)
   }
 
+  has_subgroups <- "subgroup" %in% names(data) &&
+    any(!is.na(data$subgroup) & nzchar(data$subgroup))
+
+  if (isTRUE(has_subgroups)) {
+    stop(
+      "`sort_terms` must be \"none\" when `subgroup` is used so source row order is preserved.",
+      call. = FALSE
+    )
+  }
+
   decreasing <- sort_terms == "descending"
   has_grouping <- any(!is.na(data$grouping) & nzchar(data$grouping))
 
@@ -310,6 +345,72 @@ sort_forest_data <- function(data, sort_terms = c("none", "descending", "ascendi
   }), use.names = FALSE)
 
   data[row_order, , drop = FALSE]
+}
+
+validate_subgroup_blocks <- function(data) {
+  if (!"subgroup" %in% names(data)) {
+    return(invisible(data))
+  }
+
+  subgroup <- as.character(data$subgroup)
+  present <- !is.na(subgroup) & nzchar(subgroup)
+
+  if (!any(present)) {
+    return(invisible(data))
+  }
+
+  grouping <- if ("grouping" %in% names(data)) {
+    as.character(data$grouping)
+  } else {
+    rep(NA_character_, nrow(data))
+  }
+  panel_key <- ifelse(
+    is.na(grouping) | !nzchar(grouping),
+    "(Ungrouped)",
+    grouping
+  )
+  repeated <- character()
+
+  for (panel in unique(panel_key)) {
+    idx <- which(panel_key == panel)
+    panel_subgroup <- subgroup[idx]
+    panel_present <- !is.na(panel_subgroup) & nzchar(panel_subgroup)
+    run_key <- ifelse(
+      panel_present,
+      paste0("subgroup:", nchar(panel_subgroup), ":", panel_subgroup),
+      "standalone"
+    )
+    runs <- rle(run_key)
+    run_starts <- c(1L, utils::head(cumsum(runs$lengths), -1L) + 1L)
+    run_subgroups <- panel_subgroup[run_starts]
+    run_subgroups <- run_subgroups[
+      !is.na(run_subgroups) & nzchar(run_subgroups)
+    ]
+    duplicated_subgroups <- unique(run_subgroups[duplicated(run_subgroups)])
+
+    if (length(duplicated_subgroups) > 0L) {
+      panel_labels <- if (identical(panel, "(Ungrouped)")) {
+        duplicated_subgroups
+      } else {
+        paste0(duplicated_subgroups, " [facet: ", panel, "]")
+      }
+      repeated <- c(repeated, panel_labels)
+    }
+  }
+
+  if (length(repeated) > 0L) {
+    stop(
+      paste0(
+        "Each `subgroup` must form one contiguous block within a facet. ",
+        "Repeated noncontiguous subgroup block(s): ",
+        paste(repeated, collapse = ", "),
+        "."
+      ),
+      call. = FALSE
+    )
+  }
+
+  invisible(data)
 }
 
 format_conf_level_label <- function(conf.level = 0.95) {
@@ -659,6 +760,10 @@ make_panel_row_keys <- function(panel, labels, panel_key_labels) {
 #' @keywords internal
 #' @noRd
 assign_row_keys <- function(data, has_groupings) {
+  if (".display_identity" %in% names(data)) {
+    return(assign_hierarchical_row_keys(data, has_groupings))
+  }
+
   panel_values <- observed_grouping_panels(data, has_groupings)
   panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
   data$row_key <- NA_character_
@@ -679,10 +784,53 @@ assign_row_keys <- function(data, has_groupings) {
   data
 }
 
+assign_hierarchical_row_keys <- function(data, has_groupings) {
+  panel_values <- observed_grouping_panels(data, has_groupings)
+  panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
+  data$row_key <- NA_character_
+  all_levels <- character()
+
+  for (pv in panel_values) {
+    idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
+    panel_identities <- unique(data$.display_identity[idx])
+    first_rows <- match(panel_identities, data$.display_identity[idx])
+    panel_labels <- data$label[idx][first_rows]
+    keys <- make_panel_row_keys(pv, panel_labels, panel_key_labels)
+    keys <- make.unique(keys, sep = "___")
+    if (length(all_levels) > 0L) {
+      keys <- utils::tail(
+        make.unique(c(all_levels, keys), sep = "___"),
+        length(keys)
+      )
+    }
+    row_map <- stats::setNames(keys, panel_identities)
+
+    data$row_key[idx] <- unname(row_map[data$.display_identity[idx]])
+    all_levels <- c(all_levels, keys)
+  }
+
+  factor_levels <- if (
+    "row_type" %in% names(data) &&
+      any(data$row_type == "subgroup_header")
+  ) {
+    rev(all_levels)
+  } else {
+    all_levels
+  }
+  data$row_key <- factor(data$row_key, levels = factor_levels)
+  data
+}
+
 #' Build axis label lookup: row_key -> display label.
 #' @keywords internal
 #' @noRd
 build_axis_labels <- function(data, has_groupings) {
+  if ("display_label" %in% names(data)) {
+    row_levels <- levels(data$row_key)
+    first_rows <- match(row_levels, as.character(data$row_key))
+    return(stats::setNames(data$display_label[first_rows], row_levels))
+  }
+
   panel_values <- observed_grouping_panels(data, has_groupings)
   panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
   labels <- character()
@@ -695,6 +843,127 @@ build_axis_labels <- function(data, has_groupings) {
   }
 
   labels
+}
+
+encode_display_identity <- function(row_type, subgroup, label) {
+  subgroup <- ifelse(
+    is.na(subgroup) | !nzchar(subgroup),
+    "",
+    subgroup
+  )
+  paste0(
+    nchar(row_type), ":", row_type, "|",
+    nchar(subgroup), ":", subgroup, "|",
+    nchar(label), ":", label
+  )
+}
+
+blank_display_row <- function(row) {
+  row[] <- lapply(row, function(column) {
+    if (is.list(column)) {
+      column[] <- list(NA)
+    } else {
+      column[] <- NA
+    }
+    column
+  })
+  row
+}
+
+as_forest_display_frame <- function(data) {
+  metadata <- if (inherits(data, "forest_data")) forest_metadata(data) else NULL
+  out <- if (inherits(data, "forest_data")) {
+    strip_forest_data_class(data)
+  } else {
+    as.data.frame(data, stringsAsFactors = FALSE)
+  }
+  class(out) <- "data.frame"
+
+  if (!is.null(metadata)) {
+    attr(out, "source_columns") <- metadata$source_columns
+    attr(out, "column_mapping") <- metadata$column_mapping
+    attr(out, "grouping_levels") <- metadata$grouping_levels
+    attr(out, "conf.level") <- metadata$conf_level
+  }
+
+  out
+}
+
+expand_subgroup_display_rows <- function(data, has_groupings) {
+  display_data <- as_forest_display_frame(data)
+  display_data$.forest_source_row <- seq_len(nrow(display_data))
+  display_data$row_type <- "estimate"
+  display_data$display_label <- display_data$label
+
+  has_subgroups <- "subgroup" %in% names(display_data) &&
+    any(!is.na(display_data$subgroup) & nzchar(display_data$subgroup))
+
+  if (!isTRUE(has_subgroups)) {
+    return(display_data)
+  }
+
+  child <- !is.na(display_data$subgroup) & nzchar(display_data$subgroup)
+  display_data$display_label[child] <- paste0("   ", display_data$label[child])
+  panel_values <- observed_grouping_panels(display_data, has_groupings)
+  parts <- list()
+
+  for (pv in panel_values) {
+    idx <- if (has_groupings) {
+      which(display_data$grouping_panel == pv)
+    } else {
+      seq_len(nrow(display_data))
+    }
+    previous_subgroup <- NA_character_
+
+    for (position in seq_along(idx)) {
+      row_index <- idx[[position]]
+      subgroup <- display_data$subgroup[[row_index]]
+      is_subgroup <- !is.na(subgroup) && nzchar(subgroup)
+      starts_subgroup <- is_subgroup &&
+        (is.na(previous_subgroup) || !identical(subgroup, previous_subgroup))
+
+      if (starts_subgroup) {
+        header <- blank_display_row(display_data[row_index, , drop = FALSE])
+        header$term <- subgroup
+        header$label <- subgroup
+        header$grouping_panel <- display_data$grouping_panel[row_index]
+        header$row_type <- "subgroup_header"
+        header$display_label <- subgroup
+
+        block_end <- position
+        while (block_end < length(idx)) {
+          next_subgroup <- display_data$subgroup[[idx[[block_end + 1L]]]]
+          if (is.na(next_subgroup) || !nzchar(next_subgroup) ||
+              !identical(next_subgroup, subgroup)) {
+            break
+          }
+          block_end <- block_end + 1L
+        }
+        block_rows <- idx[seq.int(position, block_end)]
+        block_separators <- display_data$separate_groups[block_rows]
+        separator_present <- !is.na(block_separators) &
+          nzchar(block_separators)
+        common_separator <- unique(block_separators[separator_present])
+        if (all(separator_present) && length(common_separator) == 1L) {
+          header$separate_groups <- common_separator
+        }
+
+        parts[[length(parts) + 1L]] <- header
+      }
+
+      parts[[length(parts) + 1L]] <- display_data[row_index, , drop = FALSE]
+      previous_subgroup <- if (is_subgroup) subgroup else NA_character_
+    }
+  }
+
+  out <- do.call(rbind, parts)
+  rownames(out) <- NULL
+  for (attribute in c(
+    "source_columns", "column_mapping", "grouping_levels", "conf.level"
+  )) {
+    attr(out, attribute) <- attr(display_data, attribute, exact = TRUE)
+  }
+  out
 }
 
 #' Build a data frame of alternating stripe rectangles for each panel.
@@ -801,22 +1070,44 @@ build_separate_lines <- function(data, has_groupings) {
   }
 }
 
-#' Main entry point.  Orchestrates the four passes defined above.
+#' Main entry point. Orchestrates display-row expansion and layout passes.
 #' @keywords internal
 #' @noRd
 build_forest_plot_data <- function(data) {
-  has_groupings <- any(!is.na(data$grouping) & nzchar(data$grouping))
-  plot_data <- data
-  plot_data$grouping_panel <- assign_grouping_panels(plot_data, has_groupings)
+  if (!"subgroup" %in% names(data)) {
+    data$subgroup <- NA_character_
+  }
+  validate_subgroup_blocks(data)
 
-  plot_data <- prefix_ambiguous_labels(plot_data, has_groupings)
+  has_groupings <- any(!is.na(data$grouping) & nzchar(data$grouping))
+  forest_data <- data
+  forest_data$grouping_panel <- assign_grouping_panels(forest_data, has_groupings)
+
+  forest_data <- prefix_ambiguous_labels(forest_data, has_groupings)
+  plot_data <- expand_subgroup_display_rows(forest_data, has_groupings)
+  plot_data$.display_identity <- encode_display_identity(
+    plot_data$row_type,
+    ifelse(plot_data$row_type == "estimate", plot_data$subgroup, NA_character_),
+    plot_data$label
+  )
   plot_data <- assign_row_keys(plot_data, has_groupings)
+
+  estimate_rows <- plot_data$row_type == "estimate"
+  source_rows <- plot_data$.forest_source_row[estimate_rows]
+  source_keys <- as.character(plot_data$row_key[estimate_rows])
+  forest_data$row_key <- factor(
+    source_keys[match(seq_len(nrow(forest_data)), source_rows)],
+    levels = levels(plot_data$row_key)
+  )
 
   stripe_data <- build_stripe_rectangles(plot_data, has_groupings)
   separator_data <- build_separate_lines(plot_data, has_groupings)
   axis_labels <- build_axis_labels(plot_data, has_groupings)
+  plot_data$.forest_source_row <- NULL
+  plot_data$.display_identity <- NULL
 
   list(
+    forest_data = forest_data,
     plot_data = plot_data,
     stripe_data = stripe_data,
     separator_data = separator_data,
@@ -858,27 +1149,101 @@ extract_trained_y_limits <- function(plot) {
 }
 
 align_forest_state_to_plot_y_scale <- function(state, plot) {
-  row_levels <- levels(state$forest_data$row_key)
   y_limits <- extract_trained_y_limits(plot)
+  align_forest_state_to_row_levels(state, y_limits)
+}
 
-  if (is.null(row_levels) || is.null(y_limits)) {
+align_forest_state_to_row_levels <- function(state, requested_levels) {
+  base_display_data <- if (is.null(state$full_display_data)) {
+    if (is.null(state$display_data)) state$forest_data else state$display_data
+  } else {
+    state$full_display_data
+  }
+  base_forest_data <- if (is.null(state$full_forest_data)) {
+    state$forest_data
+  } else {
+    state$full_forest_data
+  }
+  display_data <- base_display_data
+  row_levels <- levels(display_data$row_key)
+
+  if (is.null(row_levels) || is.null(requested_levels)) {
     return(state)
   }
 
-  matched_limits <- y_limits[y_limits %in% row_levels]
+  requested_levels <- as.character(requested_levels)
+  matched_limits <- unique(requested_levels[requested_levels %in% row_levels])
 
-  if (length(matched_limits) == 0L || identical(matched_limits, row_levels)) {
+  if (length(matched_limits) == 0L) {
     return(state)
   }
 
-  keep_rows <- as.character(state$forest_data$row_key) %in% matched_limits
-  aligned_data <- state$forest_data[keep_rows, , drop = FALSE]
-  aligned_data$row_key <- factor(as.character(aligned_data$row_key), levels = matched_limits)
+  keep_display_rows <- as.character(display_data$row_key) %in% matched_limits
+  aligned_display_data <- display_data[keep_display_rows, , drop = FALSE]
+  aligned_display_data$row_key <- factor(
+    as.character(aligned_display_data$row_key),
+    levels = matched_limits
+  )
+
+  keep_estimate_rows <- as.character(base_forest_data$row_key) %in% matched_limits
+  aligned_forest_data <- base_forest_data[keep_estimate_rows, , drop = FALSE]
+  aligned_forest_data$row_key <- factor(
+    as.character(aligned_forest_data$row_key),
+    levels = matched_limits
+  )
+  if (isTRUE(state$has_groupings)) {
+    panel_levels <- observed_grouping_panels(base_display_data, TRUE)
+    aligned_display_data$grouping_panel <- factor(
+      as.character(aligned_display_data$grouping_panel),
+      levels = panel_levels
+    )
+    aligned_forest_data$grouping_panel <- factor(
+      as.character(aligned_forest_data$grouping_panel),
+      levels = panel_levels
+    )
+  }
 
   aligned_state <- state
-  aligned_state$forest_data <- aligned_data
-  aligned_state$stripe_data <- build_stripe_rectangles(aligned_data, state$has_groupings)
+  aligned_state$forest_data <- aligned_forest_data
+  aligned_state$display_data <- aligned_display_data
+  aligned_state$stripe_data <- build_stripe_rectangles(
+    aligned_display_data,
+    state$has_groupings
+  )
+  if (!is.null(state$separator_data)) {
+    aligned_state$separator_data <- build_separate_lines(
+      aligned_display_data,
+      state$has_groupings
+    )
+  }
   aligned_state
+}
+
+align_forest_row_layers_to_state <- function(plot, state) {
+  stripe_index <- state$stripe_layer_index
+  if (!is.null(stripe_index) && stripe_index <= length(plot$layers)) {
+    old_stripes <- plot$layers[[stripe_index]]$data
+    new_stripes <- state$stripe_data[
+      state$stripe_data$fill_key == "stripe",
+      ,
+      drop = FALSE
+    ]
+
+    if (nrow(old_stripes) > 0L && nrow(new_stripes) > 0L) {
+      new_stripes$xmin <- old_stripes$xmin[[1L]]
+      new_stripes$xmax <- old_stripes$xmax[[1L]]
+    }
+    plot$layers[[stripe_index]]$data <- new_stripes
+  }
+
+  separator_index <- state$separator_layer_index
+  if (!is.null(separator_index) && separator_index <= length(plot$layers) &&
+      !is.null(state$separator_data)) {
+    plot$layers[[separator_index]]$data <- state$separator_data
+  }
+
+  plot$ggforestplotR_state <- state
+  plot
 }
 
 build_forest_table_data <- function(data,
@@ -895,7 +1260,8 @@ build_forest_table_data <- function(data,
                                     estimate_fmt = NULL,
                                     ci_fmt = NULL,
                                     column_labels = NULL,
-                                    columns = NULL) {
+                                    columns = NULL,
+                                    display_data = data) {
   digits <- resolve_table_digits(
     digits = digits,
     estimate_digits = estimate_digits,
@@ -922,7 +1288,6 @@ build_forest_table_data <- function(data,
     }
   }
   source_column_names <- names(source_storage)
-  source_columns <- data
   column_mapping <- if (inherits(data, "forest_data")) {
     forest_column_mapping(data)
   } else {
@@ -934,16 +1299,60 @@ build_forest_table_data <- function(data,
   has_groups <- any(!is.na(data$group) & nzchar(data$group))
   align_groups <- has_groups
   group_header <- default_group_table_header(data)
-  row_levels <- levels(data$row_key)
+  row_levels <- levels(display_data$row_key)
   row_parts <- vector("list", length(row_levels))
+  row_types <- stats::setNames(rep("estimate", length(row_levels)), row_levels)
+  mapped_row_label_columns <- unique(unname(column_mapping[c("term", "label")]))
+  mapped_row_label_columns <- mapped_row_label_columns[!is.na(mapped_row_label_columns)]
+  row_label_data_columns <- unique(c(
+    "term", "label", mapped_row_label_columns
+  ))
+  has_subgroup_headers <- "row_type" %in% names(display_data) &&
+    any(display_data$row_type == "subgroup_header")
+  visible_data_columns <- names(display_data)[
+    !startsWith(names(display_data), "..source..") &
+      !names(display_data) %in% forest_display_reserved_columns()
+  ]
+  extra_columns <- unique(c(visible_data_columns, source_column_names))
+  extra_columns <- setdiff(extra_columns, "group")
+  structural_fields <- c(
+    "row_key", "grouping_panel", "term_text", "group_text", "n_text",
+    "events_text", "estimate_text", "estimate_value_text", "ci_text",
+    "p_text"
+  )
+  extra_storage_lookup <- stats::setNames(extra_columns, extra_columns)
+  colliding_extra_columns <- intersect(extra_columns, structural_fields)
+  used_storage_names <- unique(c(extra_columns, structural_fields))
+
+  for (i in seq_along(colliding_extra_columns)) {
+    extra <- colliding_extra_columns[[i]]
+    stored_name <- paste0("..forest_table_source..", i)
+    while (stored_name %in% used_storage_names) {
+      stored_name <- paste0(stored_name, ".")
+    }
+    extra_storage_lookup[[extra]] <- stored_name
+    used_storage_names <- c(used_storage_names, stored_name)
+  }
 
   for (i in seq_along(row_levels)) {
     row_key <- row_levels[[i]]
-    idx <- which(as.character(data$row_key) == row_key)
+    idx <- which(as.character(display_data$row_key) == row_key)
 
     if (length(idx) == 0L) next
 
-    rd <- data[idx, , drop = FALSE]
+    rd <- display_data[idx, , drop = FALSE]
+    row_type <- if ("row_type" %in% names(rd)) {
+      as.character(rd$row_type[[1L]])
+    } else {
+      "estimate"
+    }
+    row_types[[row_key]] <- row_type
+    is_header <- identical(row_type, "subgroup_header")
+    term_text <- if ("display_label" %in% names(rd)) {
+      rd$display_label[[1L]]
+    } else {
+      rd$label[[1L]]
+    }
     group_values <- if (!has_groups && "group" %in% names(source_storage)) {
       rd[[source_storage[["group"]]]]
     } else {
@@ -952,76 +1361,84 @@ build_forest_table_data <- function(data,
     row_parts[[i]] <- data.frame(
       row_key = row_key,
       grouping_panel = rd$grouping_panel[1L],
-      term_text = rd$label[1L],
-      group_text = format_forest_table_values(
-        group_values,
-        rd$group,
-        align_groups = align_groups
+      term_text = term_text,
+      group_text = if (is_header) "" else format_forest_table_values(
+        group_values, rd$group, align_groups = align_groups
       ),
-      n_text = format_forest_table_values(
-        rd$n,
-        rd$group,
-        align_groups = align_groups
+      n_text = if (is_header) "" else format_forest_table_values(
+        rd$n, rd$group, align_groups = align_groups
       ),
-      events_text = format_forest_table_values(
-        rd$events,
-        rd$group,
-        align_groups = align_groups
+      events_text = if (is_header) "" else format_forest_table_values(
+        rd$events, rd$group, align_groups = align_groups
       ),
-      estimate_text = format_forest_estimates(
-        rd$estimate,
-        rd$conf.low,
-        rd$conf.high,
-        rd$group,
+      estimate_text = if (is_header) "" else format_forest_estimates(
+        rd$estimate, rd$conf.low, rd$conf.high, rd$group,
         estimate_digits = digits$estimate_digits,
         interval_digits = digits$interval_digits,
         estimate_fmt = estimate_fmt,
         align_groups = align_groups
       ),
-      estimate_value_text = format_forest_estimates(
-        rd$estimate,
-        rd$conf.low,
-        rd$conf.high,
-        rd$group,
+      estimate_value_text = if (is_header) "" else format_forest_estimates(
+        rd$estimate, rd$conf.low, rd$conf.high, rd$group,
         estimate_digits = digits$estimate_digits,
         interval_digits = digits$interval_digits,
         estimate_fmt = if (is.null(estimate_fmt)) "{estimate}" else estimate_fmt,
         align_groups = align_groups
       ),
-      ci_text = format_forest_intervals(
-        rd$conf.low,
-        rd$conf.high,
-        rd$group,
+      ci_text = if (is_header) "" else format_forest_intervals(
+        rd$conf.low, rd$conf.high, rd$group,
         interval_digits = digits$interval_digits,
         ci_fmt = ci_fmt,
         align_groups = align_groups
       ),
-      p_text = format_forest_p_values(
-        rd$p.value,
-        rd$group,
+      p_text = if (is_header) "" else format_forest_p_values(
+        rd$p.value, rd$group,
         p_digits = digits$p_digits,
         align_groups = align_groups
       ),
       stringsAsFactors = FALSE
     )
 
-    visible_data_columns <- names(data)[!startsWith(names(data), "..source..")]
-    extra_columns <- setdiff(
-      unique(c(visible_data_columns, source_column_names)),
-      names(row_parts[[i]])
-    )
-    extra_columns <- setdiff(
-      extra_columns,
-      c("row_key", "grouping_panel", "group")
-    )
-
     for (extra in extra_columns) {
+      storage_field <- extra_storage_lookup[[extra]]
+      if (isTRUE(has_subgroup_headers) && extra %in% row_label_data_columns) {
+        if (is_header) {
+          row_parts[[i]][[storage_field]] <- term_text
+          next
+        }
+
+        label_values <- if (extra %in% names(source_storage)) {
+          rd[[source_storage[[extra]]]]
+        } else {
+          rd[[extra]]
+        }
+        label_text <- format_forest_table_values(
+          label_values,
+          rd$group,
+          align_groups = FALSE
+        )
+        is_child <- any(!is.na(rd$subgroup) & nzchar(rd$subgroup))
+        if (is_child) {
+          label_text <- paste0(
+            "   ",
+            gsub("\n", "\n   ", label_text, fixed = TRUE)
+          )
+        }
+        row_parts[[i]][[storage_field]] <- label_text
+        next
+      }
+
+      if (is_header) {
+        row_parts[[i]][[storage_field]] <- ""
+        next
+      }
+
       values <- if (extra %in% names(source_storage)) {
         rd[[source_storage[[extra]]]]
       } else {
         rd[[extra]]
       }
-      row_parts[[i]][[extra]] <- format_forest_table_values(
+      row_parts[[i]][[storage_field]] <- format_forest_table_values(
         values,
         rd$group,
         align_groups = align_groups
@@ -1063,11 +1480,13 @@ build_forest_table_data <- function(data,
     p = p_header
   )
   extra_column_keys <- setdiff(column_keys, names(column_field_lookup))
-  extra_field_lookup <- stats::setNames(extra_column_keys, extra_column_keys)
+  extra_field_lookup <- stats::setNames(
+    unname(extra_storage_lookup[extra_column_keys]),
+    extra_column_keys
+  )
   column_field_lookup <- c(column_field_lookup, extra_field_lookup)
   header_lookup <- c(header_lookup, stats::setNames(extra_column_keys, extra_column_keys))
 
-  mapped_row_label_columns <- unique(unname(column_mapping[c("term", "label")]))
   mapped_row_label_columns <- intersect(mapped_row_label_columns, column_keys)
   header_lookup[mapped_row_label_columns] <- term_header
 
@@ -1092,6 +1511,7 @@ build_forest_table_data <- function(data,
     long_parts[[i]] <- data.frame(
       row_key = table_rows$row_key,
       grouping_panel = table_rows$grouping_panel,
+      row_type = unname(row_types[as.character(table_rows$row_key)]),
       column_key = key,
       column_position = NA_real_,
       text = table_rows[[column_field_lookup[[key]]]],
@@ -1581,7 +2001,8 @@ build_forest_table_plot <- function(table_spec,
     p <- p + ggplot2::facet_wrap(
       ggplot2::vars(grouping_panel),
       ncol = 1, scales = "free_y",
-      strip.position = grouping_strip_position
+      strip.position = grouping_strip_position,
+      drop = FALSE
     )
   }
 

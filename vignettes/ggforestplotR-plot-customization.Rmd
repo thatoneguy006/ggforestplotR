@@ -50,6 +50,49 @@ ggforestplot(
 )
 ```
 
+## Mix standalone and hierarchical subgroup rows
+
+Use `subgroup` when already-computed estimates include categorical levels that
+should appear beneath a parent heading. Missing or empty subgroup values remain
+ordinary standalone rows, so continuous covariates and subgroup blocks can be
+shown together. Members of each subgroup must be contiguous in the input.
+
+```{r mixed-subgroups}
+mixed_coefs <- tibble::tribble(
+  ~term,    ~subgroup, ~estimate, ~conf.low, ~conf.high,
+  "Age",    NA_character_, 1.03,      1.01,       1.05,
+  "White",  "Race",        1.01,      0.95,       1.07,
+  "Black",  "Race",        0.89,      0.80,       0.99,
+  "BMI",    NA_character_, 0.97,      0.94,       1.00,
+  "Female", "Sex",         0.96,      0.89,       1.04,
+  "Male",   "Sex",         0.98,      0.92,       1.06
+)
+
+ggforestplot(
+  mixed_coefs,
+  term = "term",
+  subgroup = "subgroup",
+  estimate = "estimate",
+  conf.low = "conf.low",
+  conf.high = "conf.high",
+  exponentiate = TRUE,
+  striped_rows = TRUE
+)
+```
+
+These row and panel controls have different purposes:
+
+- `group` draws multiple estimates, usually with different colors, on the same
+  row.
+- `facet` divides rows into separate panels.
+- `subgroup` adds hierarchical parent rows and indents their child estimates.
+- `separate_groups` keeps its existing role as a visual block-separation
+  feature; it does not create a parent/child hierarchy.
+
+`subgroup` controls only the presentation of estimates you have already
+computed. It does not detect categorical variables or calculate model
+interaction contrasts automatically.
+
 ## Distinct variable separation
 
 Use `separate_groups` and `separate_lines` when you want a more distinct visual separation between variables. This is especially useful for categorical variables with many levels. `separate_groups` automatically appends the variable name to the level.

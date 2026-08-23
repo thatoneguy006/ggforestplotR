@@ -14,6 +14,10 @@
 #'   Names should match values in the term column and values are the labels to
 #'   display.
 #' @param group Optional column name used for color-grouping estimates.
+#' @param subgroup Optional column name defining hierarchical subgroup blocks.
+#'   Missing or empty values identify ordinary standalone estimates. Each
+#'   non-empty subgroup must form one contiguous block within a facet. This is
+#'   a presentation-only mapping; subgroups and contrasts are not inferred.
 #' @param facet Optional column name used to split rows into faceted plot
 #'   sections. If this column is a factor, its levels control facet order.
 #' @param facet_strip_position Positioning for facet strip labels.
@@ -34,7 +38,8 @@
 #' @param conf.level Confidence level represented by model or data-frame
 #'   interval columns. Defaults to `0.95`.
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
-#'   `"ascending"`.
+#'   `"ascending"`. Subgroup hierarchies require `"none"` so their source order
+#'   is preserved.
 #' @param point_size Point size for coefficient markers.
 #' @param point_shape Shape used for coefficient markers.
 #' @param linewidth Line width for confidence intervals.
@@ -124,7 +129,8 @@ ggforestplot <- function(data,
                          ref_line = NULL,
                          ref_label = NULL,
                          ref_linetype = 2,
-                         ref_color = "grey60") {
+                         ref_color = "grey60",
+                         subgroup = NULL) {
   ref_line_missing <- missing(ref_line)
   conf_level_missing <- missing(conf.level)
 
@@ -186,6 +192,7 @@ ggforestplot <- function(data,
       label = label,
       term_labels = term_labels,
       group = group,
+      subgroup = subgroup,
       grouping = facet,
       separate_groups = separate_groups,
       n = n,
@@ -238,18 +245,21 @@ ggforestplot <- function(data,
   }
 
   display_data <- build_forest_plot_data(forest_data)
-  forest_data <- display_data$plot_data
+  forest_data <- display_data$forest_data
+  plot_data <- display_data$plot_data
+  estimate_data <- plot_data[plot_data$row_type == "estimate", , drop = FALSE]
   stripe_data <- display_data$stripe_data
   separator_data <- display_data$separator_data
   plot_stripe_data <- stripe_data
   plot_x_limits <- NULL
   stripe_layer_index <- NULL
+  separator_layer_index <- NULL
 
   if (!is.null(ci_limits)) {
     plot_x_limits <- ci_limits
   } else if (isTRUE(plot_exponentiate)) {
     plot_x_limits <- default_plot_background_limits(
-      forest_data,
+      estimate_data,
       exponentiate = plot_exponentiate,
       include_zero = draw_ref_line,
       ref_line = ref_line
@@ -262,11 +272,11 @@ ggforestplot <- function(data,
   }
 
   ci_plot_data <- build_ci_plot_data(
-    forest_data,
+    estimate_data,
     ci_limits = ci_limits,
     exponentiate = plot_exponentiate
   )
-  has_groups <- any(!is.na(forest_data$group) & nzchar(forest_data$group))
+  has_groups <- any(!is.na(estimate_data$group) & nzchar(estimate_data$group))
   dodge <- ggplot2::position_dodge(width = dodge_width)
   point_mapping <- if (has_groups) {
     ggplot2::aes(
@@ -298,6 +308,18 @@ ggforestplot <- function(data,
   }
 
   p <- ggplot2::ggplot(ci_plot_data, point_mapping)
+  header_data <- plot_data[
+    plot_data$row_type == "subgroup_header",
+    ,
+    drop = FALSE
+  ]
+  if (nrow(header_data) > 0L) {
+    p <- p + ggplot2::geom_blank(
+      data = plot_data,
+      mapping = ggplot2::aes(y = .data$row_key),
+      inherit.aes = FALSE
+    )
+  }
 
   if (isTRUE(striped_rows)) {
     p <- p + ggplot2::geom_rect(
@@ -325,6 +347,7 @@ ggforestplot <- function(data,
       colour = separator_line_colour,
       linewidth = separator_line_size
     )
+    separator_layer_index <- length(p$layers)
   }
 
   left_arrow_data <- ci_plot_data[ci_plot_data$ci_truncated_left, , drop = FALSE]
@@ -490,12 +513,13 @@ ggforestplot <- function(data,
     )
   }
 
+  p <- p + ggplot2::geom_point(
+    size = point_size,
+    shape = point_shape,
+    position = dodge
+  )
+
   p <- p +
-    ggplot2::geom_point(
-      size = point_size,
-      shape = point_shape,
-      position = dodge
-    ) +
     ggplot2::scale_y_discrete(
       labels = display_data$axis_labels,
       drop = TRUE
@@ -556,9 +580,14 @@ ggforestplot <- function(data,
 
   p$ggforestplotR_state <- list(
     forest_data = forest_data,
+    display_data = plot_data,
+    full_forest_data = forest_data,
+    full_display_data = plot_data,
     column_mapping = column_mapping,
     stripe_data = stripe_data,
     stripe_layer_index = stripe_layer_index,
+    separator_data = separator_data,
+    separator_layer_index = separator_layer_index,
     has_groupings = display_data$has_groupings,
     facet_strip_position = facet_strip_position,
     grouping_strip_position = facet_strip_position,

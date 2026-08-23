@@ -46,6 +46,7 @@ as_forest_data(data, ...)
   source_model = NULL,
   source_package = NULL,
   sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
   ...
 )
 
@@ -137,7 +138,8 @@ Names should match values in the term column and values are the labels to
 display.}
 
 \item{sort_terms}{How to sort rows: \code{"none"}, \code{"descending"}, or
-\code{"ascending"}.}
+\code{"ascending"}. Subgroup hierarchies require \code{"none"} so their source order
+is preserved.}
 
 \item{exponentiate}{Compatibility argument. \code{TRUE} is equivalent to
 \code{estimate_scale = "ratio"}; \code{FALSE} is equivalent to
@@ -190,6 +192,11 @@ effect measure has no universal reference value.}
 class. The complete fitted model is not retained.}
 
 \item{source_package}{Optional package name identifying the model source.}
+
+\item{subgroup}{Optional column name defining hierarchical subgroup blocks.
+Missing or empty values identify ordinary standalone estimates. Rows with
+the same non-empty value must form one contiguous block within each facet.
+Subgroups are never inferred and do not calculate model contrasts.}
 
 \item{conf.int}{Logical; model methods require \code{TRUE} because forest data
 include confidence-interval columns.}

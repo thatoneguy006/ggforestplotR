@@ -15,6 +15,10 @@
 #'   display.
 #' @param group Optional column name used for color-grouping multiple
 #'   estimates per row.
+#' @param subgroup Optional column name defining hierarchical subgroup blocks.
+#'   Missing or empty values identify ordinary standalone estimates. Rows with
+#'   the same non-empty value must form one contiguous block within each facet.
+#'   Subgroups are never inferred and do not calculate model contrasts.
 #' @param grouping Optional column name used to split rows into grouped plot
 #'   sections.
 #' @param separate_groups Optional column name used to identify labeled
@@ -46,7 +50,8 @@
 #' @param intercept Logical; for model methods, whether to retain the
 #'   intercept term.
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
-#'   `"ascending"`.
+#'   `"ascending"`. Subgroup hierarchies require `"none"` so their source order
+#'   is preserved.
 #' @param ... Arguments passed to an `as_forest_data()` method.
 #'
 #' @return A `forest_data` data-frame subclass ready for [ggforestplot()] and
@@ -96,11 +101,38 @@ as_forest_data.forest_data <- function(data,
   if (!"label" %in% names(out)) {
     out$label <- out$term
   }
+  subgroup_mapping <- metadata$column_mapping
+  has_explicit_subgroup_mapping <- is.character(subgroup_mapping) &&
+    "subgroup" %in% names(subgroup_mapping)
+  if ("subgroup" %in% names(out) && !has_explicit_subgroup_mapping) {
+    source_storage <- metadata$source_columns
+    source_subgroup_storage <- if (
+      is.character(source_storage) &&
+        "subgroup" %in% names(source_storage)
+    ) {
+      unname(source_storage[["subgroup"]])
+    } else {
+      NULL
+    }
+    if (identical(source_subgroup_storage, "subgroup")) {
+      stored_name <- "..source..subgroup"
+      while (stored_name %in% names(out)) {
+        stored_name <- paste0(stored_name, ".")
+      }
+      out[[stored_name]] <- out$subgroup
+      source_storage[["subgroup"]] <- stored_name
+      metadata$source_columns <- source_storage
+    }
+    out$subgroup <- NA_character_
+  } else if (!"subgroup" %in% names(out)) {
+    out$subgroup <- NA_character_
+  }
   out$label <- apply_term_labels(out$term, out$label, term_labels)
 
   out <- sort_forest_data(out, sort_terms = sort_terms)
+  validate_subgroup_blocks(out)
   rownames(out) <- NULL
-  set_forest_metadata(out, forest_metadata(out))
+  set_forest_metadata(out, metadata)
 }
 
 #' @rdname as_forest_data
@@ -127,6 +159,7 @@ as_forest_data.data.frame <- function(data,
                                       source_model = NULL,
                                       source_package = NULL,
                                       sort_terms = c("none", "descending", "ascending"),
+                                      subgroup = NULL,
                                       ...) {
   if (!inherits(data, "data.frame")) {
     stop(
@@ -178,6 +211,7 @@ as_forest_data.data.frame <- function(data,
     conf.high = resolve_column(data, conf.high, "conf.high"),
     label = resolve_column(data, label, "label", required = FALSE),
     group = resolve_column(data, group, "group", required = FALSE),
+    subgroup = resolve_column(data, subgroup, "subgroup", required = FALSE),
     grouping = resolve_column(data, grouping, "grouping", required = FALSE),
     separate_groups = resolve_column(data, separate_groups, "separate_groups", required = FALSE),
     n = resolve_column(data, n, "n", required = FALSE),
@@ -213,6 +247,12 @@ as_forest_data.data.frame <- function(data,
     as.character(data[[cols$group]])
   }
 
+  out$subgroup <- if (is.null(cols$subgroup)) {
+    NA_character_
+  } else {
+    as.character(data[[cols$subgroup]])
+  }
+
   out$grouping <- if (is.null(cols$grouping)) {
     NA_character_
   } else {
@@ -244,14 +284,18 @@ as_forest_data.data.frame <- function(data,
   }
 
   canonical_columns <- names(out)
-  extra_cols <- setdiff(source_column_names, canonical_columns)
+  reserved_columns <- unique(c(
+    canonical_columns,
+    forest_display_reserved_columns()
+  ))
+  extra_cols <- setdiff(source_column_names, reserved_columns)
 
   for (extra in extra_cols) {
     out[[extra]] <- data[[extra]]
   }
 
   source_storage <- stats::setNames(source_column_names, source_column_names)
-  conflicting_columns <- intersect(source_column_names, canonical_columns)
+  conflicting_columns <- intersect(source_column_names, reserved_columns)
 
   for (source_name in conflicting_columns) {
     canonical_uses_source <- source_name %in% names(column_mapping) &&
@@ -270,8 +314,10 @@ as_forest_data.data.frame <- function(data,
   attr(out, "grouping_levels") <- grouping_levels
 
   validate_forest_data(out, exponentiate = identical(estimate_scale, "ratio"))
+  validate_subgroup_blocks(out)
 
   out <- sort_forest_data(out, sort_terms = sort_terms)
+  validate_subgroup_blocks(out)
 
   rownames(out) <- NULL
   metadata <- new_forest_metadata(

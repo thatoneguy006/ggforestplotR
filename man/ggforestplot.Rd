@@ -45,7 +45,8 @@ ggforestplot(
   ref_line = NULL,
   ref_label = NULL,
   ref_linetype = 2,
-  ref_color = "grey60"
+  ref_color = "grey60",
+  subgroup = NULL
 )
 }
 \arguments{
@@ -98,7 +99,8 @@ ratios for Cox models.}
 interval columns. Defaults to \code{0.95}.}
 
 \item{sort_terms}{How to sort rows: \code{"none"}, \code{"descending"}, or
-\code{"ascending"}.}
+\code{"ascending"}. Subgroup hierarchies require \code{"none"} so their source order
+is preserved.}
 
 \item{point_size}{Point size for coefficient markers.}
 
@@ -153,6 +155,11 @@ ratios.}
 \item{ref_linetype}{Line type for the reference line.}
 
 \item{ref_color}{Color for the reference line.}
+
+\item{subgroup}{Optional column name defining hierarchical subgroup blocks.
+Missing or empty values identify ordinary standalone estimates. Each
+non-empty subgroup must form one contiguous block within a facet. This is
+a presentation-only mapping; subgroups and contrasts are not inferred.}
 }
 \value{
 A \code{ggplot} object. Use standard \code{ggplot2} functions such as

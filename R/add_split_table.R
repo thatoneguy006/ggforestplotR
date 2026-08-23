@@ -34,7 +34,18 @@
     stop("`plot` must be created by `ggforestplot()` before calling `add_split_table()`.", call. = FALSE)
   }
 
+  source_forest_data <- if (is.null(state$full_forest_data)) {
+    state$forest_data
+  } else {
+    state$full_forest_data
+  }
   state <- align_forest_state_to_plot_y_scale(state, plot)
+  plot <- align_forest_row_layers_to_state(plot, state)
+  display_data <- if (is.null(state$display_data)) {
+    state$forest_data
+  } else {
+    state$display_data
+  }
 
   if (is.null(digits)) {
     digits <- 2
@@ -79,10 +90,10 @@
     stripe_alpha <- state$defaults$stripe_alpha
   }
 
-  default_left <- default_split_left_columns(state$forest_data)
-  default_right <- default_split_right_columns(state$forest_data)
-  resolved_left <- if (is.null(left_columns)) default_left else normalize_table_columns(left_columns, data = state$forest_data)
-  resolved_right <- if (is.null(right_columns)) default_right else normalize_table_columns(right_columns, data = state$forest_data)
+  default_left <- default_split_left_columns(source_forest_data)
+  default_right <- default_split_right_columns(source_forest_data)
+  resolved_left <- if (is.null(left_columns)) default_left else normalize_table_columns(left_columns, data = source_forest_data)
+  resolved_right <- if (is.null(right_columns)) default_right else normalize_table_columns(right_columns, data = source_forest_data)
 
   if (length(resolved_left) == 0L) {
     stop(
@@ -107,21 +118,21 @@
     )
   }
 
-  if ("n" %in% c(resolved_left, resolved_right) && all(is.na(state$forest_data$n) | !nzchar(state$forest_data$n))) {
+  if ("n" %in% c(resolved_left, resolved_right) && all(is.na(source_forest_data$n) | !nzchar(source_forest_data$n))) {
     stop("An `n` column is required when split table columns include `n`.", call. = FALSE)
   }
 
   if ("events" %in% c(resolved_left, resolved_right) &&
-      all(is.na(state$forest_data$events) | !nzchar(state$forest_data$events))) {
+      all(is.na(source_forest_data$events) | !nzchar(source_forest_data$events))) {
     stop("An `events` column is required when split table columns include `events`.", call. = FALSE)
   }
 
-  if ("p" %in% c(resolved_left, resolved_right) && all(is.na(state$forest_data$p.value))) {
+  if ("p" %in% c(resolved_left, resolved_right) && all(is.na(source_forest_data$p.value))) {
     stop("A `p.value` column is required when split table columns include `p`.", call. = FALSE)
   }
 
   left_spec <- build_forest_table_data(
-    state$forest_data,
+    source_forest_data,
     term_header = term_header,
     n_header = n_header,
     events_header = events_header,
@@ -133,11 +144,12 @@
     p_digits = digits$p_digits,
     estimate_fmt = estimate_fmt,
     ci_fmt = ci_fmt,
-    columns = resolved_left
+    columns = resolved_left,
+    display_data = display_data
   )
 
   right_spec <- build_forest_table_data(
-    state$forest_data,
+    source_forest_data,
     term_header = term_header,
     n_header = n_header,
     events_header = events_header,
@@ -149,7 +161,8 @@
     p_digits = digits$p_digits,
     estimate_fmt = estimate_fmt,
     ci_fmt = ci_fmt,
-    columns = resolved_right
+    columns = resolved_right,
+    display_data = display_data
   )
 
   left_spec <- layout_split_table_spec(

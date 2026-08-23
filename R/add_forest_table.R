@@ -39,7 +39,18 @@
     stop("`plot` must be created by `ggforestplot()` before calling `add_forest_table()`.", call. = FALSE)
   }
 
+  source_forest_data <- if (is.null(state$full_forest_data)) {
+    state$forest_data
+  } else {
+    state$full_forest_data
+  }
   state <- align_forest_state_to_plot_y_scale(state, plot)
+  plot <- align_forest_row_layers_to_state(plot, state)
+  display_data <- if (is.null(state$display_data)) {
+    state$forest_data
+  } else {
+    state$display_data
+  }
 
   if (is.null(digits)) {
     digits <- 2
@@ -85,20 +96,20 @@
   }
 
   table_columns <- if (is.null(columns)) {
-    default_forest_table_columns(state$forest_data)
+    default_forest_table_columns(source_forest_data)
   } else {
-    normalize_table_columns(columns, data = state$forest_data)
+    normalize_table_columns(columns, data = source_forest_data)
   }
 
-  if ("n" %in% table_columns && all(is.na(state$forest_data$n) | !nzchar(state$forest_data$n))) {
+  if ("n" %in% table_columns && all(is.na(source_forest_data$n) | !nzchar(source_forest_data$n))) {
     stop("`columns = \"n\"` requires an `n` column in the underlying forest data.", call. = FALSE)
   }
 
-  if ("events" %in% table_columns && all(is.na(state$forest_data$events) | !nzchar(state$forest_data$events))) {
+  if ("events" %in% table_columns && all(is.na(source_forest_data$events) | !nzchar(source_forest_data$events))) {
     stop("`columns = \"events\"` requires an `events` column in the underlying forest data.", call. = FALSE)
   }
 
-  if ("p" %in% table_columns && all(is.na(state$forest_data$p.value))) {
+  if ("p" %in% table_columns && all(is.na(source_forest_data$p.value))) {
     stop("`columns = \"p\"` requires a `p.value` column in the underlying forest data.", call. = FALSE)
   }
 
@@ -117,7 +128,7 @@
   }
 
   table_spec <- build_forest_table_data(
-    state$forest_data,
+    source_forest_data,
     term_header = term_header,
     n_header = n_header,
     events_header = events_header,
@@ -129,7 +140,8 @@
     p_digits = digits$p_digits,
     estimate_fmt = estimate_fmt,
     ci_fmt = ci_fmt,
-    columns = table_columns
+    columns = table_columns,
+    display_data = display_data
   )
   table_spec <- layout_center_table_spec(
     table_spec,
