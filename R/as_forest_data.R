@@ -15,13 +15,20 @@
 #'   display.
 #' @param group Optional column name used for color-grouping multiple
 #'   estimates per row.
-#' @param subgroup Optional column name defining hierarchical subgroup blocks.
-#'   Missing or empty values identify ordinary standalone estimates. Rows with
-#'   the same non-empty value must form one contiguous block within each facet.
-#'   When `p.value` is mapped, the first nonmissing value for each subgroup and
-#'   estimate group, when applicable, is displayed on its parent row; child
-#'   p-value cells are suppressed.
-#'   Subgroups are never inferred and do not calculate model contrasts.
+#' @param subgroup For data frames, an optional column name defining
+#'   presentation-only hierarchical subgroup blocks. Missing or empty values
+#'   identify ordinary standalone estimates. Rows with the same non-empty
+#'   value must form one contiguous block within each facet. When `p.value` is
+#'   mapped, the first nonmissing value for each subgroup and estimate group,
+#'   when applicable, is displayed on its parent row; child p-value cells are
+#'   suppressed. Data-frame subgroups are never inferred and do not calculate
+#'   model contrasts. For fitted-model methods, use `"auto"` to detect one
+#'   unambiguous continuous-by-factor interaction, or supply a factor predictor
+#'   name together with `focal` to derive post-estimation subgroup effects.
+#' @param focal For fitted-model methods, the predictor whose conditional
+#'   effect is estimated within each subgroup level. It may be continuous or a
+#'   factor. Factor effects compare each non-reference level with the first
+#'   level. Ignored for data-frame methods.
 #' @param grouping Optional column name used to split rows into grouped plot
 #'   sections.
 #' @param separate_groups Optional column name used to identify labeled

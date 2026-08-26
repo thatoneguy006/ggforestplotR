@@ -97,4 +97,3 @@ ggforestplot(model_ready)
 
 `tidy_forest_model()` remains available as a compatibility wrapper and returns
 the same `forest_data` object.
-

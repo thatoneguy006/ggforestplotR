@@ -206,6 +206,16 @@ ggforestplot <- function(data,
       sort_terms = sort_terms
     )
   } else {
+    if (!is.null(subgroup)) {
+      stop(
+        paste0(
+          "For fitted models, estimate subgroup effects with ",
+          "`tidy_forest_model(model, subgroup = ..., focal = ...)` before ",
+          "calling `ggforestplot()`."
+        ),
+        call. = FALSE
+      )
+    }
     as_forest_data(
       data,
       exponentiate = exponentiate,

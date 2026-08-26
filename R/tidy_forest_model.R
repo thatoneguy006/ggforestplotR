@@ -58,9 +58,11 @@ keep_fixed_effects <- function(out) {
 
 #' Tidy a model object for forest plotting
 #'
-#' Uses [broom::tidy()] to convert a fitted model into forest-plot data. Mixed
-#' models are supported through `broom.mixed` tidy methods when that package is
-#' installed.
+#' Uses [broom::tidy()] to convert a fitted model into forest-plot data. When
+#' subgroup effects are requested, [emmeans::emtrends()] or
+#' [emmeans::emmeans()] derives conditional effects from the original fitted
+#' model and its covariance matrix. Mixed models are supported through
+#' `broom.mixed` tidy methods when that package is installed.
 #'
 #' @param model A fitted model object supported by [broom::tidy()] or, for
 #'   mixed models, a `broom.mixed` tidy method.
@@ -73,6 +75,12 @@ keep_fixed_effects <- function(out) {
 #'   Names should match model term names and values are the labels to display.
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
 #'   `"ascending"`.
+#' @param subgroup `NULL` for ordinary coefficient rows, `"auto"` to detect one
+#'   unambiguous continuous-by-factor interaction, or the name of a factor
+#'   defining subgroup levels. Explicit selection also requires `focal`.
+#' @param focal Optional predictor whose conditional effect is estimated within
+#'   each subgroup level. It may be continuous or a factor. For factors, each
+#'   non-reference level is contrasted with the first factor level.
 #'
 #' @return A `forest_data` object ready for [ggforestplot()].
 #' @export
@@ -81,6 +89,15 @@ keep_fixed_effects <- function(out) {
 #' if (requireNamespace("broom", quietly = TRUE)) {
 #'   fit <- lm(mpg ~ wt + hp + qsec, data = mtcars)
 #'   tidy_forest_model(fit)
+#'
+#'   if (requireNamespace("emmeans", quietly = TRUE)) {
+#'     interaction_fit <- lm(wt ~ mpg * factor(cyl), data = mtcars)
+#'     tidy_forest_model(
+#'       interaction_fit,
+#'       subgroup = "auto",
+#'       focal = "mpg"
+#'     )
+#'   }
 #'
 #'   set.seed(123)
 #'   logit_data <- data.frame(
@@ -101,7 +118,9 @@ tidy_forest_model <- function(model,
                               exponentiate = NULL,
                               intercept = FALSE,
                               term_labels = NULL,
-                              sort_terms = c("none", "descending", "ascending")) {
+                              sort_terms = c("none", "descending", "ascending"),
+                              subgroup = NULL,
+                              focal = NULL) {
   as_forest_data(
     model,
     conf.int = conf.int,
@@ -109,7 +128,9 @@ tidy_forest_model <- function(model,
     exponentiate = exponentiate,
     intercept = intercept,
     term_labels = term_labels,
-    sort_terms = sort_terms
+    sort_terms = sort_terms,
+    subgroup = subgroup,
+    focal = focal
   )
 }
 
@@ -120,7 +141,9 @@ tidy_forest_model_impl <- function(model,
                                    intercept = FALSE,
                                    term_labels = NULL,
                                    sort_terms = c("none", "descending", "ascending"),
-                                   source_package = NULL) {
+                                   source_package = NULL,
+                                   subgroup = NULL,
+                                   focal = NULL) {
   if (!is.logical(conf.int) || length(conf.int) != 1L || is.na(conf.int)) {
     stop("`conf.int` must be `TRUE` or `FALSE`.", call. = FALSE)
   }
@@ -129,6 +152,15 @@ tidy_forest_model_impl <- function(model,
   }
 
   sort_terms <- match.arg(sort_terms)
+  if (is.null(subgroup) && !is.null(focal)) {
+    stop("`focal` requires `subgroup`.", call. = FALSE)
+  }
+  if (!is.null(subgroup) && !identical(sort_terms, "none")) {
+    stop(
+      "Subgroup-effect rows require `sort_terms = \"none\"`.",
+      call. = FALSE
+    )
+  }
   estimate_info <- infer_model_estimate_info(
     model,
     exponentiate = exponentiate,
@@ -162,12 +194,34 @@ tidy_forest_model_impl <- function(model,
     out <- out[out$term != "(Intercept)", , drop = FALSE]
   }
 
+  has_subgroup <- !is.null(subgroup)
+  if (has_subgroup) {
+    effects <- .estimate_subgroup_effects(
+      model,
+      subgroup = subgroup,
+      focal = focal,
+      conf.level = conf.level,
+      estimate_info = estimate_info
+    )
+    out <- .splice_subgroup_effects(out, effects)
+  }
+
+  group_column <- if (has_subgroup && "group" %in% names(out) &&
+      any(!is.na(out$group) & nzchar(out$group))) {
+    "group"
+  } else {
+    NULL
+  }
+
   out <- as_forest_data(
     data = out,
     term = "term",
     estimate = "estimate",
     conf.low = "conf.low",
     conf.high = "conf.high",
+    label = if (has_subgroup) "label" else "term",
+    group = group_column,
+    subgroup = if (has_subgroup) "subgroup" else NULL,
     term_labels = term_labels,
     n = NULL,
     p.value = if ("p.value" %in% names(out)) "p.value" else NULL,
@@ -191,6 +245,8 @@ model_as_forest_data <- function(data,
                                  term_labels = NULL,
                                  sort_terms = c("none", "descending", "ascending"),
                                  source_package = NULL,
+                                 subgroup = NULL,
+                                 focal = NULL,
                                  ...) {
   tidy_forest_model_impl(
     model = data,
@@ -200,7 +256,9 @@ model_as_forest_data <- function(data,
     intercept = intercept,
     term_labels = term_labels,
     sort_terms = sort_terms,
-    source_package = source_package
+    source_package = source_package,
+    subgroup = subgroup,
+    focal = focal
   )
 }
 
@@ -209,7 +267,8 @@ model_as_forest_data <- function(data,
 as_forest_data.lm <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
                               exponentiate = NULL, intercept = FALSE,
                               term_labels = NULL,
-                              sort_terms = c("none", "descending", "ascending")) {
+                              sort_terms = c("none", "descending", "ascending"),
+                              subgroup = NULL, focal = NULL) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -218,6 +277,8 @@ as_forest_data.lm <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
     intercept = intercept,
     term_labels = term_labels,
     sort_terms = sort_terms,
+    subgroup = subgroup,
+    focal = focal,
     source_package = "stats",
     ...
   )
@@ -228,7 +289,8 @@ as_forest_data.lm <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
 as_forest_data.glm <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
                                exponentiate = NULL, intercept = FALSE,
                                term_labels = NULL,
-                               sort_terms = c("none", "descending", "ascending")) {
+                               sort_terms = c("none", "descending", "ascending"),
+                               subgroup = NULL, focal = NULL) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -237,6 +299,8 @@ as_forest_data.glm <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
     intercept = intercept,
     term_labels = term_labels,
     sort_terms = sort_terms,
+    subgroup = subgroup,
+    focal = focal,
     source_package = "stats",
     ...
   )
@@ -247,7 +311,8 @@ as_forest_data.glm <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
 as_forest_data.coxph <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
                                  exponentiate = NULL, intercept = FALSE,
                                  term_labels = NULL,
-                                 sort_terms = c("none", "descending", "ascending")) {
+                                 sort_terms = c("none", "descending", "ascending"),
+                                 subgroup = NULL, focal = NULL) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -256,6 +321,8 @@ as_forest_data.coxph <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
     intercept = intercept,
     term_labels = term_labels,
     sort_terms = sort_terms,
+    subgroup = subgroup,
+    focal = focal,
     source_package = "survival",
     ...
   )
@@ -266,7 +333,8 @@ as_forest_data.coxph <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
 as_forest_data.merMod <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
                                   exponentiate = NULL, intercept = FALSE,
                                   term_labels = NULL,
-                                  sort_terms = c("none", "descending", "ascending")) {
+                                  sort_terms = c("none", "descending", "ascending"),
+                                  subgroup = NULL, focal = NULL) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -275,6 +343,8 @@ as_forest_data.merMod <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
     intercept = intercept,
     term_labels = term_labels,
     sort_terms = sort_terms,
+    subgroup = subgroup,
+    focal = focal,
     source_package = "lme4",
     ...
   )
@@ -285,7 +355,8 @@ as_forest_data.merMod <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
 as_forest_data.lme <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
                                exponentiate = NULL, intercept = FALSE,
                                term_labels = NULL,
-                               sort_terms = c("none", "descending", "ascending")) {
+                               sort_terms = c("none", "descending", "ascending"),
+                               subgroup = NULL, focal = NULL) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -294,6 +365,8 @@ as_forest_data.lme <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
     intercept = intercept,
     term_labels = term_labels,
     sort_terms = sort_terms,
+    subgroup = subgroup,
+    focal = focal,
     source_package = "nlme",
     ...
   )
@@ -304,7 +377,8 @@ as_forest_data.lme <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
 as_forest_data.glmmTMB <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
                                    exponentiate = NULL, intercept = FALSE,
                                    term_labels = NULL,
-                                   sort_terms = c("none", "descending", "ascending")) {
+                                   sort_terms = c("none", "descending", "ascending"),
+                                   subgroup = NULL, focal = NULL) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -313,6 +387,8 @@ as_forest_data.glmmTMB <- function(data, ..., conf.int = TRUE, conf.level = 0.95
     intercept = intercept,
     term_labels = term_labels,
     sort_terms = sort_terms,
+    subgroup = subgroup,
+    focal = focal,
     source_package = "glmmTMB",
     ...
   )
@@ -323,7 +399,8 @@ as_forest_data.glmmTMB <- function(data, ..., conf.int = TRUE, conf.level = 0.95
 as_forest_data.default <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
                                    exponentiate = NULL, intercept = FALSE,
                                    term_labels = NULL,
-                                   sort_terms = c("none", "descending", "ascending")) {
+                                   sort_terms = c("none", "descending", "ascending"),
+                                   subgroup = NULL, focal = NULL) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -332,6 +409,8 @@ as_forest_data.default <- function(data, ..., conf.int = TRUE, conf.level = 0.95
     intercept = intercept,
     term_labels = term_labels,
     sort_terms = sort_terms,
+    subgroup = subgroup,
+    focal = focal,
     source_package = NULL,
     ...
   )
