@@ -97,3 +97,54 @@ ggforestplot(model_ready)
 
 `tidy_forest_model()` remains available as a compatibility wrapper and returns
 the same `forest_data` object.
+
+## Derive subgroup effects from an interaction model
+
+For a fitted model with one continuous-by-factor interaction,
+`subgroup = "auto"` identifies the factor from model metadata and estimates the
+focal variable's average slope within each observed factor level.
+
+```{r model-subgroup-effects}
+interaction_fit <- lm(wt ~ mpg * factor(cyl), data = mtcars)
+
+subgroup_ready <- tidy_forest_model(
+  interaction_fit,
+  subgroup = "auto",
+  focal = "mpg"
+)
+
+as.data.frame(subgroup_ready)[, c(
+  "term", "subgroup", "estimate", "std.error", "conf.low", "conf.high"
+)]
+
+ggforestplot(subgroup_ready, striped_rows = TRUE) +
+  add_forest_table()
+```
+
+These rows are average `mpg` slopes within the `cyl` levels. They come from
+`marginaleffects::avg_slopes()` using the original model and its covariance
+matrix. No subgroup-specific models are refitted. The focal main effect, factor
+main-effect coefficients, and raw interaction coefficients are replaced by the
+derived block; unrelated coefficients remain standalone in formula order.
+
+The same interaction can be selected explicitly:
+
+```{r explicit-model-subgroup-effects}
+tidy_forest_model(
+  interaction_fit,
+  subgroup = "cyl",
+  focal = "mpg"
+)
+```
+
+Automatic selection currently requires exactly one unambiguous
+continuous-by-factor interaction. Factor-by-factor effects require explicit
+predictor names and use `marginaleffects::avg_comparisons()`. Continuous
+subgroups, transformed focal terms, multiple selected interactions, and
+three-way interactions are rejected. Logistic and Cox effects are calculated
+on their model scale and shown as odds ratios and hazard ratios by default, not
+as marginal probabilities or survival probabilities.
+
+Parent-header interaction p-values are not synthesized in this release. The
+canonical `p.value` is therefore blank for derived blocks, while each simple
+effect test is retained in `effect.p.value` for users who choose to display it.

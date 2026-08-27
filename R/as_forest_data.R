@@ -24,7 +24,8 @@
 #'   suppressed. Data-frame subgroups are never inferred and do not calculate
 #'   model contrasts. For fitted-model methods, use `"auto"` to detect one
 #'   unambiguous continuous-by-factor interaction, or supply a factor predictor
-#'   name together with `focal` to derive post-estimation subgroup effects.
+#'   name together with `focal` to derive covariance-aware post-estimation
+#'   subgroup effects through `marginaleffects`.
 #' @param focal For fitted-model methods, the predictor whose conditional
 #'   effect is estimated within each subgroup level. It may be continuous or a
 #'   factor. Factor effects compare each non-reference level with the first

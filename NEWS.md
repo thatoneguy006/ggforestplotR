@@ -7,6 +7,13 @@
   plot. Subgroup p-values now appear once on the parent row, and hierarchical
   term labels in `add_forest_table()` are left-aligned while child levels remain
   indented.
+- Added covariance-aware subgroup effects for fitted interaction models.
+  `tidy_forest_model()` and fitted-model `as_forest_data()` methods now use
+  `marginaleffects` to derive average slopes or comparisons from the original
+  fit without refitting subgroup models or displaying raw interaction
+  coefficients. Conservative automatic selection supports one continuous-by-
+  factor interaction, while explicit selection supports factor comparisons and
+  preserves additive, odds-ratio, ratio, and hazard-ratio scales.
 
 # ggforestplotR 0.4.0
 

@@ -58,7 +58,9 @@ as_forest_data(data, ...)
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL
 )
 
 \method{as_forest_data}{glm}(
@@ -69,7 +71,9 @@ as_forest_data(data, ...)
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL
 )
 
 \method{as_forest_data}{coxph}(
@@ -80,7 +84,9 @@ as_forest_data(data, ...)
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL
 )
 
 \method{as_forest_data}{merMod}(
@@ -91,7 +97,9 @@ as_forest_data(data, ...)
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL
 )
 
 \method{as_forest_data}{lme}(
@@ -102,7 +110,9 @@ as_forest_data(data, ...)
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL
 )
 
 \method{as_forest_data}{glmmTMB}(
@@ -113,7 +123,9 @@ as_forest_data(data, ...)
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL
 )
 
 \method{as_forest_data}{default}(
@@ -124,7 +136,9 @@ as_forest_data(data, ...)
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL
 )
 }
 \arguments{
@@ -193,19 +207,28 @@ class. The complete fitted model is not retained.}
 
 \item{source_package}{Optional package name identifying the model source.}
 
-\item{subgroup}{Optional column name defining hierarchical subgroup blocks.
-Missing or empty values identify ordinary standalone estimates. Rows with
-the same non-empty value must form one contiguous block within each facet.
-When \code{p.value} is mapped, the first nonmissing value for each subgroup and
-estimate group, when applicable, is displayed on its parent row; child
-p-value cells are suppressed.
-Subgroups are never inferred and do not calculate model contrasts.}
+\item{subgroup}{For data frames, an optional column name defining
+presentation-only hierarchical subgroup blocks. Missing or empty values
+identify ordinary standalone estimates. Rows with the same non-empty
+value must form one contiguous block within each facet. When \code{p.value} is
+mapped, the first nonmissing value for each subgroup and estimate group,
+when applicable, is displayed on its parent row; child p-value cells are
+suppressed. Data-frame subgroups are never inferred and do not calculate
+model contrasts. For fitted-model methods, use \code{"auto"} to detect one
+unambiguous continuous-by-factor interaction, or supply a factor predictor
+name together with \code{focal} to derive covariance-aware post-estimation
+subgroup effects through \code{marginaleffects}.}
 
 \item{conf.int}{Logical; model methods require \code{TRUE} because forest data
 include confidence-interval columns.}
 
 \item{intercept}{Logical; for model methods, whether to retain the
 intercept term.}
+
+\item{focal}{For fitted-model methods, the predictor whose conditional
+effect is estimated within each subgroup level. It may be continuous or a
+factor. Factor effects compare each non-reference level with the first
+level. Ignored for data-frame methods.}
 }
 \value{
 A \code{forest_data} data-frame subclass ready for \code{\link[=ggforestplot]{ggforestplot()}} and

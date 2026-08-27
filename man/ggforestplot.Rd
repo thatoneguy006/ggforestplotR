@@ -162,7 +162,9 @@ non-empty subgroup must form one contiguous block within a facet. This is
 a presentation-only mapping; subgroups and contrasts are not inferred.
 When \code{p.value} is mapped, the first nonmissing value for each subgroup and
 estimate group, when applicable, is displayed on its parent row; child
-p-value cells are suppressed.}
+p-value cells are suppressed. For fitted models, first call
+\code{\link[=tidy_forest_model]{tidy_forest_model()}} with \code{subgroup} and \code{focal}; direct model calls do not
+perform post-estimation subgroup inference inside the plotting layer.}
 }
 \value{
 A \code{ggplot} object. Use standard \code{ggplot2} functions such as

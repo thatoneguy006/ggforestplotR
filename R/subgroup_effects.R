@@ -102,7 +102,7 @@
   list(
     expression = expression,
     name = name,
-    emmeans_name = name,
+    variable_name = name,
     data_class = data_class,
     kind = kind,
     supported = !is.na(name) && kind != "unsupported"
@@ -110,6 +110,18 @@
 }
 
 .subgroup_interaction_metadata <- function(model) {
+  if (inherits(model, "mlm")) {
+    stop(
+      "Subgroup effects currently require a univariate fitted model.",
+      call. = FALSE
+    )
+  }
+  if (inherits(model, "coxphms")) {
+    stop(
+      "Multi-state Cox models are not yet supported for subgroup effects.",
+      call. = FALSE
+    )
+  }
   if (inherits(model, c("nlmerMod", "glmmTMB")) ||
       !inherits(model, c("lm", "glm", "coxph", "merMod", "lme"))) {
     stop(
@@ -160,6 +172,18 @@
 .subgroup_component_matches <- function(component, requested) {
   identical(component$name, requested) ||
     identical(component$expression, requested)
+}
+
+.subgroup_component_variables <- function(component) {
+  parsed <- tryCatch(
+    str2lang(component$expression),
+    error = function(error) NULL
+  )
+  if (is.null(parsed)) character() else all.vars(parsed)
+}
+
+.subgroup_component_contains <- function(component, predictor) {
+  predictor %in% .subgroup_component_variables(component)
 }
 
 .subgroup_candidate <- function(record) {
@@ -273,8 +297,8 @@
       return(FALSE)
     }
     any(vapply(other$components, function(component) {
-      .subgroup_component_matches(component, focal_component$name) ||
-        .subgroup_component_matches(component, subgroup_component$name)
+      .subgroup_component_contains(component, focal_component$name) ||
+        .subgroup_component_contains(component, subgroup_component$name)
     }, logical(1)))
   }, metadata$records)
   if (length(other_interactions) > 0L) {
@@ -347,6 +371,25 @@
     )
   }
 
+  nonlinear_focal_terms <- Filter(function(record) {
+    if (record$index == resolved$record$index) {
+      return(FALSE)
+    }
+    any(vapply(record$components, function(component) {
+      .subgroup_component_contains(component, resolved$focal$name) &&
+        !.subgroup_component_matches(component, resolved$focal$expression)
+    }, logical(1)))
+  }, metadata$records)
+  if (length(nonlinear_focal_terms) > 0L) {
+    stop(
+      paste0(
+        "The selected `focal` predictor also appears in transformed or ",
+        "nonlinear terms. These subgroup effects are not yet supported."
+      ),
+      call. = FALSE
+    )
+  }
+
   main_indices <- vapply(
     c(resolved$focal$expression, resolved$subgroup$expression),
     function(expression) {
@@ -412,133 +455,68 @@
   matrix
 }
 
-.subgroup_summary_columns <- function(summary) {
-  estimate <- attr(summary, "estName", exact = TRUE)
-  confidence <- attr(summary, "clNames", exact = TRUE)
-
-  if (is.null(estimate) || !estimate %in% names(summary)) {
-    candidates <- c(
-      "estimate",
-      grep("\\.trend$", names(summary), value = TRUE)
-    )
-    candidates <- candidates[candidates %in% names(summary)]
-    estimate <- if (length(candidates) > 0L) candidates[[1L]] else NULL
+.subgroup_effect_dispatch <- function(model) {
+  if (inherits(model, "coxph")) {
+    return(list(type = "lp"))
   }
-  if (is.null(confidence) || length(confidence) != 2L ||
-      any(!confidence %in% names(summary))) {
-    confidence <- if (all(c("lower.CL", "upper.CL") %in% names(summary))) {
-      c("lower.CL", "upper.CL")
-    } else {
-      c("asymp.LCL", "asymp.UCL")
+  if ((inherits(model, "lm") && !inherits(model, "glm")) ||
+      inherits(model, c("lmerMod", "lme"))) {
+    return(list(type = "response"))
+  }
+
+  model_family <- tryCatch(
+    stats::family(model),
+    error = function(error) NULL
+  )
+  if (!is.null(model_family)) {
+    supported_links <- c("identity", "logit", "log")
+    if (!model_family$link %in% supported_links) {
+      stop(
+        paste0(
+          "Subgroup effects do not yet support the `",
+          model_family$link,
+          "` link. Supported links are identity, logit, and log."
+        ),
+        call. = FALSE
+      )
     }
-  }
-  if (is.null(estimate) || !estimate %in% names(summary) ||
-      any(!confidence %in% names(summary))) {
-    stop(
-      "`emmeans` did not return recognizable estimate and interval columns.",
-      call. = FALSE
-    )
+
+    return(list(type = "link"))
   }
 
-  statistic <- intersect(c("t.ratio", "z.ratio"), names(summary))
-  list(
-    estimate = estimate,
-    conf.low = confidence[[1L]],
-    conf.high = confidence[[2L]],
-    statistic = if (length(statistic) > 0L) statistic[[1L]] else NULL
+  stop(
+    paste0(
+      "Could not determine a conventional model scale for subgroup effects ",
+      "from this fitted model."
+    ),
+    call. = FALSE
   )
 }
 
-.summarize_subgroup_emmeans <- function(object, conf.level) {
-  summary_data <- summary(
-    object,
-    infer = c(TRUE, TRUE),
-    level = conf.level,
-    type = "link",
-    adjust = "none"
+.validate_subgroup_marginaleffects <- function(result, subgroup_column) {
+  required <- c(
+    subgroup_column, "estimate", "std.error", "statistic", "p.value",
+    "conf.low", "conf.high"
   )
-  as.data.frame(summary_data)
-}
-
-.estimate_subgroup_effects <- function(model,
-                                       subgroup,
-                                       focal,
-                                       conf.level,
-                                       estimate_info) {
-  if (!requireNamespace("emmeans", quietly = TRUE)) {
+  missing <- setdiff(required, names(result))
+  if (length(missing) > 0L) {
     stop(
       paste0(
-        "The `emmeans` package is required to estimate subgroup effects. ",
-        "Install it or use `subgroup = NULL` for ordinary model coefficients."
+        "`marginaleffects` did not return required column(s): ",
+        paste(missing, collapse = ", "),
+        "."
       ),
       call. = FALSE
     )
   }
 
-  interaction <- .resolve_subgroup_interaction(
-    model,
-    subgroup = subgroup,
-    focal = focal
+  numeric_columns <- c(
+    "estimate", "std.error", "statistic", "conf.low", "conf.high"
   )
-
-  result <- tryCatch({
-    if (interaction$focal$kind == "continuous") {
-      emmeans::emtrends(
-        model,
-        specs = interaction$subgroup$emmeans_name,
-        var = interaction$focal$emmeans_name
-      )
-    } else {
-      means <- emmeans::emmeans(
-        model,
-        specs = interaction$focal$emmeans_name,
-        by = interaction$subgroup$emmeans_name,
-        type = "link"
-      )
-      mean_data <- as.data.frame(means)
-      focal_levels <- unique(as.character(
-        mean_data[[interaction$focal$emmeans_name]]
-      ))
-      if (length(focal_levels) < 2L) {
-        stop(
-          paste0(
-            "Factor `focal` predictors require at least two observed levels."
-          ),
-          call. = FALSE
-        )
-      }
-      emmeans::contrast(
-        means,
-        method = "trt.vs.ctrl",
-        ref = 1L,
-        by = interaction$subgroup$emmeans_name,
-        adjust = "none"
-      )
-    }
-  }, error = function(error) {
-    stop(
-      paste0(
-        "Could not estimate subgroup effects with `emmeans`: ",
-        conditionMessage(error)
-      ),
-      call. = FALSE
-    )
-  })
-
-  summary <- .summarize_subgroup_emmeans(result, conf.level = conf.level)
-  columns <- .subgroup_summary_columns(summary)
-  subgroup_column <- interaction$subgroup$emmeans_name
-  if (!subgroup_column %in% names(summary)) {
-    stop(
-      "`emmeans` did not return the requested subgroup predictor.",
-      call. = FALSE
-    )
-  }
-
-  estimate <- as.numeric(summary[[columns$estimate]])
-  conf.low <- as.numeric(summary[[columns$conf.low]])
-  conf.high <- as.numeric(summary[[columns$conf.high]])
-  if (anyNA(estimate) || anyNA(conf.low) || anyNA(conf.high)) {
+  invalid <- vapply(result[numeric_columns], function(column) {
+    any(!is.finite(as.numeric(column)))
+  }, logical(1))
+  if (any(invalid)) {
     stop(
       paste0(
         "One or more subgroup effects are not estimable from the fitted ",
@@ -548,38 +526,106 @@
     )
   }
 
+  invisible(result)
+}
+
+.estimate_subgroup_effects <- function(model,
+                                       subgroup,
+                                       focal,
+                                       conf.level,
+                                       estimate_info,
+                                       interaction = NULL) {
+  if (!requireNamespace("marginaleffects", quietly = TRUE)) {
+    stop(
+      paste0(
+        "The `marginaleffects` package is required to estimate subgroup ",
+        "effects. Install it or use `subgroup = NULL` for ordinary model ",
+        "coefficients."
+      ),
+      call. = FALSE
+    )
+  }
+
+  if (is.null(interaction)) {
+    interaction <- .resolve_subgroup_interaction(
+      model,
+      subgroup = subgroup,
+      focal = focal
+    )
+  }
+  effect_dispatch <- .subgroup_effect_dispatch(model)
+
+  result <- tryCatch({
+    if (interaction$focal$kind == "continuous") {
+      marginaleffects::avg_slopes(
+        model,
+        variables = interaction$focal$variable_name,
+        by = interaction$subgroup$variable_name,
+        type = effect_dispatch$type,
+        conf_level = conf.level
+      )
+    } else {
+      marginaleffects::avg_comparisons(
+        model,
+        variables = interaction$focal$variable_name,
+        by = interaction$subgroup$variable_name,
+        type = effect_dispatch$type,
+        conf_level = conf.level
+      )
+    }
+  }, error = function(error) {
+    stop(
+      paste0(
+        "Could not estimate subgroup effects with `marginaleffects`: ",
+        conditionMessage(error)
+      ),
+      call. = FALSE
+    )
+  })
+
+  result <- as.data.frame(result)
+  subgroup_column <- interaction$subgroup$variable_name
+  .validate_subgroup_marginaleffects(result, subgroup_column)
+
+  estimate <- as.numeric(result$estimate)
+  conf.low <- as.numeric(result$conf.low)
+  conf.high <- as.numeric(result$conf.high)
+
   if (isTRUE(estimate_info$exponentiate)) {
     estimate <- exp(estimate)
     conf.low <- exp(conf.low)
     conf.high <- exp(conf.high)
   }
 
-  terms <- as.character(summary[[subgroup_column]])
-  contrast <- if ("contrast" %in% names(summary)) {
-    as.character(summary$contrast)
+  terms <- as.character(result[[subgroup_column]])
+  contrast <- if ("contrast" %in% names(result)) {
+    as.character(result$contrast)
   } else {
-    rep(paste0(interaction$focal$name, " slope"), nrow(summary))
-  }
-  statistic <- if (is.null(columns$statistic)) {
-    rep(NA_real_, nrow(summary))
-  } else {
-    as.numeric(summary[[columns$statistic]])
+    rep(paste0(interaction$focal$name, " slope"), nrow(result))
   }
 
   rows <- data.frame(
     term = terms,
     label = terms,
     estimate = estimate,
-    std.error = as.numeric(summary$SE),
-    statistic = statistic,
-    df = if ("df" %in% names(summary)) as.numeric(summary$df) else NA_real_,
-    p.value = rep(NA_real_, nrow(summary)),
-    effect.p.value = as.numeric(summary$p.value),
+    std.error = as.numeric(result$std.error),
+    statistic = as.numeric(result$statistic),
+    df = if ("df" %in% names(result)) as.numeric(result$df) else NA_real_,
+    p.value = rep(NA_real_, nrow(result)),
+    effect.p.value = as.numeric(result$p.value),
     conf.low = conf.low,
     conf.high = conf.high,
-    subgroup = rep(interaction$display_subgroup, nrow(summary)),
-    model_term = rep(interaction$record$label, nrow(summary)),
+    subgroup = rep(interaction$display_subgroup, nrow(result)),
+    subgroup_level = terms,
+    focal = rep(interaction$focal$name, nrow(result)),
+    model_term = rep(interaction$record$label, nrow(result)),
     contrast = contrast,
+    estimand = if (interaction$focal$kind == "continuous") {
+      rep("average_slope", nrow(result))
+    } else {
+      rep("average_comparison", nrow(result))
+    },
+    effect_scale = rep(estimate_info$estimate_scale, nrow(result)),
     stringsAsFactors = FALSE
   )
   if (interaction$focal$kind == "factor" &&

@@ -11,7 +11,9 @@ tidy_forest_model(
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL
 )
 }
 \arguments{
@@ -23,7 +25,9 @@ mixed models, a \code{broom.mixed} tidy method.}
 
 \item{conf.level}{Confidence level for intervals.}
 
-\item{exponentiate}{Logical; passed through to \code{\link[broom:tidy]{broom::tidy()}}.}
+\item{exponentiate}{\code{NULL} uses the model's conventional coefficient scale,
+such as odds ratios for logistic models and hazard ratios for Cox models.
+\code{TRUE} or \code{FALSE} overrides that behavior.}
 
 \item{intercept}{Logical; if \code{FALSE}, drop the intercept term.}
 
@@ -32,19 +36,72 @@ Names should match model term names and values are the labels to display.}
 
 \item{sort_terms}{How to sort rows: \code{"none"}, \code{"descending"}, or
 \code{"ascending"}.}
+
+\item{subgroup}{\code{NULL} for ordinary coefficient rows, \code{"auto"} to detect one
+unambiguous continuous-by-factor interaction, or the name of a factor
+defining subgroup levels. Explicit selection also requires \code{focal}.}
+
+\item{focal}{Optional predictor whose conditional effect is estimated within
+each subgroup level. It may be continuous or a factor. For factors, each
+non-reference level is contrasted with the first factor level.}
 }
 \value{
-A \code{forest_data} object ready for \code{\link[=ggforestplot]{ggforestplot()}}.
+A \code{forest_data} object ready for \code{\link[=ggforestplot]{ggforestplot()}}. Derived rows add
+\code{subgroup_level}, \code{focal}, \code{model_term}, \code{contrast}, \code{estimand},
+\code{effect_scale}, and \code{effect.p.value} columns. The canonical \code{p.value}
+remains missing for these
+rows because it is reserved for a future parent-header interaction test;
+\code{effect.p.value} stores the subgroup-specific slope or comparison test.
 }
 \description{
-Uses \code{\link[broom:tidy]{broom::tidy()}} to convert a fitted model into forest-plot data. Mixed
-models are supported through \code{broom.mixed} tidy methods when that package is
-installed.
+Uses \code{\link[broom:tidy]{broom::tidy()}} to convert a fitted model into forest-plot data. When
+subgroup effects are requested, \code{\link[marginaleffects:avg_slopes]{marginaleffects::avg_slopes()}} or
+\code{\link[marginaleffects:avg_comparisons]{marginaleffects::avg_comparisons()}} derives conditional average effects
+from the original fitted model and its covariance matrix. Mixed models are
+supported through \code{broom.mixed} tidy methods when that package is installed.
+}
+\details{
+With \code{subgroup = NULL}, the function retains its ordinary coefficient-tidy
+behavior. When subgroup effects are requested, interaction selection uses
+the fitted model's terms and model frame rather than parsing coefficient
+names. The selected focal main effect, subgroup main-effect coefficients,
+and raw interaction coefficients are replaced at their original position by
+one hierarchical subgroup block. Unrelated coefficient rows stay in formula
+order.
+
+Continuous focal predictors use
+\code{\link[marginaleffects:avg_slopes]{marginaleffects::avg_slopes()}} within each observed subgroup. Factor focal
+predictors use \code{\link[marginaleffects:avg_comparisons]{marginaleffects::avg_comparisons()}} and compare each
+non-reference level with the first factor level. Both functions use the
+original fitted model and its variance-covariance matrix; no subgroup models
+are refitted.
+
+Automatic selection is deliberately conservative. It accepts one
+unambiguous continuous-by-factor interaction. Factor-by-factor interactions
+require explicit \code{focal} and \code{subgroup} names. Continuous subgroups,
+transformed focal terms, multiple interactions involving the selected
+predictors, and three-way interactions are rejected.
+
+Linear and identity-link effects remain additive. Logit and log-link effects
+are estimated on the link scale and use the existing \code{exponentiate}
+semantics to return odds ratios or ratios by default. Cox effects are
+estimated on the linear-predictor scale and returned as hazard ratios by
+default. Other links fail rather than silently returning a response-scale
+estimand with a different interpretation.
 }
 \examples{
 if (requireNamespace("broom", quietly = TRUE)) {
   fit <- lm(mpg ~ wt + hp + qsec, data = mtcars)
   tidy_forest_model(fit)
+
+  if (requireNamespace("marginaleffects", quietly = TRUE)) {
+    interaction_fit <- lm(wt ~ mpg * factor(cyl), data = mtcars)
+    tidy_forest_model(
+      interaction_fit,
+      subgroup = "auto",
+      focal = "mpg"
+    )
+  }
 
   set.seed(123)
   logit_data <- data.frame(

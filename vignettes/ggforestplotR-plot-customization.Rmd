@@ -89,9 +89,11 @@ These row and panel controls have different purposes:
 - `separate_groups` keeps its existing role as a visual block-separation
   feature; it does not create a parent/child hierarchy.
 
-`subgroup` controls only the presentation of estimates you have already
-computed. It does not detect categorical variables or calculate model
-interaction contrasts automatically. If `p.value` is mapped, the first
+For data frames passed directly to `ggforestplot()`, `subgroup` controls only
+the presentation of estimates you have already computed. It does not detect
+categorical variables or calculate model interaction contrasts. For fitted
+interaction models, use `tidy_forest_model(model, subgroup = ..., focal = ...)`
+to derive subgroup effects before plotting. If `p.value` is mapped, the first
 nonmissing p-value in each subgroup block and estimate group, when applicable,
 is shown on the parent row; child-level p-value cells are left blank. In
 `add_forest_table()`, hierarchical term labels are left-aligned and child labels

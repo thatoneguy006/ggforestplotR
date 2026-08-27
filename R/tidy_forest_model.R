@@ -59,17 +59,48 @@ keep_fixed_effects <- function(out) {
 #' Tidy a model object for forest plotting
 #'
 #' Uses [broom::tidy()] to convert a fitted model into forest-plot data. When
-#' subgroup effects are requested, [emmeans::emtrends()] or
-#' [emmeans::emmeans()] derives conditional effects from the original fitted
-#' model and its covariance matrix. Mixed models are supported through
-#' `broom.mixed` tidy methods when that package is installed.
+#' subgroup effects are requested, [marginaleffects::avg_slopes()] or
+#' [marginaleffects::avg_comparisons()] derives conditional average effects
+#' from the original fitted model and its covariance matrix. Mixed models are
+#' supported through `broom.mixed` tidy methods when that package is installed.
+#'
+#' @details
+#' With `subgroup = NULL`, the function retains its ordinary coefficient-tidy
+#' behavior. When subgroup effects are requested, interaction selection uses
+#' the fitted model's terms and model frame rather than parsing coefficient
+#' names. The selected focal main effect, subgroup main-effect coefficients,
+#' and raw interaction coefficients are replaced at their original position by
+#' one hierarchical subgroup block. Unrelated coefficient rows stay in formula
+#' order.
+#'
+#' Continuous focal predictors use
+#' [marginaleffects::avg_slopes()] within each observed subgroup. Factor focal
+#' predictors use [marginaleffects::avg_comparisons()] and compare each
+#' non-reference level with the first factor level. Both functions use the
+#' original fitted model and its variance-covariance matrix; no subgroup models
+#' are refitted.
+#'
+#' Automatic selection is deliberately conservative. It accepts one
+#' unambiguous continuous-by-factor interaction. Factor-by-factor interactions
+#' require explicit `focal` and `subgroup` names. Continuous subgroups,
+#' transformed focal terms, multiple interactions involving the selected
+#' predictors, and three-way interactions are rejected.
+#'
+#' Linear and identity-link effects remain additive. Logit and log-link effects
+#' are estimated on the link scale and use the existing `exponentiate`
+#' semantics to return odds ratios or ratios by default. Cox effects are
+#' estimated on the linear-predictor scale and returned as hazard ratios by
+#' default. Other links fail rather than silently returning a response-scale
+#' estimand with a different interpretation.
 #'
 #' @param model A fitted model object supported by [broom::tidy()] or, for
 #'   mixed models, a `broom.mixed` tidy method.
 #' @param conf.int Logical; if `TRUE`, request confidence intervals from
 #'   [broom::tidy()].
 #' @param conf.level Confidence level for intervals.
-#' @param exponentiate Logical; passed through to [broom::tidy()].
+#' @param exponentiate `NULL` uses the model's conventional coefficient scale,
+#'   such as odds ratios for logistic models and hazard ratios for Cox models.
+#'   `TRUE` or `FALSE` overrides that behavior.
 #' @param intercept Logical; if `FALSE`, drop the intercept term.
 #' @param term_labels Optional named vector used to relabel displayed terms.
 #'   Names should match model term names and values are the labels to display.
@@ -82,7 +113,12 @@ keep_fixed_effects <- function(out) {
 #'   each subgroup level. It may be continuous or a factor. For factors, each
 #'   non-reference level is contrasted with the first factor level.
 #'
-#' @return A `forest_data` object ready for [ggforestplot()].
+#' @return A `forest_data` object ready for [ggforestplot()]. Derived rows add
+#'   `subgroup_level`, `focal`, `model_term`, `contrast`, `estimand`,
+#'   `effect_scale`, and `effect.p.value` columns. The canonical `p.value`
+#'   remains missing for these
+#'   rows because it is reserved for a future parent-header interaction test;
+#'   `effect.p.value` stores the subgroup-specific slope or comparison test.
 #' @export
 #'
 #' @examples
@@ -90,7 +126,7 @@ keep_fixed_effects <- function(out) {
 #'   fit <- lm(mpg ~ wt + hp + qsec, data = mtcars)
 #'   tidy_forest_model(fit)
 #'
-#'   if (requireNamespace("emmeans", quietly = TRUE)) {
+#'   if (requireNamespace("marginaleffects", quietly = TRUE)) {
 #'     interaction_fit <- lm(wt ~ mpg * factor(cyl), data = mtcars)
 #'     tidy_forest_model(
 #'       interaction_fit,
@@ -161,6 +197,18 @@ tidy_forest_model_impl <- function(model,
       call. = FALSE
     )
   }
+  has_subgroup <- !is.null(subgroup)
+  subgroup_interaction <- if (has_subgroup) {
+    interaction <- .resolve_subgroup_interaction(
+      model,
+      subgroup = subgroup,
+      focal = focal
+    )
+    .subgroup_effect_dispatch(model)
+    interaction
+  } else {
+    NULL
+  }
   estimate_info <- infer_model_estimate_info(
     model,
     exponentiate = exponentiate,
@@ -194,14 +242,14 @@ tidy_forest_model_impl <- function(model,
     out <- out[out$term != "(Intercept)", , drop = FALSE]
   }
 
-  has_subgroup <- !is.null(subgroup)
   if (has_subgroup) {
     effects <- .estimate_subgroup_effects(
       model,
       subgroup = subgroup,
       focal = focal,
       conf.level = conf.level,
-      estimate_info = estimate_info
+      estimate_info = estimate_info,
+      interaction = subgroup_interaction
     )
     out <- .splice_subgroup_effects(out, effects)
   }
