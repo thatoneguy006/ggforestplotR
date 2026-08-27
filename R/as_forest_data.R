@@ -25,7 +25,9 @@
 #'   model contrasts. For fitted-model methods, use `"auto"` to detect one
 #'   unambiguous continuous-by-factor interaction, or supply a factor predictor
 #'   name together with `focal` to derive covariance-aware post-estimation
-#'   subgroup effects through `marginaleffects`.
+#'   subgroup effects through `marginaleffects`. Fitted-model subgroup rows use
+#'   the canonical `p.value` column for the omnibus interaction test, so it can
+#'   share a table column with ordinary coefficient p-values.
 #' @param focal For fitted-model methods, the predictor whose conditional
 #'   effect is estimated within each subgroup level. It may be continuous or a
 #'   factor. Factor effects compare each non-reference level with the first

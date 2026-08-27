@@ -48,10 +48,9 @@ non-reference level is contrasted with the first factor level.}
 \value{
 A \code{forest_data} object ready for \code{\link[=ggforestplot]{ggforestplot()}}. Derived rows add
 \code{subgroup_level}, \code{focal}, \code{model_term}, \code{contrast}, \code{estimand},
-\code{effect_scale}, and \code{effect.p.value} columns. The canonical \code{p.value}
-remains missing for these
-rows because it is reserved for a future parent-header interaction test;
-\code{effect.p.value} stores the subgroup-specific slope or comparison test.
+and \code{effect_scale} columns. Their canonical \code{p.value} is the omnibus
+interaction test, allowing it to share one table column with ordinary
+covariate p-values.
 }
 \description{
 Uses \code{\link[broom:tidy]{broom::tidy()}} to convert a fitted model into forest-plot data. When
@@ -88,6 +87,12 @@ semantics to return odds ratios or ratios by default. Cox effects are
 estimated on the linear-predictor scale and returned as hazard ratios by
 default. Other links fail rather than silently returning a response-scale
 estimand with a different interpretation.
+
+The canonical \code{p.value} column contains ordinary coefficient p-values for
+standalone covariates and an omnibus Wald test of the selected interaction
+for subgroup rows. The interaction p-value is repeated across the source
+subgroup rows so the display layer can promote it to the parent header and
+suppress it on individual levels.
 }
 \examples{
 if (requireNamespace("broom", quietly = TRUE)) {

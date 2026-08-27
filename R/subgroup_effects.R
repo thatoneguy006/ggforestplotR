@@ -457,11 +457,13 @@
 
 .subgroup_effect_dispatch <- function(model) {
   if (inherits(model, "coxph")) {
-    return(list(type = "lp"))
+    return(list(type = "lp", joint_test = "chisq"))
   }
-  if ((inherits(model, "lm") && !inherits(model, "glm")) ||
-      inherits(model, c("lmerMod", "lme"))) {
-    return(list(type = "response"))
+  if (inherits(model, "lm") && !inherits(model, "glm")) {
+    return(list(type = "response", joint_test = "f"))
+  }
+  if (inherits(model, c("lmerMod", "lme"))) {
+    return(list(type = "response", joint_test = "chisq"))
   }
 
   model_family <- tryCatch(
@@ -481,7 +483,7 @@
       )
     }
 
-    return(list(type = "link"))
+    return(list(type = "link", joint_test = "chisq"))
   }
 
   stop(
@@ -491,6 +493,63 @@
     ),
     call. = FALSE
   )
+}
+
+.estimate_subgroup_interaction_p <- function(model,
+                                             interaction,
+                                             model_matrix,
+                                             joint_test) {
+  assignment <- attr(model_matrix, "assign", exact = TRUE)
+  interaction_terms <- colnames(model_matrix)[
+    assignment == interaction$record$index
+  ]
+  coefficients <- tryCatch(
+    marginaleffects::get_coef(model),
+    error = function(error) NULL
+  )
+  coefficient_indices <- match(interaction_terms, names(coefficients))
+
+  if (length(interaction_terms) == 0L ||
+      length(coefficients) == 0L ||
+      anyNA(coefficient_indices)) {
+    stop(
+      paste0(
+        "Could not map the selected interaction to model coefficients for ",
+        "its joint p-value."
+      ),
+      call. = FALSE
+    )
+  }
+
+  test <- tryCatch(
+    marginaleffects::hypotheses(
+      model,
+      joint = coefficient_indices,
+      joint_test = joint_test
+    ),
+    error = function(error) {
+      stop(
+        paste0(
+          "Could not estimate the joint interaction p-value with ",
+          "`marginaleffects`: ",
+          conditionMessage(error)
+        ),
+        call. = FALSE
+      )
+    }
+  )
+  test <- as.data.frame(test)
+
+  if (!"p.value" %in% names(test) || nrow(test) != 1L ||
+      !is.finite(test$p.value[[1L]]) ||
+      test$p.value[[1L]] < 0 || test$p.value[[1L]] > 1) {
+    stop(
+      "`marginaleffects` did not return one valid joint interaction p-value.",
+      call. = FALSE
+    )
+  }
+
+  as.numeric(test$p.value[[1L]])
 }
 
 .validate_subgroup_marginaleffects <- function(result, subgroup_column) {
@@ -587,6 +646,17 @@
   subgroup_column <- interaction$subgroup$variable_name
   .validate_subgroup_marginaleffects(result, subgroup_column)
 
+  matrix <- .subgroup_fixed_model_matrix(
+    model,
+    terms = interaction$metadata$terms
+  )
+  interaction_p_value <- .estimate_subgroup_interaction_p(
+    model = model,
+    interaction = interaction,
+    model_matrix = matrix,
+    joint_test = effect_dispatch$joint_test
+  )
+
   estimate <- as.numeric(result$estimate)
   conf.low <- as.numeric(result$conf.low)
   conf.high <- as.numeric(result$conf.high)
@@ -611,8 +681,7 @@
     std.error = as.numeric(result$std.error),
     statistic = as.numeric(result$statistic),
     df = if ("df" %in% names(result)) as.numeric(result$df) else NA_real_,
-    p.value = rep(NA_real_, nrow(result)),
-    effect.p.value = as.numeric(result$p.value),
+    p.value = rep(interaction_p_value, nrow(result)),
     conf.low = conf.low,
     conf.high = conf.high,
     subgroup = rep(interaction$display_subgroup, nrow(result)),
@@ -633,10 +702,6 @@
     rows$group <- contrast
   }
 
-  matrix <- .subgroup_fixed_model_matrix(
-    model,
-    terms = interaction$metadata$terms
-  )
   assignment <- attr(matrix, "assign", exact = TRUE)
   remove_terms <- colnames(matrix)[assignment %in% interaction$term_indices]
   if (length(remove_terms) == 0L) {
@@ -685,7 +750,6 @@
   insertion <- which(removed)[[1L]]
   model_rows$label <- model_rows$term
   model_rows$subgroup <- NA_character_
-  model_rows$effect.p.value <- NA_real_
 
   subgroup_rows <- effects$rows
   if ("effect" %in% names(model_rows)) {

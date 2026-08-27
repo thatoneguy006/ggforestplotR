@@ -93,6 +93,12 @@ keep_fixed_effects <- function(out) {
 #' default. Other links fail rather than silently returning a response-scale
 #' estimand with a different interpretation.
 #'
+#' The canonical `p.value` column contains ordinary coefficient p-values for
+#' standalone covariates and an omnibus Wald test of the selected interaction
+#' for subgroup rows. The interaction p-value is repeated across the source
+#' subgroup rows so the display layer can promote it to the parent header and
+#' suppress it on individual levels.
+#'
 #' @param model A fitted model object supported by [broom::tidy()] or, for
 #'   mixed models, a `broom.mixed` tidy method.
 #' @param conf.int Logical; if `TRUE`, request confidence intervals from
@@ -115,10 +121,9 @@ keep_fixed_effects <- function(out) {
 #'
 #' @return A `forest_data` object ready for [ggforestplot()]. Derived rows add
 #'   `subgroup_level`, `focal`, `model_term`, `contrast`, `estimand`,
-#'   `effect_scale`, and `effect.p.value` columns. The canonical `p.value`
-#'   remains missing for these
-#'   rows because it is reserved for a future parent-header interaction test;
-#'   `effect.p.value` stores the subgroup-specific slope or comparison test.
+#'   and `effect_scale` columns. Their canonical `p.value` is the omnibus
+#'   interaction test, allowing it to share one table column with ordinary
+#'   covariate p-values.
 #' @export
 #'
 #' @examples

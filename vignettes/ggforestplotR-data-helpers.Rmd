@@ -105,7 +105,7 @@ For a fitted model with one continuous-by-factor interaction,
 focal variable's average slope within each observed factor level.
 
 ```{r model-subgroup-effects}
-interaction_fit <- lm(wt ~ mpg * factor(cyl), data = mtcars)
+interaction_fit <- lm(wt ~ hp + mpg * factor(cyl) + qsec, data = mtcars)
 
 subgroup_ready <- tidy_forest_model(
   interaction_fit,
@@ -114,11 +114,11 @@ subgroup_ready <- tidy_forest_model(
 )
 
 as.data.frame(subgroup_ready)[, c(
-  "term", "subgroup", "estimate", "std.error", "conf.low", "conf.high"
+  "term", "subgroup", "estimate", "conf.low", "conf.high", "p.value"
 )]
 
 ggforestplot(subgroup_ready, striped_rows = TRUE) +
-  add_forest_table()
+  add_forest_table(columns = c("term", "estimate", "p"))
 ```
 
 These rows are average `mpg` slopes within the `cyl` levels. They come from
@@ -145,6 +145,8 @@ three-way interactions are rejected. Logistic and Cox effects are calculated
 on their model scale and shown as odds ratios and hazard ratios by default, not
 as marginal probabilities or survival probabilities.
 
-Parent-header interaction p-values are not synthesized in this release. The
-canonical `p.value` is therefore blank for derived blocks, while each simple
-effect test is retained in `effect.p.value` for users who choose to display it.
+The canonical `p.value` combines two compatible display roles: ordinary
+covariates retain their coefficient p-values, while every derived subgroup
+block receives an omnibus Wald test of the selected interaction. The display
+layer moves that interaction p-value to the subgroup header and leaves the
+individual levels blank, so one table column can present both kinds of tests.

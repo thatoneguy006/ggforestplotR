@@ -13,7 +13,9 @@
   fit without refitting subgroup models or displaying raw interaction
   coefficients. Conservative automatic selection supports one continuous-by-
   factor interaction, while explicit selection supports factor comparisons and
-  preserves additive, odds-ratio, ratio, and hazard-ratio scales.
+  preserves additive, odds-ratio, ratio, and hazard-ratio scales. Omnibus
+  interaction p-values share the canonical `p.value` column with ordinary
+  covariate p-values and appear only on subgroup headers.
 
 # ggforestplotR 0.4.0
 

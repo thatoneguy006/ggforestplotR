@@ -27,6 +27,26 @@ average_comparisons <- function(model, focal, subgroup, type = "response") {
   )))
 }
 
+joint_interaction_p <- function(model, term, joint_test = "f") {
+  model_terms <- stats::delete.response(stats::terms(model))
+  term_index <- match(term, attr(model_terms, "term.labels", exact = TRUE))
+  model_matrix <- stats::model.matrix(model)
+  interaction_terms <- colnames(model_matrix)[
+    attr(model_matrix, "assign", exact = TRUE) == term_index
+  ]
+  coefficient_indices <- match(
+    interaction_terms,
+    names(marginaleffects::get_coef(model))
+  )
+  test <- suppressWarnings(marginaleffects::hypotheses(
+    model,
+    joint = coefficient_indices,
+    joint_test = joint_test
+  ))
+
+  as.data.frame(test)$p.value[[1L]]
+}
+
 test_that("lm subgroup rows match marginaleffects average slopes", {
   skip_if_not_installed("broom")
   skip_if_not_installed("marginaleffects")
@@ -38,6 +58,7 @@ test_that("lm subgroup rows match marginaleffects average slopes", {
     focal = "mpg"
   ))
   expected <- average_slopes(fit, "mpg", "cyl")
+  expected_p <- joint_interaction_p(fit, "mpg:factor(cyl)")
 
   expect_equal(out$term, as.character(expected$cyl))
   expect_equal(out$label, out$term)
@@ -47,8 +68,8 @@ test_that("lm subgroup rows match marginaleffects average slopes", {
   expect_equal(out$std.error, expected$std.error, tolerance = 1e-8)
   expect_equal(out$conf.low, expected$conf.low, tolerance = 1e-8)
   expect_equal(out$conf.high, expected$conf.high, tolerance = 1e-8)
-  expect_equal(out$effect.p.value, expected$p.value, tolerance = 1e-8)
-  expect_true(all(is.na(out$p.value)))
+  expect_equal(out$p.value, rep(expected_p, nrow(expected)), tolerance = 1e-8)
+  expect_false("effect.p.value" %in% names(out))
   expect_equal(out$model_term, rep("mpg:factor(cyl)", nrow(expected)))
   expect_equal(out$contrast, expected$contrast)
   expect_equal(out$estimand, rep("average_slope", nrow(expected)))
@@ -140,6 +161,67 @@ test_that("derived blocks replace raw terms and preserve formula order", {
   expect_true(all(unname(metadata$source_columns) %in% names(out)))
 })
 
+test_that("interaction and covariate p-values share the canonical column", {
+  skip_if_not_installed("broom")
+  skip_if_not_installed("marginaleffects")
+
+  fit <- make_interaction_lm(include_covariates = TRUE)
+  out <- suppressWarnings(tidy_forest_model(
+    fit,
+    subgroup = "auto",
+    focal = "mpg"
+  ))
+  coefficient_rows <- broom::tidy(fit)
+  expected_interaction <- joint_interaction_p(fit, "mpg:factor(cyl)")
+
+  expect_equal(
+    out$p.value[out$term == "hp"],
+    coefficient_rows$p.value[coefficient_rows$term == "hp"]
+  )
+  expect_equal(
+    out$p.value[out$term == "qsec"],
+    coefficient_rows$p.value[coefficient_rows$term == "qsec"]
+  )
+  expect_equal(
+    out$p.value[!is.na(out$subgroup)],
+    rep(expected_interaction, 3L)
+  )
+
+  plot <- ggforestplot(out)
+  display_data <- plot$ggforestplotR_state$display_data
+  header <- display_data$row_type == "subgroup_header"
+  children <- display_data$row_type == "estimate" &
+    !is.na(display_data$subgroup)
+  standalone <- display_data$row_type == "estimate" &
+    is.na(display_data$subgroup)
+
+  expect_equal(display_data$p.value[header], expected_interaction)
+  expect_true(all(is.na(display_data$p.value[children])))
+  expect_true(all(!is.na(display_data$p.value[standalone])))
+
+  table_spec <- build_forest_table_data(
+    plot$ggforestplotR_state$forest_data,
+    columns = c("term", "p"),
+    display_data = display_data
+  )
+  p_cells <- table_spec$table_data[
+    table_spec$table_data$column_key == "p",
+    ,
+    drop = FALSE
+  ]
+  p_lookup <- stats::setNames(
+    p_cells$text,
+    as.character(p_cells$row_key)
+  )
+
+  expect_true(all(nzchar(unname(p_lookup[
+    as.character(display_data$row_key[header | standalone])
+  ]))))
+  expect_true(all(!nzchar(unname(p_lookup[
+    as.character(display_data$row_key[children])
+  ]))))
+})
+
 test_that("model-derived rows stay aligned with plots and tables", {
   skip_if_not_installed("broom")
   skip_if_not_installed("marginaleffects")
@@ -159,13 +241,13 @@ test_that("model-derived rows stay aligned with plots and tables", {
   )
   expect_equal(display_data$display_label[[1L]], "cyl")
   expect_equal(trimws(display_data$display_label[-1L]), c("4", "6", "8"))
-  expect_true(all(is.na(
+  expect_true(all(!is.na(
     display_data$p.value[display_data$row_type == "subgroup_header"]
   )))
 
   table_spec <- build_forest_table_data(
     plot$ggforestplotR_state$forest_data,
-    columns = c("term", "estimate", "p", "effect.p.value"),
+    columns = c("term", "estimate", "p"),
     display_data = display_data
   )
   table_data <- table_spec$table_data
@@ -179,9 +261,11 @@ test_that("model-derived rows stay aligned with plots and tables", {
   ]
 
   expect_equal(header_cells$text[header_cells$column_key == "term"], "cyl")
-  expect_true(all(
-    header_cells$text[header_cells$column_key != "term"] == ""
-  ))
+  expect_equal(
+    header_cells$text[header_cells$column_key == "estimate"],
+    ""
+  )
+  expect_true(nzchar(header_cells$text[header_cells$column_key == "p"]))
   expect_s3_class(plot + add_forest_table(), "patchwork")
 })
 
@@ -343,6 +427,20 @@ test_that("factor focal variables use subgroup average comparisons", {
     length(unique(plot$ggforestplotR_state$display_data$row_key)),
     3L
   )
+
+  table_spec <- build_forest_table_data(
+    plot$ggforestplotR_state$forest_data,
+    columns = c("term", "p"),
+    display_data = plot$ggforestplotR_state$display_data
+  )
+  header_p <- table_spec$table_data[
+    table_spec$table_data$row_type == "subgroup_header" &
+      table_spec$table_data$column_key == "p",
+    "text"
+  ]
+  expect_length(header_p, 1L)
+  expect_true(nzchar(header_p))
+  expect_false(grepl("\n", header_p, fixed = TRUE))
 })
 
 test_that("logistic subgroup slopes retain odds-ratio scale", {

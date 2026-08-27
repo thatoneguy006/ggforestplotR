@@ -1014,6 +1014,15 @@ format_subgroup_header_p_values <- function(data,
     return("")
   }
 
+  block_values <- block$p.value[!is.na(block$p.value)]
+  if (length(block_values) > 0L &&
+      length(unique(block_values)) == 1L) {
+    return(format_forest_p_values(
+      block_values[[1L]],
+      p_digits = p_digits
+    ))
+  }
+
   has_groups <- any(!is.na(block$group) & nzchar(block$group))
   if (!isTRUE(has_groups)) {
     values <- block$p.value[!is.na(block$p.value)]

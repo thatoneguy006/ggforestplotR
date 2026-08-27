@@ -217,7 +217,9 @@ suppressed. Data-frame subgroups are never inferred and do not calculate
 model contrasts. For fitted-model methods, use \code{"auto"} to detect one
 unambiguous continuous-by-factor interaction, or supply a factor predictor
 name together with \code{focal} to derive covariance-aware post-estimation
-subgroup effects through \code{marginaleffects}.}
+subgroup effects through \code{marginaleffects}. Fitted-model subgroup rows use
+the canonical \code{p.value} column for the omnibus interaction test, so it can
+share a table column with ordinary coefficient p-values.}
 
 \item{conf.int}{Logical; model methods require \code{TRUE} because forest data
 include confidence-interval columns.}
