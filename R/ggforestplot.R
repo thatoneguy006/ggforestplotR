@@ -13,7 +13,9 @@
 #' @param term_labels Optional named vector used to relabel displayed terms.
 #'   Names should match values in the term column and values are the labels to
 #'   display.
-#' @param group Optional column name used for color-grouping estimates.
+#' @param group Optional column name used for color-grouping estimates. If this
+#'   column is a factor, its levels control the group legend and vertical dodge
+#'   order.
 #' @param subgroup Optional column name defining hierarchical subgroup blocks.
 #'   Missing or empty values identify ordinary standalone estimates. Each
 #'   non-empty subgroup must form one contiguous block within a facet. This is
@@ -278,7 +280,7 @@ ggforestplot <- function(data,
     ci_limits = ci_limits,
     exponentiate = plot_exponentiate
   )
-  has_groups <- any(!is.na(estimate_data$group) & nzchar(estimate_data$group))
+  has_groups <- has_table_values(estimate_data, "group")
   dodge <- ggplot2::position_dodge(width = dodge_width)
   point_mapping <- if (has_groups) {
     ggplot2::aes(

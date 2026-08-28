@@ -14,7 +14,8 @@
 #'   Names should match values in the term column and values are the labels to
 #'   display.
 #' @param group Optional column name used for color-grouping multiple
-#'   estimates per row.
+#'   estimates per row. If this column is a factor, its levels control the
+#'   group legend and vertical dodge order.
 #' @param subgroup For data frames, an optional column name defining
 #'   presentation-only hierarchical subgroup blocks. Missing or empty values
 #'   identify ordinary standalone estimates. Rows with the same non-empty
@@ -271,6 +272,8 @@ as_forest_data.data.frame <- function(data,
 
   out$group <- if (is.null(cols$group)) {
     NA_character_
+  } else if (is.factor(data[[cols$group]])) {
+    data[[cols$group]]
   } else {
     as.character(data[[cols$group]])
   }

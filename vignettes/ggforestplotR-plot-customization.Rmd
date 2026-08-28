@@ -173,7 +173,7 @@ ggforestplot(
 
 `add_split_table()` can be used to create more traditional looking forest plots. You can choose which summary information goes to which side. Like `add_forest_table()`, it should be added after any plot-level styling. 
 
-Use the `estimate_fmt` argument to change how your estimates are displayed. You can also control digits via `estimate_digits` and `interval_digits`.
+Use the `estimate_fmt` argument to change how your estimates are displayed. You can also control digits via `estimate_digits`, `interval_digits`, and `p_digits`.
 
 ```{r split-table}
 ggforestplot(
@@ -189,7 +189,8 @@ ggforestplot(
     column_labels = c("estimate" = "Beta [95% CI]"),
     estimate_fmt = "{estimate} [{conf.low}, {conf.high}]",
     estimate_digits = 2,
-    interval_digits = 3
+    interval_digits = 3,
+    p_digits = 2
   ) 
 ```
 
@@ -254,7 +255,11 @@ ggforestplot(
   theme(legend.position = "top") +
   scale_color_manual(values = c("#1F968BFF", "#453781FF")) +
   labs(color = "Model") +
-  add_forest_table(column_labels = c("term" = "Term", "model" = "Model", "estimate"  = "Estimate (95% CI)"))
+  add_forest_table(
+    column_labels = c("term" = "Term", 
+                      "model" = "Model", 
+                      "estimate"  = "Estimate (95% CI)")
+    )
 ```
 
 You can also use `bind_forest_models()` to plot estimates from several fit models at once.
@@ -265,7 +270,9 @@ fit2 <- lm(mpg ~ cyl + disp, data = mtcars)
 fit3 <- lm(mpg ~ cyl + disp + wt, data = mtcars)
 
 bound_models <- bind_forest_models(list(fit1,fit2,fit3), 
-                                   model_labels = c("Unadjusted", "Adjusted", "Fully Adjusted"))
+                                   model_labels = c("Unadjusted", 
+                                                    "Adjusted", 
+                                                    "Fully Adjusted"))
 
 ggforestplot(bound_models, striped_rows = T, p.value = "p.value") +
   scale_x_continuous(limits = c(-6,1)) +

@@ -105,7 +105,7 @@ test_that("grouped table text uses the same vertical dodge as plot points", {
     estimate = c(0.2, 0.4, -0.1, 0.1),
     conf.low = c(0.1, 0.3, -0.2, 0),
     conf.high = c(0.3, 0.5, 0, 0.2),
-    model = rep(c("A", "B"), 2)
+    model = factor(rep(c("A", "B"), 2), levels = c("B", "A"))
   )
   plot <- ggforestplot(data, group = "model", dodge_width = 0.8)
   out <- add_forest_table(plot, columns = c("term", "group", "estimate"))
@@ -132,7 +132,10 @@ test_that("grouped table text uses the same vertical dodge as plot points", {
   group_text <- text_data[[group_layer]]
   colour_scale <- plot_build$plot$scales$get_scales("colour")
 
-  for (model in c("A", "B")) {
+  expect_equal(levels(plot$ggforestplotR_state$forest_data$group), c("B", "A"))
+  expect_equal(as.character(colour_scale$get_breaks()), c("B", "A"))
+
+  for (model in c("B", "A")) {
     point_y <- point_data$y[point_data$colour == colour_scale$map(model)]
     group_y <- group_text$y[group_text$label == model]
     expect_equal(sort(group_y), sort(point_y))

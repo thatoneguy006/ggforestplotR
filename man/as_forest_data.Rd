@@ -185,7 +185,8 @@ interaction test or the post-estimation test for each derived effect.}
 \item{label}{Optional column name used for the displayed row label.}
 
 \item{group}{Optional column name used for color-grouping multiple
-estimates per row.}
+estimates per row. If this column is a factor, its levels control the
+group legend and vertical dodge order.}
 
 \item{grouping}{Optional column name used to split rows into grouped plot
 sections.}

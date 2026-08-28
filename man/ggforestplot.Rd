@@ -66,7 +66,9 @@ supported by \code{\link[broom:tidy]{broom::tidy()}}.}
 Names should match values in the term column and values are the labels to
 display.}
 
-\item{group}{Optional column name used for color-grouping estimates.}
+\item{group}{Optional column name used for color-grouping estimates. If this
+column is a factor, its levels control the group legend and vertical dodge
+order.}
 
 \item{facet}{Optional column name used to split rows into faceted plot
 sections. If this column is a factor, its levels control facet order.}

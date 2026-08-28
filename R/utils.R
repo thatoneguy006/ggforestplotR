@@ -521,6 +521,8 @@ collapse_grouped_values <- function(formatted,
                                     group = NULL,
                                     force_group_labels = FALSE,
                                     align_groups = FALSE) {
+  group <- as.character(group)
+
   if (isTRUE(align_groups)) {
     formatted[is.na(formatted)] <- ""
     return(paste(formatted, collapse = "\n"))
@@ -1042,7 +1044,8 @@ format_subgroup_header_p_values <- function(data,
     ))
   }
 
-  has_groups <- any(!is.na(block$group) & nzchar(block$group))
+  group_values <- as.character(block$group)
+  has_groups <- any(!is.na(group_values) & nzchar(group_values))
   if (!isTRUE(has_groups)) {
     values <- block$p.value[!is.na(block$p.value)]
     value <- if (length(values) == 0L) NA_real_ else values[[1L]]
@@ -1050,9 +1053,9 @@ format_subgroup_header_p_values <- function(data,
   }
 
   group_key <- ifelse(
-    is.na(block$group) | !nzchar(block$group),
+    is.na(group_values) | !nzchar(group_values),
     "(Ungrouped)",
-    block$group
+    group_values
   )
   group_levels <- unique(group_key)
   values <- vapply(group_levels, function(group) {
@@ -1405,8 +1408,9 @@ build_forest_table_data <- function(data,
   if (is.list(column_mapping)) {
     column_mapping <- NULL
   }
-  has_groups <- any(!is.na(data$group) & nzchar(data$group))
+  has_groups <- has_table_values(data, "group")
   align_groups <- has_groups
+  group_levels <- if (is.factor(data$group)) levels(data$group) else NULL
   p_method <- forest_p_method(data)
   group_header <- default_group_table_header(data)
   row_levels <- levels(display_data$row_key)
@@ -1661,11 +1665,12 @@ build_forest_table_data <- function(data,
     positions = rep(NA_real_, length(column_keys)),
     header_positions = rep(NA_real_, length(column_keys)),
     headers = unname(header_lookup[column_keys]),
-    column_keys = column_keys
+    column_keys = column_keys,
+    group_levels = group_levels
   )
 }
 
-expand_grouped_table_text <- function(table_data) {
+expand_grouped_table_text <- function(table_data, group_levels = NULL) {
   parts <- lapply(seq_len(nrow(table_data)), function(i) {
     row <- table_data[i, , drop = FALSE]
     groups <- row$group_values[[1L]]
@@ -1690,6 +1695,9 @@ expand_grouped_table_text <- function(table_data) {
 
   out <- do.call(rbind, parts)
   rownames(out) <- NULL
+  if (!is.null(group_levels)) {
+    out$text_group <- factor(out$text_group, levels = group_levels)
+  }
   out
 }
 
@@ -2165,7 +2173,10 @@ build_forest_table_plot <- function(table_spec,
     }
   }
 
-  text_data <- expand_grouped_table_text(table_spec$table_data)
+  text_data <- expand_grouped_table_text(
+    table_spec$table_data,
+    group_levels = table_spec$group_levels
+  )
   centered_text <- text_data[!text_data$dodge_text, , drop = FALSE]
   grouped_text <- text_data[text_data$dodge_text, , drop = FALSE]
   text_layers <- list()
