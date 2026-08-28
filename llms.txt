@@ -92,6 +92,7 @@ ggforestplot(
 
 ## Learn more
 
+- Package website: <https://thatoneguy006.github.io/ggforestplotR/>
 - Get started:
   <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-get-started.html>
 - Plot & Table customization:
@@ -116,7 +117,7 @@ ggforestplot(
 - [`forest_metadata()`](https://thatoneguy006.github.io/ggforestplotR/reference/forest_metadata.md)
   inspects effect-scale and source metadata.
 - [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
-  is the compatibility wrapper for model conversion.
+  is used as a post-estimation interface for fitted models.
 
 # Package index
 

@@ -65,15 +65,16 @@ add_forest_table(
 
 - term_header:
 
-  Header text for the term column.
+  Deprecated. Use the corresponding entry in `column_labels`, such as
+  `column_labels = c(term = "Variable")`.
 
 - n_header:
 
-  Header text for the `N` column.
+  Deprecated. Use `column_labels = c(n = "N")` instead.
 
 - events_header:
 
-  Header text for the `Events` column.
+  Deprecated. Use `column_labels = c(events = "Events")` instead.
 
 - estimate_label:
 
@@ -82,7 +83,7 @@ add_forest_table(
 
 - p_header:
 
-  Header text for the p-value column.
+  Deprecated. Use `column_labels = c(p = "P-value")` instead.
 
 - column_labels:
 
@@ -91,7 +92,8 @@ add_forest_table(
   such as `"term"`, `"group"`, `"estimate"`, `"ci"`, `"p"`, or an
   arbitrary original dataframe column. For grouped data frames, either
   `"group"` or the source column supplied through `group =` can relabel
-  the group column.
+  the group column. Use this argument instead of the deprecated
+  dedicated header arguments.
 
 - digits:
 

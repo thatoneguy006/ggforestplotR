@@ -9,7 +9,7 @@ fitted model."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,8 +66,6 @@ fitted model.</p>
 <span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  facet <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  facet_strip_position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"left"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
-<span>  grouping <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  grouping_strip_position <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  separate_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  events <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -96,7 +94,9 @@ fitted model.</p>
 <span>  ref_line <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ref_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ref_linetype <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  ref_color <span class="op">=</span> <span class="st">"grey60"</span></span>
+<span>  ref_color <span class="op">=</span> <span class="st">"grey60"</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  p_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"level"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -136,7 +136,9 @@ display.</p></dd>
 
 
 <dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
-<dd><p>Optional column name used for color-grouping estimates.</p></dd>
+<dd><p>Optional column name used for color-grouping estimates. If this
+column is a factor, its levels control the group legend and vertical dodge
+order.</p></dd>
 
 
 <dt id="arg-facet">facet<a class="anchor" aria-label="anchor" href="#arg-facet"></a></dt>
@@ -146,15 +148,6 @@ sections. If this column is a factor, its levels control facet order.</p></dd>
 
 <dt id="arg-facet-strip-position">facet_strip_position<a class="anchor" aria-label="anchor" href="#arg-facet-strip-position"></a></dt>
 <dd><p>Positioning for facet strip labels.</p></dd>
-
-
-<dt id="arg-grouping">grouping<a class="anchor" aria-label="anchor" href="#arg-grouping"></a></dt>
-<dd><p>Deprecated. Use <code>facet</code> instead.</p></dd>
-
-
-<dt id="arg-grouping-strip-position">grouping_strip_position<a class="anchor" aria-label="anchor" href="#arg-grouping-strip-position"></a></dt>
-<dd><p>Deprecated. Use <code>facet_strip_position</code>
-instead.</p></dd>
 
 
 <dt id="arg-separate-groups">separate_groups<a class="anchor" aria-label="anchor" href="#arg-separate-groups"></a></dt>
@@ -190,7 +183,8 @@ interval columns. Defaults to <code>0.95</code>.</p></dd>
 
 <dt id="arg-sort-terms">sort_terms<a class="anchor" aria-label="anchor" href="#arg-sort-terms"></a></dt>
 <dd><p>How to sort rows: <code>"none"</code>, <code>"descending"</code>, or
-<code>"ascending"</code>.</p></dd>
+<code>"ascending"</code>. Subgroup hierarchies require <code>"none"</code> so their source order
+is preserved.</p></dd>
 
 
 <dt id="arg-point-size">point_size<a class="anchor" aria-label="anchor" href="#arg-point-size"></a></dt>
@@ -289,6 +283,27 @@ ratios.</p></dd>
 
 <dt id="arg-ref-color">ref_color<a class="anchor" aria-label="anchor" href="#arg-ref-color"></a></dt>
 <dd><p>Color for the reference line.</p></dd>
+
+
+<dt id="arg-subgroup">subgroup<a class="anchor" aria-label="anchor" href="#arg-subgroup"></a></dt>
+<dd><p>Optional column name defining hierarchical subgroup blocks.
+Missing or empty values identify ordinary standalone estimates. Each
+non-empty subgroup must form one contiguous block within a facet. This is
+a presentation-only mapping; subgroups and contrasts are not inferred.
+With the default <code>p_method = "overall"</code> forest-data metadata, the first
+nonmissing p-value for each subgroup and estimate group, when applicable,
+is displayed on its parent row and child p-value cells are suppressed.
+<code>p_method = "level"</code> retains p-values on child rows. For fitted models,
+first call <code><a href="tidy_forest_model.html">tidy_forest_model()</a></code> with <code>subgroup</code>, <code>focal</code>, and the desired
+<code>p_method</code>; direct model calls do not perform post-estimation subgroup
+inference inside the plotting layer.</p></dd>
+
+
+<dt id="arg-p-method">p_method<a class="anchor" aria-label="anchor" href="#arg-p-method"></a></dt>
+<dd><p>Subgroup p-value placement for data-frame input.
+<code>"overall"</code> displays one p-value on each subgroup header; <code>"level"</code>
+displays p-values on the subgroup estimate rows. Fitted-model subgroup
+data inherit this choice from <code><a href="tidy_forest_model.html">tidy_forest_model()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

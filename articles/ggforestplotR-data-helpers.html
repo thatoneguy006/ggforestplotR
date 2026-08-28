@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -177,6 +177,101 @@ semantics such as <code>Beta</code>, <code>OR</code>, or
 <p><img src="ggforestplotR-data-helpers_files/figure-html/helper-to-plot-model-1.png" class="r-plt" alt="" width="768"></p>
 <p><code><a href="../reference/tidy_forest_model.html">tidy_forest_model()</a></code> remains available as a compatibility
 wrapper and returns the same <code>forest_data</code> object.</p>
+</div>
+<div class="section level2">
+<h2 id="derive-subgroup-effects-from-an-interaction-model">Derive subgroup effects from an interaction model<a class="anchor" aria-label="anchor" href="#derive-subgroup-effects-from-an-interaction-model"></a>
+</h2>
+<p>For a fitted model with one continuous-by-factor interaction,
+<code>subgroup = "auto"</code> identifies the factor from model metadata
+and estimates the focal variable’s average slope within each observed
+factor level.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">interaction_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wt</span> <span class="op">~</span> <span class="va">hp</span> <span class="op">+</span> <span class="va">mpg</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">cyl</span><span class="op">)</span> <span class="op">+</span> <span class="va">qsec</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">subgroup_ready</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_forest_model.html">tidy_forest_model</a></span><span class="op">(</span></span>
+<span>  <span class="va">interaction_fit</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="st">"auto"</span>,</span>
+<span>  focal <span class="op">=</span> <span class="st">"mpg"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">subgroup_ready</span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"term"</span>, <span class="st">"subgroup"</span>, <span class="st">"estimate"</span>, <span class="st">"conf.low"</span>, <span class="st">"conf.high"</span>, <span class="st">"p.value"</span></span>
+<span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;   term subgroup     estimate     conf.low    conf.high     p.value</span></span>
+<span><span class="co">#&gt; 1   hp     &lt;NA&gt;  0.002211858 -0.003019553  0.007443269 0.391515516</span></span>
+<span><span class="co">#&gt; 2    4      cyl -0.063790596 -0.121755535 -0.005825657 0.133731900</span></span>
+<span><span class="co">#&gt; 3    6      cyl -0.045622115 -0.273154167  0.181909936 0.133731900</span></span>
+<span><span class="co">#&gt; 4    8      cyl -0.168851554 -0.258483642 -0.079219466 0.133731900</span></span>
+<span><span class="co">#&gt; 5 qsec     &lt;NA&gt;  0.237491332  0.105815640  0.369167024 0.001059097</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">subgroup_ready</span>, striped_rows <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span>columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="ggforestplotR-data-helpers_files/figure-html/model-subgroup-effects-1.png" class="r-plt" alt="" width="768"></p>
+<p>These rows are average <code>mpg</code> slopes within the
+<code>cyl</code> levels. They come from
+<code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code> using the original model and
+its covariance matrix. No subgroup-specific models are refitted. The
+focal main effect, factor main-effect coefficients, and raw interaction
+coefficients are replaced by the derived block; unrelated coefficients
+remain standalone in formula order.</p>
+<p>The same interaction can be selected explicitly:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/tidy_forest_model.html">tidy_forest_model</a></span><span class="op">(</span></span>
+<span>  <span class="va">interaction_fit</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="st">"cyl"</span>,</span>
+<span>  focal <span class="op">=</span> <span class="st">"mpg"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;forest_data&gt; Beta; scale: identity; reference: 0</span></span>
+<span><span class="co">#&gt;   term     estimate     conf.low    conf.high label group subgroup grouping</span></span>
+<span><span class="co">#&gt; 1   hp  0.002211858 -0.003019553  0.007443269    hp  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2    4 -0.063790596 -0.121755535 -0.005825657     4  &lt;NA&gt;      cyl     &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3    6 -0.045622115 -0.273154167  0.181909936     6  &lt;NA&gt;      cyl     &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4    8 -0.168851554 -0.258483642 -0.079219466     8  &lt;NA&gt;      cyl     &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5 qsec  0.237491332  0.105815640  0.369167024  qsec  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;   separate_groups    n events     p.value   std.error  statistic df</span></span>
+<span><span class="co">#&gt; 1            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.391515516 0.002534723  0.8726232 NA</span></span>
+<span><span class="co">#&gt; 2            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.133731900 0.029574492 -2.1569465 NA</span></span>
+<span><span class="co">#&gt; 3            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.133731900 0.116089915 -0.3929895 NA</span></span>
+<span><span class="co">#&gt; 4            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.133731900 0.045731497 -3.6922376 NA</span></span>
+<span><span class="co">#&gt; 5            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.001059097 0.063799498  3.7224640 NA</span></span>
+<span><span class="co">#&gt;   subgroup_level focal      model_term contrast      estimand effect_scale</span></span>
+<span><span class="co">#&gt; 1           &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;     &lt;NA&gt;          &lt;NA&gt;         &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2              4   mpg mpg:factor(cyl)    dY/dX average_slope     identity</span></span>
+<span><span class="co">#&gt; 3              6   mpg mpg:factor(cyl)    dY/dX average_slope     identity</span></span>
+<span><span class="co">#&gt; 4              8   mpg mpg:factor(cyl)    dY/dX average_slope     identity</span></span>
+<span><span class="co">#&gt; 5           &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;     &lt;NA&gt;          &lt;NA&gt;         &lt;NA&gt;</span></span></code></pre></div>
+<p>Automatic selection currently requires exactly one unambiguous
+continuous-by-factor interaction. Factor-by-factor effects require
+explicit predictor names and use
+<code><a href="https://rdrr.io/pkg/marginaleffects/man/comparisons.html" class="external-link">marginaleffects::avg_comparisons()</a></code>. Continuous subgroups,
+transformed focal terms, multiple selected interactions, and three-way
+interactions are rejected. Logistic and Cox effects are calculated on
+their model scale and shown as odds ratios and hazard ratios by default,
+not as marginal probabilities or survival probabilities.</p>
+<p>The canonical <code>p.value</code> combines two compatible display
+roles: ordinary covariates retain their coefficient p-values, while
+every derived subgroup block receives an omnibus Wald test of the
+selected interaction. The display layer moves that interaction p-value
+to the subgroup header and leaves the individual levels blank, so one
+table column can present both kinds of tests.</p>
+<p>Use <code>p_method = "level"</code> when the subgroup-specific slope
+or comparison tests are the quantities that should appear beside the
+individual estimates:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">level_p_ready</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_forest_model.html">tidy_forest_model</a></span><span class="op">(</span></span>
+<span>  <span class="va">interaction_fit</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="st">"auto"</span>,</span>
+<span>  focal <span class="op">=</span> <span class="st">"mpg"</span>,</span>
+<span>  p_method <span class="op">=</span> <span class="st">"level"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">level_p_ready</span>, striped_rows <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span>columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="ggforestplotR-data-helpers_files/figure-html/model-subgroup-level-p-values-1.png" class="r-plt" alt="" width="768"></p>
+<p>Both methods use the same canonical <code>p.value</code> column.
+<code>"overall"</code> changes the test and places it on the subgroup
+header; <code>"level"</code> retains the tests returned for the derived
+effects and places them on the subgroup rows.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

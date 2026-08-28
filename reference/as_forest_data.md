@@ -14,6 +14,7 @@ as_forest_data(
   term_labels = NULL,
   sort_terms = c("none", "descending", "ascending"),
   exponentiate = NULL,
+  p_method = NULL,
   ...
 )
 
@@ -41,6 +42,8 @@ as_forest_data(
   source_model = NULL,
   source_package = NULL,
   sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  p_method = c("overall", "level"),
   ...
 )
 
@@ -53,7 +56,10 @@ as_forest_data(
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 
 # S3 method for class 'glm'
@@ -65,7 +71,10 @@ as_forest_data(
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 
 # S3 method for class 'coxph'
@@ -77,7 +86,10 @@ as_forest_data(
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 
 # S3 method for class 'merMod'
@@ -89,7 +101,10 @@ as_forest_data(
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 
 # S3 method for class 'lme'
@@ -101,7 +116,10 @@ as_forest_data(
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 
 # S3 method for class 'glmmTMB'
@@ -113,7 +131,10 @@ as_forest_data(
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 
 # Default S3 method
@@ -125,7 +146,10 @@ as_forest_data(
   exponentiate = NULL,
   intercept = FALSE,
   term_labels = NULL,
-  sort_terms = c("none", "descending", "ascending")
+  sort_terms = c("none", "descending", "ascending"),
+  subgroup = NULL,
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 ```
 
@@ -147,13 +171,22 @@ as_forest_data(
 
 - sort_terms:
 
-  How to sort rows: `"none"`, `"descending"`, or `"ascending"`.
+  How to sort rows: `"none"`, `"descending"`, or `"ascending"`. Subgroup
+  hierarchies require `"none"` so their source order is preserved.
 
 - exponentiate:
 
   Compatibility argument. `TRUE` is equivalent to
   `estimate_scale = "ratio"`; `FALSE` is equivalent to
   `estimate_scale = "identity"` when `estimate_scale` is not supplied.
+
+- p_method:
+
+  Subgroup p-value placement. `"overall"` displays one omnibus or
+  block-level p-value on the subgroup header; `"level"` keeps p-values
+  on the individual subgroup estimate rows. For fitted-model methods,
+  this also selects whether `p.value` contains the omnibus interaction
+  test or the post-estimation test for each derived effect.
 
 - term:
 
@@ -178,7 +211,8 @@ as_forest_data(
 - group:
 
   Optional column name used for color-grouping multiple estimates per
-  row.
+  row. If this column is a factor, its levels control the group legend
+  and vertical dodge order.
 
 - grouping:
 
@@ -237,6 +271,24 @@ as_forest_data(
 
   Optional package name identifying the model source.
 
+- subgroup:
+
+  For data frames, an optional column name defining presentation-only
+  hierarchical subgroup blocks. Missing or empty values identify
+  ordinary standalone estimates. Rows with the same non-empty value must
+  form one contiguous block within each facet. When `p.value` is mapped,
+  the first nonmissing value for each subgroup and estimate group, when
+  applicable, is displayed on its parent row; child p-value cells are
+  suppressed. Data-frame subgroups are never inferred and do not
+  calculate model contrasts. For fitted-model methods, use `"auto"` to
+  detect one unambiguous continuous-by-factor interaction, or supply a
+  factor predictor name together with `focal` to derive covariance-aware
+  post-estimation subgroup effects through `marginaleffects`.
+  Fitted-model subgroup rows use the canonical `p.value` column for
+  either the omnibus interaction test or row-level effect tests,
+  according to `p_method`, so they can share a table column with
+  ordinary coefficient p-values.
+
 - conf.int:
 
   Logical; model methods require `TRUE` because forest data include
@@ -245,6 +297,13 @@ as_forest_data(
 - intercept:
 
   Logical; for model methods, whether to retain the intercept term.
+
+- focal:
+
+  For fitted-model methods, the predictor whose conditional effect is
+  estimated within each subgroup level. It may be continuous or a
+  factor. Factor effects compare each non-reference level with the first
+  level. Ignored for data-frame methods.
 
 ## Value
 
@@ -272,10 +331,10 @@ as_forest_data(
   conf.high = "upper"
 )
 #> <forest_data> Estimate; scale: identity; reference: 0
-#>        term estimate conf.low conf.high     label group grouping
-#> 1       Age     0.10     0.02      0.18       Age  <NA>     <NA>
-#> 2       BMI    -0.08    -0.16      0.00       BMI  <NA>     <NA>
-#> 3 Treatment     0.34     0.12      0.56 Treatment  <NA>     <NA>
+#>        term estimate conf.low conf.high     label group subgroup grouping
+#> 1       Age     0.10     0.02      0.18       Age  <NA>     <NA>     <NA>
+#> 2       BMI    -0.08    -0.16      0.00       BMI  <NA>     <NA>     <NA>
+#> 3 Treatment     0.34     0.12      0.56 Treatment  <NA>     <NA>     <NA>
 #>   separate_groups    n events p.value  variable  beta lower upper
 #> 1            <NA> <NA>   <NA>      NA       Age  0.10  0.02  0.18
 #> 2            <NA> <NA>   <NA>      NA       BMI -0.08 -0.16  0.00

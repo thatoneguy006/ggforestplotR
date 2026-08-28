@@ -37,6 +37,89 @@ ggforestplot(
 
 ![](ggforestplotR-plot-customization_files/figure-html/facet-right-1.png)
 
+## Subgroup analyses
+
+### From a tibble
+
+There are two ways to plot subgroup analyses using
+[`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md).
+From a tibble, you can simply set `subgroup = "subgroup_variable_name"`.
+This functionality still works when some variables have subgroups and
+others don’t, demonstrated here.
+
+``` r
+
+mixed_coefs <- tibble::tribble(
+  ~term,    ~subgroup, ~estimate, ~conf.low, ~conf.high,
+  "Age",    NA_character_, 1.03,      1.01,       1.05,
+  "White",  "Race",        1.01,      0.95,       1.07,
+  "Black",  "Race",        0.89,      0.80,       0.99,
+  "BMI",    NA_character_, 0.97,      0.94,       1.00,
+  "Female", "Sex",         0.96,      0.89,       1.04,
+  "Male",   "Sex",         0.98,      0.92,       1.06
+)
+
+ggforestplot(
+  mixed_coefs,
+  term = "term",
+  subgroup = "subgroup",
+  estimate = "estimate",
+  conf.low = "conf.low",
+  conf.high = "conf.high",
+  exponentiate = TRUE,
+  striped_rows = TRUE
+) +
+  add_forest_table()
+```
+
+![](ggforestplotR-plot-customization_files/figure-html/mixed-subgroups-1.png)
+
+### Continuous-by-categorical
+
+The second way is to plot subgroup analyses from a fitted model. From
+your fitted model, call
+[`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
+and specify your `subgroup` and optionally your `focal` variable.
+`subgroup = "auto"` chooses the subgroup computations based on the
+model, otherwise you can specify the subgroup. `p_method` allows you to
+append overall p-values to the parent-row, or you can choose
+`p_method = "level"` if you want subgroup-specific p-values. Internally,
+the function calls on `marginaleffects` to compute interaction
+estimates.
+
+``` r
+
+fit <- lm(wt ~ mpg*as.factor(cyl) + hp, data = mtcars)
+
+fit |>
+  tidy_forest_model(subgroup = "auto", focal = "mpg", p_method = "overall") |>
+    ggforestplot(striped_rows = T) +
+    add_forest_table(columns = c("term", "estimate", "p.value"))
+```
+
+![](ggforestplotR-plot-customization_files/figure-html/fitted-subgroups-1.png)
+
+### Categorical-by-categorical
+
+``` r
+
+fit2 <- lm(wt ~ as.factor(gear)*as.factor(cyl) + hp + am, data = mtcars)
+
+fit2 |>
+  tidy_forest_model(subgroup = "gear", focal = "cyl", p_method = "level") |>
+  ggforestplot(striped_rows = T) +
+  theme(legend.position = "top") +
+  add_forest_table(columns = c("term", "estimate", "p.value"))
+#> Warning: Model matrix is rank deficient. Some variance-covariance parameters are
+#>   missing.
+#> Warning: The `cyl` variable is treated as a categorical (factor) variable, but
+#> the original data is of class numeric. It is safer and faster to convert such
+#> variables to factor before fitting the model and calling a `marginaleffects`
+#> function. This warning appears once per session.
+```
+
+![](ggforestplotR-plot-customization_files/figure-html/subgroup-categorical-1.png)
+
 ## Distinct variable separation
 
 Use `separate_groups` and `separate_lines` when you want a more distinct
@@ -86,9 +169,9 @@ using the `columns` argument, and can change the labels using
 `term_labels` to assign them new values. Some of the column labels are
 automatically assigned if no value is provided.
 
-Notice how we are explicitly naming the *n* and *p.value* columns? This
-is necessary in most cases because aliases are not yet incorporated (but
-they will be…I promise I’m getting to it).
+Notice how we are explicitly naming *p.value* column? This is necessary
+in most cases because aliases are not yet incorporated (but they will
+be…I promise I’m getting to it).
 
 ``` r
 
@@ -96,7 +179,6 @@ ggforestplot(
   coefs,
   facet = "section",
   facet_strip_position = "right",
-  n = "sample_size",
   p.value = "p_value",
   striped_rows = TRUE,
   term_labels = c("Smoking" = "Smoking status")
@@ -142,8 +224,8 @@ choose which summary information goes to which side. Like
 it should be added after any plot-level styling.
 
 Use the `estimate_fmt` argument to change how your estimates are
-displayed. You can also control digits via `estimate_digits` and
-`interval_digits`.
+displayed. You can also control digits via `estimate_digits`,
+`interval_digits`, and `p_digits`.
 
 ``` r
 
@@ -160,7 +242,8 @@ ggforestplot(
     column_labels = c("estimate" = "Beta [95% CI]"),
     estimate_fmt = "{estimate} [{conf.low}, {conf.high}]",
     estimate_digits = 2,
-    interval_digits = 3
+    interval_digits = 3,
+    p_digits = 2
   ) 
 ```
 
@@ -223,22 +306,25 @@ comparison_coefs <- data.frame(
   estimate = c(0.12, -0.10, 0.18, 0.30, 0.46, 0.08, -0.05, 0.24, 0.40, 0.58),
   conf.low = c(0.03, -0.18, 0.04, 0.10, 0.18, 0.00, -0.13, 0.10, 0.20, 0.30),
   conf.high = c(0.21, -0.02, 0.32, 0.50, 0.74, 0.16, 0.03, 0.38, 0.60, 0.86),
-  model = rep(c("A", "B"), each = 5),
-  section = rep(c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor"), 2)
+  model = rep(c("A", "B"), each = 5)
 )
 
 ggforestplot(
   comparison_coefs,
   group = "model",
-  facet = "section",
   striped_rows = TRUE,
-  dodge_width = 0.5,
-  facet_strip_position = "right"
+  dodge_width = 0.5
 ) +
   theme(legend.position = "top") +
   scale_color_manual(values = c("#1F968BFF", "#453781FF")) +
   labs(color = "Model") +
-  add_forest_table(column_labels = c("term" = "Term", "model" = "Model", "estimate"  = "Estimate (95% CI)"))
+  add_forest_table(
+    column_labels = c("term" = "Term", 
+                      "model" = "Model", 
+                      "estimate"  = "Estimate (95% CI)")
+    )
+#> Scale for colour is already present.
+#> Adding another scale for colour, which will replace the existing scale.
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/comparison-1.png)
@@ -254,7 +340,9 @@ fit2 <- lm(mpg ~ cyl + disp, data = mtcars)
 fit3 <- lm(mpg ~ cyl + disp + wt, data = mtcars)
 
 bound_models <- bind_forest_models(list(fit1,fit2,fit3), 
-                                   model_labels = c("Unadjusted", "Adjusted", "Fully Adjusted"))
+                                   model_labels = c("Unadjusted", 
+                                                    "Adjusted", 
+                                                    "Fully Adjusted"))
 
 ggforestplot(bound_models, striped_rows = T, p.value = "p.value") +
   scale_x_continuous(limits = c(-6,1)) +
@@ -263,6 +351,8 @@ ggforestplot(bound_models, striped_rows = T, p.value = "p.value") +
   add_forest_table(columns = c("term", "model","estimate", "p.value"),
                    p_digits = 4,
                    )
+#> Scale for colour is already present.
+#> Adding another scale for colour, which will replace the existing scale.
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/bind-models-1.png)

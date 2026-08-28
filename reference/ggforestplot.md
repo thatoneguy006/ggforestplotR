@@ -17,8 +17,6 @@ ggforestplot(
   group = NULL,
   facet = NULL,
   facet_strip_position = c("left", "right"),
-  grouping = NULL,
-  grouping_strip_position = NULL,
   separate_groups = NULL,
   n = NULL,
   events = NULL,
@@ -47,7 +45,9 @@ ggforestplot(
   ref_line = NULL,
   ref_label = NULL,
   ref_linetype = 2,
-  ref_color = "grey60"
+  ref_color = "grey60",
+  subgroup = NULL,
+  p_method = c("overall", "level")
 )
 ```
 
@@ -85,7 +85,9 @@ ggforestplot(
 
 - group:
 
-  Optional column name used for color-grouping estimates.
+  Optional column name used for color-grouping estimates. If this column
+  is a factor, its levels control the group legend and vertical dodge
+  order.
 
 - facet:
 
@@ -95,14 +97,6 @@ ggforestplot(
 - facet_strip_position:
 
   Positioning for facet strip labels.
-
-- grouping:
-
-  Deprecated. Use `facet` instead.
-
-- grouping_strip_position:
-
-  Deprecated. Use `facet_strip_position` instead.
 
 - separate_groups:
 
@@ -137,7 +131,8 @@ ggforestplot(
 
 - sort_terms:
 
-  How to sort rows: `"none"`, `"descending"`, or `"ascending"`.
+  How to sort rows: `"none"`, `"descending"`, or `"ascending"`. Subgroup
+  hierarchies require `"none"` so their source order is preserved.
 
 - point_size:
 
@@ -234,6 +229,30 @@ ggforestplot(
 - ref_color:
 
   Color for the reference line.
+
+- subgroup:
+
+  Optional column name defining hierarchical subgroup blocks. Missing or
+  empty values identify ordinary standalone estimates. Each non-empty
+  subgroup must form one contiguous block within a facet. This is a
+  presentation-only mapping; subgroups and contrasts are not inferred.
+  With the default `p_method = "overall"` forest-data metadata, the
+  first nonmissing p-value for each subgroup and estimate group, when
+  applicable, is displayed on its parent row and child p-value cells are
+  suppressed. `p_method = "level"` retains p-values on child rows. For
+  fitted models, first call
+  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
+  with `subgroup`, `focal`, and the desired `p_method`; direct model
+  calls do not perform post-estimation subgroup inference inside the
+  plotting layer.
+
+- p_method:
+
+  Subgroup p-value placement for data-frame input. `"overall"` displays
+  one p-value on each subgroup header; `"level"` displays p-values on
+  the subgroup estimate rows. Fitted-model subgroup data inherit this
+  choice from
+  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md).
 
 ## Value
 

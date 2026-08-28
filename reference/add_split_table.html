@@ -9,7 +9,7 @@ on both sides of the plotting panel."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -114,15 +114,18 @@ for <code>"ci"</code>.</p></dd>
 
 
 <dt id="arg-term-header">term_header<a class="anchor" aria-label="anchor" href="#arg-term-header"></a></dt>
-<dd><p>Header text for the term column.</p></dd>
+<dd><p>Deprecated. Use the corresponding entry in
+<code>column_labels</code>, such as <code>column_labels = c(term = "Variable")</code>.</p></dd>
 
 
 <dt id="arg-n-header">n_header<a class="anchor" aria-label="anchor" href="#arg-n-header"></a></dt>
-<dd><p>Header text for the <code>N</code> column.</p></dd>
+<dd><p>Deprecated. Use
+<code>column_labels = c(n = "N")</code> instead.</p></dd>
 
 
 <dt id="arg-events-header">events_header<a class="anchor" aria-label="anchor" href="#arg-events-header"></a></dt>
-<dd><p>Header text for the <code>Events</code> column.</p></dd>
+<dd><p>Deprecated. Use
+<code>column_labels = c(events = "Events")</code> instead.</p></dd>
 
 
 <dt id="arg-estimate-label">estimate_label<a class="anchor" aria-label="anchor" href="#arg-estimate-label"></a></dt>
@@ -131,7 +134,8 @@ model-derived label when available.</p></dd>
 
 
 <dt id="arg-p-header">p_header<a class="anchor" aria-label="anchor" href="#arg-p-header"></a></dt>
-<dd><p>Header text for the p-value column.</p></dd>
+<dd><p>Deprecated. Use
+<code>column_labels = c(p = "P-value")</code> instead.</p></dd>
 
 
 <dt id="arg-column-labels">column_labels<a class="anchor" aria-label="anchor" href="#arg-column-labels"></a></dt>
@@ -140,7 +144,8 @@ headers. Names should match values supplied to <code>left_columns</code> or
 <code>right_columns</code> after column resolution, such as <code>"term"</code>, <code>"group"</code>, <code>"estimate"</code>,
 <code>"ci"</code>, <code>"p"</code>, or an arbitrary original dataframe column. For grouped
 data frames, either <code>"group"</code> or the source column supplied through
-<code>group =</code> can relabel the group column.</p></dd>
+<code>group =</code> can relabel the group column. Use this argument instead of the
+deprecated dedicated header arguments.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>

@@ -1,5 +1,51 @@
 # Changelog
 
+## ggforestplotR 0.5.0
+
+### Breaking Changes
+
+- Removed the deprecated `grouping` and `grouping_strip_position`
+  arguments from
+  [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md).
+  Use `facet` and `facet_strip_position` instead.
+
+### Major Changes
+
+- Added explicit `subgroup` mappings for mixed hierarchical displays,
+  allowing standalone covariates and contiguous categorical blocks to
+  share a forest plot. Subgroup p-values can be delegated as “overall”
+  or “level” via `p_method` in
+  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
+- Added covariance-aware subgroup effects for fitted interaction models.
+  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
+  and fitted-model
+  [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
+  methods now use `marginaleffects` to derive average slopes or
+  comparisons from the original fit without refitting subgroup models or
+  displaying raw interaction coefficients. Conservative automatic
+  selection supports one continuous-by- factor interaction, while
+  explicit selection supports factor comparisons and preserves additive,
+  odds-ratio, ratio, and hazard-ratio scales.
+
+### Minor Changes
+
+- Grouped values in
+  [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_forest_table.md)
+  and
+  [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_split_table.md)
+  now use the same vertical dodge as their plotted points, keeping table
+  text aligned at different output sizes and with custom `dodge_width`
+  values.
+- Factor-valued `group` columns now retain their level order in legends,
+  vertically dodged estimates, and aligned forest-table values.
+- Deprecated `term_header`, `n_header`, `events_header`, and `p_header`
+  in
+  [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_forest_table.md)
+  and
+  [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_split_table.md).
+  Relabel displayed headers with the `column_labels` named vector
+  instead.
+
 ## ggforestplotR 0.4.0
 
 ### Major Changes

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,6 +45,25 @@
       <small>Source: <a href="https://github.com/thatoneguy006/ggforestplotR/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.0" id="ggforestplotr-050">ggforestplotR 0.5.0<a class="anchor" aria-label="anchor" href="#ggforestplotr-050"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-0-5-0">Breaking Changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-5-0"></a></h3>
+<ul><li>Removed the deprecated <code>grouping</code> and <code>grouping_strip_position</code> arguments from <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>. Use <code>facet</code> and <code>facet_strip_position</code> instead.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="major-changes-0-5-0">Major Changes<a class="anchor" aria-label="anchor" href="#major-changes-0-5-0"></a></h3>
+<ul><li>Added explicit <code>subgroup</code> mappings for mixed hierarchical displays, allowing standalone covariates and contiguous categorical blocks to share a forest plot. Subgroup p-values can be delegated as “overall” or “level” via <code>p_method</code> in <code><a href="../reference/tidy_forest_model.html">tidy_forest_model()</a></code>
+</li>
+<li>Added covariance-aware subgroup effects for fitted interaction models. <code><a href="../reference/tidy_forest_model.html">tidy_forest_model()</a></code> and fitted-model <code><a href="../reference/as_forest_data.html">as_forest_data()</a></code> methods now use <code>marginaleffects</code> to derive average slopes or comparisons from the original fit without refitting subgroup models or displaying raw interaction coefficients. Conservative automatic selection supports one continuous-by- factor interaction, while explicit selection supports factor comparisons and preserves additive, odds-ratio, ratio, and hazard-ratio scales.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="minor-changes-0-5-0">Minor Changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-5-0"></a></h3>
+<ul><li>Grouped values in <code><a href="../reference/add_forest_table.html">add_forest_table()</a></code> and <code><a href="../reference/add_split_table.html">add_split_table()</a></code> now use the same vertical dodge as their plotted points, keeping table text aligned at different output sizes and with custom <code>dodge_width</code> values.</li>
+<li>Factor-valued <code>group</code> columns now retain their level order in legends, vertically dodged estimates, and aligned forest-table values.</li>
+<li>Deprecated <code>term_header</code>, <code>n_header</code>, <code>events_header</code>, and <code>p_header</code> in <code><a href="../reference/add_forest_table.html">add_forest_table()</a></code> and <code><a href="../reference/add_split_table.html">add_split_table()</a></code>. Relabel displayed headers with the <code>column_labels</code> named vector instead.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.0" id="ggforestplotr-040">ggforestplotR 0.4.0<a class="anchor" aria-label="anchor" href="#ggforestplotr-040"></a></h2>
 <div class="section level3">

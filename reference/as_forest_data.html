@@ -9,7 +9,7 @@ structure used throughout ggforestplotR."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,6 +63,7 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
 <span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  p_method <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -90,6 +91,8 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span>  source_model <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  source_package <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  p_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"level"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -102,7 +105,10 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  focal <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  p_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"level"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'glm'</span></span>
@@ -114,7 +120,10 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  focal <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  p_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"level"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'coxph'</span></span>
@@ -126,7 +135,10 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  focal <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  p_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"level"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'merMod'</span></span>
@@ -138,7 +150,10 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  focal <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  p_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"level"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'lme'</span></span>
@@ -150,7 +165,10 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  focal <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  p_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"level"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'glmmTMB'</span></span>
@@ -162,7 +180,10 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  focal <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  p_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"level"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Default S3 method</span></span>
@@ -174,7 +195,10 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span>  exponentiate <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span></span>
+<span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  focal <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  p_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"level"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -199,13 +223,22 @@ display.</p></dd>
 
 <dt id="arg-sort-terms">sort_terms<a class="anchor" aria-label="anchor" href="#arg-sort-terms"></a></dt>
 <dd><p>How to sort rows: <code>"none"</code>, <code>"descending"</code>, or
-<code>"ascending"</code>.</p></dd>
+<code>"ascending"</code>. Subgroup hierarchies require <code>"none"</code> so their source order
+is preserved.</p></dd>
 
 
 <dt id="arg-exponentiate">exponentiate<a class="anchor" aria-label="anchor" href="#arg-exponentiate"></a></dt>
 <dd><p>Compatibility argument. <code>TRUE</code> is equivalent to
 <code>estimate_scale = "ratio"</code>; <code>FALSE</code> is equivalent to
 <code>estimate_scale = "identity"</code> when <code>estimate_scale</code> is not supplied.</p></dd>
+
+
+<dt id="arg-p-method">p_method<a class="anchor" aria-label="anchor" href="#arg-p-method"></a></dt>
+<dd><p>Subgroup p-value placement. <code>"overall"</code> displays one
+omnibus or block-level p-value on the subgroup header; <code>"level"</code> keeps
+p-values on the individual subgroup estimate rows. For fitted-model
+methods, this also selects whether <code>p.value</code> contains the omnibus
+interaction test or the post-estimation test for each derived effect.</p></dd>
 
 
 <dt id="arg-term">term<a class="anchor" aria-label="anchor" href="#arg-term"></a></dt>
@@ -230,7 +263,8 @@ display.</p></dd>
 
 <dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
 <dd><p>Optional column name used for color-grouping multiple
-estimates per row.</p></dd>
+estimates per row. If this column is a factor, its levels control the
+group legend and vertical dodge order.</p></dd>
 
 
 <dt id="arg-grouping">grouping<a class="anchor" aria-label="anchor" href="#arg-grouping"></a></dt>
@@ -292,6 +326,23 @@ class. The complete fitted model is not retained.</p></dd>
 <dd><p>Optional package name identifying the model source.</p></dd>
 
 
+<dt id="arg-subgroup">subgroup<a class="anchor" aria-label="anchor" href="#arg-subgroup"></a></dt>
+<dd><p>For data frames, an optional column name defining
+presentation-only hierarchical subgroup blocks. Missing or empty values
+identify ordinary standalone estimates. Rows with the same non-empty
+value must form one contiguous block within each facet. When <code>p.value</code> is
+mapped, the first nonmissing value for each subgroup and estimate group,
+when applicable, is displayed on its parent row; child p-value cells are
+suppressed. Data-frame subgroups are never inferred and do not calculate
+model contrasts. For fitted-model methods, use <code>"auto"</code> to detect one
+unambiguous continuous-by-factor interaction, or supply a factor predictor
+name together with <code>focal</code> to derive covariance-aware post-estimation
+subgroup effects through <code>marginaleffects</code>. Fitted-model subgroup rows use
+the canonical <code>p.value</code> column for either the omnibus interaction test or
+row-level effect tests, according to <code>p_method</code>, so they can share a table
+column with ordinary coefficient p-values.</p></dd>
+
+
 <dt id="arg-conf-int">conf.int<a class="anchor" aria-label="anchor" href="#arg-conf-int"></a></dt>
 <dd><p>Logical; model methods require <code>TRUE</code> because forest data
 include confidence-interval columns.</p></dd>
@@ -300,6 +351,13 @@ include confidence-interval columns.</p></dd>
 <dt id="arg-intercept">intercept<a class="anchor" aria-label="anchor" href="#arg-intercept"></a></dt>
 <dd><p>Logical; for model methods, whether to retain the
 intercept term.</p></dd>
+
+
+<dt id="arg-focal">focal<a class="anchor" aria-label="anchor" href="#arg-focal"></a></dt>
+<dd><p>For fitted-model methods, the predictor whose conditional
+effect is estimated within each subgroup level. It may be continuous or a
+factor. Factor effects compare each non-reference level with the first
+level. Ignored for data-frame methods.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -327,10 +385,10 @@ for table helpers so they can be displayed with
 <span class="r-in"><span>  conf.high <span class="op">=</span> <span class="st">"upper"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;forest_data&gt; Estimate; scale: identity; reference: 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        term estimate conf.low conf.high     label group grouping</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       Age     0.10     0.02      0.18       Age  &lt;NA&gt;     &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       BMI    -0.08    -0.16      0.00       BMI  &lt;NA&gt;     &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Treatment     0.34     0.12      0.56 Treatment  &lt;NA&gt;     &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        term estimate conf.low conf.high     label group subgroup grouping</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       Age     0.10     0.02      0.18       Age  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       BMI    -0.08    -0.16      0.00       BMI  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Treatment     0.34     0.12      0.56 Treatment  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   separate_groups    n events p.value  variable  beta lower upper</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt;      NA       Age  0.10  0.02  0.18</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt;      NA       BMI -0.08 -0.16  0.00</span>

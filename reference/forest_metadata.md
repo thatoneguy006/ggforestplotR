@@ -18,4 +18,5 @@ forest_metadata(x)
 
 ## Value
 
-A named metadata list.
+A named metadata list, including the effect scale, reference value,
+source mappings, and subgroup `p_method` display contract.
