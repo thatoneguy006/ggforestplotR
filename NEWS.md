@@ -5,6 +5,12 @@
 - Removed the deprecated `grouping` and `grouping_strip_position` arguments
   from `ggforestplot()`. Use `facet` and `facet_strip_position`, respectively.
 
+## Deprecations
+
+- Deprecated `term_header`, `n_header`, `events_header`, and `p_header` in
+  `add_forest_table()` and `add_split_table()`. Relabel displayed headers with
+  the `column_labels` named vector instead.
+
 ## Major Changes
 
 - Added explicit `subgroup` mappings for mixed hierarchical displays, allowing

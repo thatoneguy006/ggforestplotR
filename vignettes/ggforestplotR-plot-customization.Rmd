@@ -92,7 +92,14 @@ fit |>
 
 ### Categorical-by-categorical
 ```{r}
+fit2 <- lm(wt ~ gear*cyl + hp + am, data = mtcars %>%
+            mutate(cyl = factor(cyl), gear = factor(gear)))
 
+fit2 %>%
+  tidy_forest_model(subgroup = "gear", focal = "cyl", p_method = "level") %>%
+  ggforestplot(striped_rows = T) +
+  theme(legend.position = "top") +
+  add_forest_table(columns = c("term", "estimate", "p.value"))
 ```
 
 

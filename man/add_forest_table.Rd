@@ -52,22 +52,27 @@ table includes \code{"group"}; omit it from an explicit selection to hide it.
 Its header defaults to the source column supplied through \verb{group =} for
 data frames and to \code{"Model"} for \code{\link[=bind_forest_models]{bind_forest_models()}} output.}
 
-\item{term_header}{Header text for the term column.}
+\item{term_header}{Deprecated. Use the corresponding entry in
+\code{column_labels}, such as \code{column_labels = c(term = "Variable")}.}
 
-\item{n_header}{Header text for the \code{N} column.}
+\item{n_header}{Deprecated. Use
+\code{column_labels = c(n = "N")} instead.}
 
-\item{events_header}{Header text for the \code{Events} column.}
+\item{events_header}{Deprecated. Use
+\code{column_labels = c(events = "Events")} instead.}
 
 \item{estimate_label}{Header label for the estimate column. Defaults to the
 model-derived label when available.}
 
-\item{p_header}{Header text for the p-value column.}
+\item{p_header}{Deprecated. Use
+\code{column_labels = c(p = "P-value")} instead.}
 
 \item{column_labels}{Optional named vector used to relabel table column
 headers. Names should match values supplied to \code{columns} after column
 resolution, such as \code{"term"}, \code{"group"}, \code{"estimate"}, \code{"ci"}, \code{"p"}, or an arbitrary
 original dataframe column. For grouped data frames, either \code{"group"} or
-the source column supplied through \verb{group =} can relabel the group column.}
+the source column supplied through \verb{group =} can relabel the group column.
+Use this argument instead of the deprecated dedicated header arguments.}
 
 \item{digits}{Deprecated. Number of digits used when formatting estimates
 and p-values. Defaults to \code{2}. Use \code{estimate_digits}, \code{interval_digits},

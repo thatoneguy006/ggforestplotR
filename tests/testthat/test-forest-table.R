@@ -302,7 +302,7 @@ test_that("mapped row-label columns use the term header and suppress duplicate y
   )
   out <- p + add_forest_table(
     columns = c("name", "estimate"),
-    term_header = "Variable"
+    column_labels = c(name = "Variable")
   )
   table_plot <- out$patches$plots[[1]]
 
@@ -786,5 +786,40 @@ test_that("deprecated table digit argument warns", {
     add_split_table(p, digits = 3),
     "`digits` is deprecated"
   )
+})
+
+test_that("dedicated table header arguments are deprecated", {
+  header_columns <- c(
+    term_header = "term",
+    n_header = "n",
+    events_header = "events",
+    p_header = "p"
+  )
+
+  for (argument in names(header_columns)) {
+    args <- stats::setNames(list("Custom"), argument)
+    replacement <- sprintf(
+      "column_labels = c\\(%s =",
+      header_columns[[argument]]
+    )
+
+    expect_warning(
+      do.call(add_forest_table, args),
+      replacement,
+      class = "ggforestplotR_deprecated_argument"
+    )
+    expect_warning(
+      do.call(add_split_table, args),
+      replacement,
+      class = "ggforestplotR_deprecated_argument"
+    )
+  }
+
+  expect_no_warning(add_forest_table(
+    column_labels = c(term = "Variable", n = "N")
+  ))
+  expect_no_warning(add_split_table(
+    column_labels = c(term = "Variable", p = "P")
+  ))
 })
 

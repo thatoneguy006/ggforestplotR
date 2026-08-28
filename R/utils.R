@@ -312,6 +312,21 @@ warn_deprecated_argument <- function(arg, replacement) {
   )
 }
 
+warn_deprecated_table_headers <- function(supplied) {
+  replacements <- c(
+    term_header = "`column_labels = c(term = \"...\")`",
+    n_header = "`column_labels = c(n = \"...\")`",
+    events_header = "`column_labels = c(events = \"...\")`",
+    p_header = "`column_labels = c(p = \"...\")`"
+  )
+
+  for (arg in names(supplied)[supplied]) {
+    warn_deprecated_argument(arg, replacements[[arg]])
+  }
+
+  invisible(NULL)
+}
+
 apply_term_labels <- function(term, label, term_labels = NULL) {
   if (is.null(term_labels)) {
     return(label)

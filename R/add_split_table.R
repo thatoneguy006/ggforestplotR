@@ -297,18 +297,23 @@
 #'   `"ci"`, and `"p"`, arbitrary original dataframe columns, or numeric positions in
 #'   the supplied data. `"conf.low"` and `"conf.high"` are accepted as aliases
 #'   for `"ci"`.
-#' @param term_header Header text for the term column.
-#' @param n_header Header text for the `N` column.
-#' @param events_header Header text for the `Events` column.
+#' @param term_header Deprecated. Use the corresponding entry in
+#'   `column_labels`, such as `column_labels = c(term = "Variable")`.
+#' @param n_header Deprecated. Use
+#'   `column_labels = c(n = "N")` instead.
+#' @param events_header Deprecated. Use
+#'   `column_labels = c(events = "Events")` instead.
 #' @param estimate_label Header label for the estimate column. Defaults to the
 #'   model-derived label when available.
-#' @param p_header Header text for the p-value column.
+#' @param p_header Deprecated. Use
+#'   `column_labels = c(p = "P-value")` instead.
 #' @param column_labels Optional named vector used to relabel table column
 #'   headers. Names should match values supplied to `left_columns` or
 #'   `right_columns` after column resolution, such as `"term"`, `"group"`, `"estimate"`,
 #'   `"ci"`, `"p"`, or an arbitrary original dataframe column. For grouped
 #'   data frames, either `"group"` or the source column supplied through
-#'   `group =` can relabel the group column.
+#'   `group =` can relabel the group column. Use this argument instead of the
+#'   deprecated dedicated header arguments.
 #' @param digits Deprecated. Number of digits used when formatting estimates
 #'   and p-values. Defaults to `2`. Use `estimate_digits`, `interval_digits`,
 #'   and `p_digits` for separate control.
@@ -402,6 +407,13 @@ add_split_table <- function(plot = NULL,
                             left_width = NULL,
                             plot_width = NULL,
                             right_width = NULL) {
+  warn_deprecated_table_headers(c(
+    term_header = !missing(term_header),
+    n_header = !missing(n_header),
+    events_header = !missing(events_header),
+    p_header = !missing(p_header)
+  ))
+
   if (!missing(digits)) {
     warn_deprecated_argument("digits", "`estimate_digits`, `interval_digits`, and `p_digits`")
   }
