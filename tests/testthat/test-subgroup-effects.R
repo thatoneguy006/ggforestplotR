@@ -291,6 +291,41 @@ test_that("level p-values stay on subgroup estimate rows", {
   ]))))
 })
 
+test_that("standalone covariates stay black and out of group legends", {
+  skip_if_not_installed("broom")
+  skip_if_not_installed("marginaleffects")
+
+  model_data <- transform(
+    mtcars,
+    cyl = factor(cyl),
+    gear = factor(gear)
+  )
+  fit <- stats::lm(wt ~ gear * cyl + hp, data = model_data)
+  out <- suppressWarnings(tidy_forest_model(
+    fit,
+    subgroup = "gear",
+    focal = "cyl",
+    p_method = "level"
+  ))
+  plot <- ggforestplot(out)
+  built <- ggplot2::ggplot_build(plot)
+  colour_scale <- built$plot$scales$get_scales("colour")
+  point_layer <- which(vapply(
+    plot$layers,
+    function(layer) inherits(layer$geom, "GeomPoint"),
+    logical(1)
+  ))[[1L]]
+  point_data <- built$data[[point_layer]]
+  standalone_rows <- is.na(plot$ggforestplotR_state$forest_data$group)
+
+  expect_equal(
+    as.character(colour_scale$get_breaks()),
+    c("6 - 4", "8 - 4")
+  )
+  expect_equal(colour_scale$map(NA_character_), "black")
+  expect_true(all(point_data$colour[standalone_rows] == "black"))
+})
+
 test_that("model-derived rows stay aligned with plots and tables", {
   skip_if_not_installed("broom")
   skip_if_not_installed("marginaleffects")

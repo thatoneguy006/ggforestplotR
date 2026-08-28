@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(ggforestplotR)
+#library(ggforestplotR)
 library(ggplot2)
 ```
 
@@ -50,12 +50,9 @@ ggforestplot(
 )
 ```
 
-## Mix standalone and hierarchical subgroup rows
+## Subgroup analyses
 
-Use `subgroup` when already-computed estimates include categorical levels that
-should appear beneath a parent heading. Missing or empty subgroup values remain
-ordinary standalone rows, so continuous covariates and subgroup blocks can be
-shown together. Members of each subgroup must be contiguous in the input.
+There are two ways to plot subgroup analyses using `ggforestplot()`. From a data-frame, you can simply set `subgroup = "subgroup_variable_name"`. This functionality still works when some variables have subgroups and others don't, demonstrated here.
 
 ```{r mixed-subgroups}
 mixed_coefs <- tibble::tribble(
@@ -77,8 +74,28 @@ ggforestplot(
   conf.high = "conf.high",
   exponentiate = TRUE,
   striped_rows = TRUE
-)
+) +
+  add_forest_table()
 ```
+
+### Continuous-by-categorical
+
+The second way is to plot subgroup analyses from a fitted model. From your fitted model, call `tidy_forest_model()` and specify your `subgroup` and optionally your `focal` variable. `subgroup = "auto"` chooses the subgroup computations based on the model, otherwise you can specify the subgroup. `p_method` allows you to append overall p-values to the parent-row, or you can choose `p_method = "level"` if you want subgroup-specific p-values. Internally, the function calls on `marginaleffects` to compute interaction estimates.
+```{r fitted-subgroups}
+fit <- lm(wt ~ mpg*as.factor(cyl) + hp, data = mtcars)
+
+fit |>
+  tidy_forest_model(subgroup = "auto", focal = "mpg", p_method = "overall") |>
+    ggforestplot(striped_rows = T) +
+    add_forest_table(columns = c("term", "estimate", "p.value"))
+```
+
+### Categorical-by-categorical
+```{r}
+
+```
+
+
 
 These row and panel controls have different purposes:
 

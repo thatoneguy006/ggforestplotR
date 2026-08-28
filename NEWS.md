@@ -28,6 +28,8 @@
   different output sizes and with custom `dodge_width` values.
 - Factor-valued `group` columns now retain their level order in legends,
   vertically dodged estimates, and aligned forest-table values.
+- Standalone covariates in mixed subgroup plots now use the ordinary black
+  styling and no longer add an `NA` entry to the group legend.
 
 # ggforestplotR 0.4.0
 

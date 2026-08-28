@@ -576,6 +576,14 @@ ggforestplot <- function(data,
     )
   }
 
+  if (isTRUE(has_groups)) {
+    p <- p + ggplot2::scale_colour_discrete(
+      breaks = function(values) values[!is.na(values)],
+      na.translate = TRUE,
+      na.value = "black"
+    )
+  }
+
   p <- p + ggplot2::labs(
     x = axis_label,
     y = NULL,
