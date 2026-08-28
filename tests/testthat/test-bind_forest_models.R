@@ -99,6 +99,47 @@ test_that("dedicated model columns preserve multiline value alignment", {
   expect_equal(length(strsplit(estimate_spec$table_data$text, "\n", fixed = TRUE)[[1L]]), 2L)
 })
 
+test_that("grouped table text uses the same vertical dodge as plot points", {
+  data <- data.frame(
+    term = rep(c("Age", "BMI"), each = 2),
+    estimate = c(0.2, 0.4, -0.1, 0.1),
+    conf.low = c(0.1, 0.3, -0.2, 0),
+    conf.high = c(0.3, 0.5, 0, 0.2),
+    model = rep(c("A", "B"), 2)
+  )
+  plot <- ggforestplot(data, group = "model", dodge_width = 0.8)
+  out <- add_forest_table(plot, columns = c("term", "group", "estimate"))
+  table_plot <- out$patches$plots[[1L]]
+  plot_build <- ggplot2::ggplot_build(plot)
+  table_build <- ggplot2::ggplot_build(table_plot)
+  point_layer <- which(vapply(
+    plot$layers,
+    function(layer) inherits(layer$geom, "GeomPoint"),
+    logical(1)
+  ))[[1L]]
+  text_layers <- which(vapply(
+    table_plot$layers,
+    function(layer) inherits(layer$geom, "GeomText"),
+    logical(1)
+  ))
+  point_data <- plot_build$data[[point_layer]]
+  text_data <- table_build$data[text_layers]
+  group_layer <- which(vapply(
+    text_data,
+    function(layer) any(layer$label %in% c("A", "B")),
+    logical(1)
+  ))[[1L]]
+  group_text <- text_data[[group_layer]]
+  colour_scale <- plot_build$plot$scales$get_scales("colour")
+
+  for (model in c("A", "B")) {
+    point_y <- point_data$y[point_data$colour == colour_scale$map(model)]
+    group_y <- group_text$y[group_text$label == model]
+    expect_equal(sort(group_y), sort(point_y))
+  }
+  expect_false(any(grepl("\n", group_text$label, fixed = TRUE)))
+})
+
 test_that("bound model tables omit prefixes when the model column is omitted", {
   skip_if_not_installed("broom")
 

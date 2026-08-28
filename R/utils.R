@@ -1006,10 +1006,7 @@ expand_subgroup_display_rows <- function(data, has_groupings) {
   out
 }
 
-format_subgroup_header_p_values <- function(data,
-                                            header_row,
-                                            p_digits,
-                                            align_groups) {
+subgroup_header_rows <- function(data, header_row) {
   subgroup <- as.character(header_row$subgroup[[1L]])
   if (is.na(subgroup) || !nzchar(subgroup)) {
     subgroup <- as.character(header_row$term[[1L]])
@@ -1023,7 +1020,14 @@ format_subgroup_header_p_values <- function(data,
   } else {
     !is.na(data_panel) & data_panel == header_panel
   }
-  block <- data[same_subgroup & same_panel, , drop = FALSE]
+  data[same_subgroup & same_panel, , drop = FALSE]
+}
+
+format_subgroup_header_p_values <- function(data,
+                                            header_row,
+                                            p_digits,
+                                            align_groups) {
+  block <- subgroup_header_rows(data, header_row)
 
   if (nrow(block) == 0L) {
     return("")
@@ -1062,6 +1066,13 @@ format_subgroup_header_p_values <- function(data,
     p_digits = p_digits,
     align_groups = align_groups
   )
+}
+
+subgroup_header_group_values <- function(data, header_row) {
+  block <- subgroup_header_rows(data, header_row)
+  groups <- as.character(block$group)
+
+  unique(groups)
 }
 
 #' Build a data frame of alternating stripe rectangles for each panel.
@@ -1400,6 +1411,7 @@ build_forest_table_data <- function(data,
   group_header <- default_group_table_header(data)
   row_levels <- levels(display_data$row_key)
   row_parts <- vector("list", length(row_levels))
+  row_group_values <- vector("list", length(row_levels))
   row_types <- stats::setNames(rep("estimate", length(row_levels)), row_levels)
   mapped_row_label_columns <- unique(unname(column_mapping[c("term", "label")]))
   mapped_row_label_columns <- mapped_row_label_columns[!is.na(mapped_row_label_columns)]
@@ -1458,6 +1470,11 @@ build_forest_table_data <- function(data,
       rd[[source_storage[["group"]]]]
     } else {
       rd$group
+    }
+    row_group_values[[i]] <- if (is_header && identical(p_method, "overall")) {
+      subgroup_header_group_values(data, rd)
+    } else {
+      as.character(rd$group)
     }
     row_parts[[i]] <- data.frame(
       row_key = row_key,
@@ -1621,15 +1638,19 @@ build_forest_table_data <- function(data,
 
   for (i in seq_along(column_keys)) {
     key <- column_keys[[i]]
-    long_parts[[i]] <- data.frame(
+    long_part <- data.frame(
       row_key = table_rows$row_key,
       grouping_panel = table_rows$grouping_panel,
       row_type = unname(row_types[as.character(table_rows$row_key)]),
       column_key = key,
       column_position = NA_real_,
       text = table_rows[[column_field_lookup[[key]]]],
+      align_groups = isTRUE(has_groups) &&
+        !key %in% c("term", mapped_row_label_columns),
       stringsAsFactors = FALSE
     )
+    long_part$group_values <- I(row_group_values)
+    long_parts[[i]] <- long_part
   }
 
   table_data <- do.call(rbind, long_parts)
@@ -1642,6 +1663,34 @@ build_forest_table_data <- function(data,
     headers = unname(header_lookup[column_keys]),
     column_keys = column_keys
   )
+}
+
+expand_grouped_table_text <- function(table_data) {
+  parts <- lapply(seq_len(nrow(table_data)), function(i) {
+    row <- table_data[i, , drop = FALSE]
+    groups <- row$group_values[[1L]]
+    lines <- strsplit(row$text[[1L]], "\n", fixed = TRUE)[[1L]]
+
+    can_dodge <- isTRUE(row$align_groups[[1L]]) &&
+      length(groups) > 1L &&
+      length(lines) == length(groups)
+
+    if (!can_dodge) {
+      row$text_group <- NA_character_
+      row$dodge_text <- FALSE
+      return(row)
+    }
+
+    row <- row[rep(1L, length(groups)), , drop = FALSE]
+    row$text <- lines
+    row$text_group <- groups
+    row$dodge_text <- TRUE
+    row
+  })
+
+  out <- do.call(rbind, parts)
+  rownames(out) <- NULL
+  out
 }
 
 # ─── Grid line data ──────────────────────────────────────────────────────────
@@ -2071,7 +2120,8 @@ build_forest_table_plot <- function(table_spec,
                                     header_hjust = 0.5,
                                     header_text_size = 11,
                                     header_fontface = "bold",
-                                    header_family = NULL) {
+                                    header_family = NULL,
+                                    dodge_width = 0.6) {
   facet_strip_position <- match.arg(facet_strip_position)
   table_position <- match.arg(table_position)
 
@@ -2115,22 +2165,59 @@ build_forest_table_plot <- function(table_spec,
     }
   }
 
-  text_layer <- if ("text_hjust" %in% names(table_spec$table_data)) {
-    ggplot2::geom_text(
-      mapping = ggplot2::aes(hjust = .data$text_hjust),
-      size = text_size,
-      lineheight = 0.95
-    )
-  } else {
-    ggplot2::geom_text(
-      hjust = text_hjust,
-      size = text_size,
-      lineheight = 0.95
-    )
+  text_data <- expand_grouped_table_text(table_spec$table_data)
+  centered_text <- text_data[!text_data$dodge_text, , drop = FALSE]
+  grouped_text <- text_data[text_data$dodge_text, , drop = FALSE]
+  text_layers <- list()
+
+  if (nrow(centered_text) > 0L) {
+    text_layers[[length(text_layers) + 1L]] <- if (
+      "text_hjust" %in% names(centered_text)
+    ) {
+      ggplot2::geom_text(
+        data = centered_text,
+        mapping = ggplot2::aes(hjust = .data$text_hjust),
+        size = text_size,
+        lineheight = 0.95
+      )
+    } else {
+      ggplot2::geom_text(
+        data = centered_text,
+        hjust = text_hjust,
+        size = text_size,
+        lineheight = 0.95
+      )
+    }
+  }
+
+  if (nrow(grouped_text) > 0L) {
+    text_layers[[length(text_layers) + 1L]] <- if (
+      "text_hjust" %in% names(grouped_text)
+    ) {
+      ggplot2::geom_text(
+        data = grouped_text,
+        mapping = ggplot2::aes(
+          group = .data$text_group,
+          hjust = .data$text_hjust
+        ),
+        position = ggplot2::position_dodge(width = dodge_width),
+        size = text_size,
+        lineheight = 0.95
+      )
+    } else {
+      ggplot2::geom_text(
+        data = grouped_text,
+        mapping = ggplot2::aes(group = .data$text_group),
+        position = ggplot2::position_dodge(width = dodge_width),
+        hjust = text_hjust,
+        size = text_size,
+        lineheight = 0.95
+      )
+    }
   }
 
   p <- p +
-    text_layer +
+    text_layers +
     ggplot2::scale_x_continuous(
       breaks = table_spec$header_positions,
       labels = table_spec$headers,

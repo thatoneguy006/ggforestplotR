@@ -211,7 +211,12 @@
     header_hjust = 0,
     header_text_size = header_text_size,
     header_fontface = header_fontface,
-    header_family = header_family
+    header_family = header_family,
+    dodge_width = if (is.null(state$defaults$dodge_width)) {
+      0.6
+    } else {
+      state$defaults$dodge_width
+    }
   )
 
   right_plot <- build_forest_table_plot(
@@ -231,7 +236,12 @@
     header_hjust = 1,
     header_text_size = header_text_size,
     header_fontface = header_fontface,
-    header_family = header_family
+    header_family = header_family,
+    dodge_width = if (is.null(state$defaults$dodge_width)) {
+      0.6
+    } else {
+      state$defaults$dodge_width
+    }
   )
 
   plot_theme_args <- list(

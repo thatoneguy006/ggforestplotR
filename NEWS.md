@@ -23,6 +23,9 @@
   covariate p-values and appear only on subgroup headers. Set
   `p_method = "level"` to place the post-estimation slope or comparison
   p-values on individual subgroup rows instead.
+- Grouped values in `add_forest_table()` and `add_split_table()` now use the
+  same vertical dodge as their plotted points, keeping table text aligned at
+  different output sizes and with custom `dodge_width` values.
 
 # ggforestplotR 0.4.0
 

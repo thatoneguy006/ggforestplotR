@@ -604,7 +604,8 @@ ggforestplot <- function(data,
       ref_line = ref_line,
       ref_label = ref_label,
       ci_limits = ci_limits,
-      ci_arrows = ci_arrows
+      ci_arrows = ci_arrows,
+      dodge_width = dodge_width
     )
   )
 

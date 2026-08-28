@@ -187,7 +187,12 @@
     header_hjust = 0.5,
     header_text_size = header_text_size,
     header_fontface = header_fontface,
-    header_family = header_family
+    header_family = header_family,
+    dodge_width = if (is.null(state$defaults$dodge_width)) {
+      0.6
+    } else {
+      state$defaults$dodge_width
+    }
   )
 
   combine_forest_plot_and_table(
