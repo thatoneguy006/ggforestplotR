@@ -3,39 +3,32 @@
 ## Breaking Changes
 
 - Removed the deprecated `grouping` and `grouping_strip_position` arguments
-  from `ggforestplot()`. Use `facet` and `facet_strip_position`, respectively.
-
-## Deprecations
-
-- Deprecated `term_header`, `n_header`, `events_header`, and `p_header` in
-  `add_forest_table()` and `add_split_table()`. Relabel displayed headers with
-  the `column_labels` named vector instead.
+  from `ggforestplot()`. Use `facet` and `facet_strip_position` instead.
 
 ## Major Changes
 
 - Added explicit `subgroup` mappings for mixed hierarchical displays, allowing
   standalone covariates and contiguous categorical blocks to share a forest
-  plot. Subgroup p-values now appear once on the parent row, and hierarchical
-  term labels in `add_forest_table()` are left-aligned while child levels remain
-  indented.
+  plot. Subgroup p-values can be delegated as "overall" or "level" via `p_method`
+  in `tidy_forest_model()`
 - Added covariance-aware subgroup effects for fitted interaction models.
   `tidy_forest_model()` and fitted-model `as_forest_data()` methods now use
   `marginaleffects` to derive average slopes or comparisons from the original
   fit without refitting subgroup models or displaying raw interaction
   coefficients. Conservative automatic selection supports one continuous-by-
   factor interaction, while explicit selection supports factor comparisons and
-  preserves additive, odds-ratio, ratio, and hazard-ratio scales. Omnibus
-  interaction p-values share the canonical `p.value` column with ordinary
-  covariate p-values and appear only on subgroup headers. Set
-  `p_method = "level"` to place the post-estimation slope or comparison
-  p-values on individual subgroup rows instead.
+  preserves additive, odds-ratio, ratio, and hazard-ratio scales. 
+  
+## Minor Changes
+
 - Grouped values in `add_forest_table()` and `add_split_table()` now use the
   same vertical dodge as their plotted points, keeping table text aligned at
   different output sizes and with custom `dodge_width` values.
 - Factor-valued `group` columns now retain their level order in legends,
   vertically dodged estimates, and aligned forest-table values.
-- Standalone covariates in mixed subgroup plots now use the ordinary black
-  styling and no longer add an `NA` entry to the group legend.
+- Deprecated `term_header`, `n_header`, `events_header`, and `p_header` in
+  `add_forest_table()` and `add_split_table()`. Relabel displayed headers with
+  the `column_labels` named vector instead.
 
 # ggforestplotR 0.4.0
 

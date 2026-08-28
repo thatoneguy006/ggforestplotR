@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-#library(ggforestplotR)
+library(ggforestplotR)
 library(ggplot2)
 ```
 
@@ -52,7 +52,9 @@ ggforestplot(
 
 ## Subgroup analyses
 
-There are two ways to plot subgroup analyses using `ggforestplot()`. From a data-frame, you can simply set `subgroup = "subgroup_variable_name"`. This functionality still works when some variables have subgroups and others don't, demonstrated here.
+### From a tibble
+
+There are two ways to plot subgroup analyses using `ggforestplot()`. From a tibble, you can simply set `subgroup = "subgroup_variable_name"`. This functionality still works when some variables have subgroups and others don't, demonstrated here.
 
 ```{r mixed-subgroups}
 mixed_coefs <- tibble::tribble(
@@ -81,6 +83,7 @@ ggforestplot(
 ### Continuous-by-categorical
 
 The second way is to plot subgroup analyses from a fitted model. From your fitted model, call `tidy_forest_model()` and specify your `subgroup` and optionally your `focal` variable. `subgroup = "auto"` chooses the subgroup computations based on the model, otherwise you can specify the subgroup. `p_method` allows you to append overall p-values to the parent-row, or you can choose `p_method = "level"` if you want subgroup-specific p-values. Internally, the function calls on `marginaleffects` to compute interaction estimates.
+
 ```{r fitted-subgroups}
 fit <- lm(wt ~ mpg*as.factor(cyl) + hp, data = mtcars)
 
@@ -91,37 +94,15 @@ fit |>
 ```
 
 ### Categorical-by-categorical
-```{r}
-fit2 <- lm(wt ~ gear*cyl + hp + am, data = mtcars %>%
-            mutate(cyl = factor(cyl), gear = factor(gear)))
+```{r subgroup-categorical}
+fit2 <- lm(wt ~ as.factor(gear)*as.factor(cyl) + hp + am, data = mtcars)
 
-fit2 %>%
-  tidy_forest_model(subgroup = "gear", focal = "cyl", p_method = "level") %>%
+fit2 |>
+  tidy_forest_model(subgroup = "gear", focal = "cyl", p_method = "level") |>
   ggforestplot(striped_rows = T) +
   theme(legend.position = "top") +
   add_forest_table(columns = c("term", "estimate", "p.value"))
 ```
-
-
-
-These row and panel controls have different purposes:
-
-- `group` draws multiple estimates, usually with different colors, on the same
-  row.
-- `facet` divides rows into separate panels.
-- `subgroup` adds hierarchical parent rows and indents their child estimates.
-- `separate_groups` keeps its existing role as a visual block-separation
-  feature; it does not create a parent/child hierarchy.
-
-For data frames passed directly to `ggforestplot()`, `subgroup` controls only
-the presentation of estimates you have already computed. It does not detect
-categorical variables or calculate model interaction contrasts. For fitted
-interaction models, use `tidy_forest_model(model, subgroup = ..., focal = ...)`
-to derive subgroup effects before plotting. If `p.value` is mapped, the first
-nonmissing p-value in each subgroup block and estimate group, when applicable,
-is shown on the parent row; child-level p-value cells are left blank. In
-`add_forest_table()`, hierarchical term labels are left-aligned and child labels
-retain their indentation.
 
 ## Distinct variable separation
 
@@ -154,14 +135,13 @@ ggforestplot(
 
 You can choose which columns from your dataframe to include in the table using the `columns` argument, and can change the labels using `column_labels`. If some of the term labels need to be changed, use `term_labels` to assign them new values. Some of the column labels are automatically assigned if no value is provided.
 
-Notice how we are explicitly naming the *n* and *p.value* columns? This is necessary in most cases because aliases are not yet incorporated (but they will be...I promise I'm getting to it).
+Notice how we are explicitly naming *p.value* column? This is necessary in most cases because aliases are not yet incorporated (but they will be...I promise I'm getting to it).
 
 ```{r left-side-table}
 ggforestplot(
   coefs,
   facet = "section",
   facet_strip_position = "right",
-  n = "sample_size",
   p.value = "p_value",
   striped_rows = TRUE,
   term_labels = c("Smoking" = "Smoking status")
@@ -264,17 +244,14 @@ comparison_coefs <- data.frame(
   estimate = c(0.12, -0.10, 0.18, 0.30, 0.46, 0.08, -0.05, 0.24, 0.40, 0.58),
   conf.low = c(0.03, -0.18, 0.04, 0.10, 0.18, 0.00, -0.13, 0.10, 0.20, 0.30),
   conf.high = c(0.21, -0.02, 0.32, 0.50, 0.74, 0.16, 0.03, 0.38, 0.60, 0.86),
-  model = rep(c("A", "B"), each = 5),
-  section = rep(c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor"), 2)
+  model = rep(c("A", "B"), each = 5)
 )
 
 ggforestplot(
   comparison_coefs,
   group = "model",
-  facet = "section",
   striped_rows = TRUE,
-  dodge_width = 0.5,
-  facet_strip_position = "right"
+  dodge_width = 0.5
 ) +
   theme(legend.position = "top") +
   scale_color_manual(values = c("#1F968BFF", "#453781FF")) +

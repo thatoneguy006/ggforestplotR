@@ -86,6 +86,7 @@ ggforestplot(
 
 ## Learn more
 
+- Package website: <https://thatoneguy006.github.io/ggforestplotR/>
 - Get started: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-get-started.html>
 - Plot & Table customization: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-plot-customization.html>
 - Data helpers: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-data-helpers.html>
@@ -99,4 +100,4 @@ ggforestplot(
 - `as_forest_data()` is the S3 conversion interface for custom coefficient data
   and supported fitted models.
 - `forest_metadata()` inspects effect-scale and source metadata.
-- `tidy_forest_model()` is the compatibility wrapper for model conversion.
+- `tidy_forest_model()` is used as a post-estimation interface for fitted models.
