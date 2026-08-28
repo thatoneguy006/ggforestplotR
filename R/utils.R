@@ -26,6 +26,16 @@ forest_display_reserved_columns <- function() {
   )
 }
 
+forest_p_method <- function(data) {
+  method <- if (inherits(data, "forest_data")) {
+    forest_metadata(data)$p_method
+  } else {
+    attr(data, "p_method", exact = TRUE)
+  }
+
+  if (is.null(method)) "overall" else method
+}
+
 # ─── Data validation ──────────────────────────────────────────────────────────
 
 validate_forest_data <- function(data, exponentiate = FALSE) {
@@ -902,6 +912,7 @@ as_forest_display_frame <- function(data) {
     attr(out, "column_mapping") <- metadata$column_mapping
     attr(out, "grouping_levels") <- metadata$grouping_levels
     attr(out, "conf.level") <- metadata$conf_level
+    attr(out, "p_method") <- forest_p_method(data)
   }
 
   out
@@ -909,6 +920,7 @@ as_forest_display_frame <- function(data) {
 
 expand_subgroup_display_rows <- function(data, has_groupings) {
   display_data <- as_forest_display_frame(data)
+  p_method <- forest_p_method(display_data)
   display_data$.forest_source_row <- seq_len(nrow(display_data))
   display_data$row_type <- "estimate"
   display_data$display_label <- display_data$label
@@ -959,12 +971,14 @@ expand_subgroup_display_rows <- function(data, has_groupings) {
           block_end <- block_end + 1L
         }
         block_rows <- idx[seq.int(position, block_end)]
-        block_p_values <- display_data$p.value[block_rows]
-        block_p_values <- block_p_values[!is.na(block_p_values)]
-        if (length(block_p_values) > 0L) {
-          header$p.value <- block_p_values[[1L]]
+        if (identical(p_method, "overall")) {
+          block_p_values <- display_data$p.value[block_rows]
+          block_p_values <- block_p_values[!is.na(block_p_values)]
+          if (length(block_p_values) > 0L) {
+            header$p.value <- block_p_values[[1L]]
+          }
+          display_data$p.value[block_rows] <- NA_real_
         }
-        display_data$p.value[block_rows] <- NA_real_
         block_separators <- display_data$separate_groups[block_rows]
         separator_present <- !is.na(block_separators) &
           nzchar(block_separators)
@@ -984,7 +998,8 @@ expand_subgroup_display_rows <- function(data, has_groupings) {
   out <- do.call(rbind, parts)
   rownames(out) <- NULL
   for (attribute in c(
-    "source_columns", "column_mapping", "grouping_levels", "conf.level"
+    "source_columns", "column_mapping", "grouping_levels", "conf.level",
+    "p_method"
   )) {
     attr(out, attribute) <- attr(display_data, attribute, exact = TRUE)
   }
@@ -1381,6 +1396,7 @@ build_forest_table_data <- function(data,
   }
   has_groups <- any(!is.na(data$group) & nzchar(data$group))
   align_groups <- has_groups
+  p_method <- forest_p_method(data)
   group_header <- default_group_table_header(data)
   row_levels <- levels(display_data$row_key)
   row_parts <- vector("list", length(row_levels))
@@ -1476,14 +1492,15 @@ build_forest_table_data <- function(data,
         ci_fmt = ci_fmt,
         align_groups = align_groups
       ),
-      p_text = if (is_header) {
+      p_text = if (is_header && identical(p_method, "overall")) {
         format_subgroup_header_p_values(
           data,
           rd,
           p_digits = digits$p_digits,
           align_groups = align_groups
         )
-      } else if (is_child) {
+      } else if (is_header ||
+                 (is_child && identical(p_method, "overall"))) {
         ""
       } else {
         format_forest_p_values(

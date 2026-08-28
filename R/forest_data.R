@@ -37,7 +37,8 @@ new_forest_metadata <- function(estimate_scale = "identity",
                                 source_package = NULL,
                                 source_columns = NULL,
                                 column_mapping = NULL,
-                                grouping_levels = NULL) {
+                                grouping_levels = NULL,
+                                p_method = "overall") {
   list(
     version = 1L,
     estimate_scale = estimate_scale,
@@ -49,7 +50,8 @@ new_forest_metadata <- function(estimate_scale = "identity",
     source_package = source_package,
     source_columns = source_columns,
     column_mapping = column_mapping,
-    grouping_levels = grouping_levels
+    grouping_levels = grouping_levels,
+    p_method = p_method
   )
 }
 
@@ -141,6 +143,16 @@ validate_forest_metadata <- function(data, metadata) {
     stop("Every `source_columns` value must identify a stored forest-data column.", call. = FALSE)
   }
 
+  p_method <- metadata$p_method
+  if (!is.null(p_method) &&
+      (!is.character(p_method) || length(p_method) != 1L ||
+       is.na(p_method) || !p_method %in% c("overall", "level"))) {
+    stop(
+      "`p_method` metadata must be either \"overall\" or \"level\".",
+      call. = FALSE
+    )
+  }
+
   column_mapping <- metadata$column_mapping
   valid_column_mapping <- is.null(column_mapping) || is.list(column_mapping) ||
     (is.character(column_mapping) && !is.null(names(column_mapping)) &&
@@ -189,6 +201,9 @@ forest_axis_label <- function(metadata) {
 }
 
 set_forest_metadata <- function(data, metadata) {
+  if (is.null(metadata$p_method)) {
+    metadata$p_method <- "overall"
+  }
   validate_forest_metadata(data, metadata)
   attr(data, "forest_meta") <- metadata
 
@@ -219,7 +234,8 @@ new_forest_data <- function(data, metadata) {
 #'
 #' @param x A `forest_data` object.
 #'
-#' @return A named metadata list.
+#' @return A named metadata list, including the effect scale, reference value,
+#'   source mappings, and subgroup `p_method` display contract.
 #' @export
 forest_metadata <- function(x) {
   if (!inherits(x, "forest_data")) {

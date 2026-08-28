@@ -154,6 +154,12 @@ bind_forest_models <- function(models,
   }
 
   estimate_labels <- vapply(metadata, `[[`, character(1), "effect_label")
+  p_methods <- vapply(metadata, function(item) {
+    if (is.null(item$p_method)) "overall" else item$p_method
+  }, character(1))
+  if (length(unique(p_methods)) > 1L) {
+    stop("All bound models must use the same `p_method`.", call. = FALSE)
+  }
 
   out <- bind_model_frames(parts)
   effect_label <- if (length(unique(estimate_labels)) == 1L) {
@@ -189,7 +195,8 @@ bind_forest_models <- function(models,
     source_model = stats::setNames(lapply(metadata, `[[`, "source_model"), model_labels),
     source_package = stats::setNames(lapply(metadata, `[[`, "source_package"), model_labels),
     source_columns = source_storage,
-    column_mapping = column_mapping
+    column_mapping = column_mapping,
+    p_method = p_methods[[1L]]
   )
 
   out <- new_forest_data(out, bound_metadata)

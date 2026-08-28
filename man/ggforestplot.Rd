@@ -46,7 +46,8 @@ ggforestplot(
   ref_label = NULL,
   ref_linetype = 2,
   ref_color = "grey60",
-  subgroup = NULL
+  subgroup = NULL,
+  p_method = c("overall", "level")
 )
 }
 \arguments{
@@ -160,11 +161,18 @@ ratios.}
 Missing or empty values identify ordinary standalone estimates. Each
 non-empty subgroup must form one contiguous block within a facet. This is
 a presentation-only mapping; subgroups and contrasts are not inferred.
-When \code{p.value} is mapped, the first nonmissing value for each subgroup and
-estimate group, when applicable, is displayed on its parent row; child
-p-value cells are suppressed. For fitted models, first call
-\code{\link[=tidy_forest_model]{tidy_forest_model()}} with \code{subgroup} and \code{focal}; direct model calls do not
-perform post-estimation subgroup inference inside the plotting layer.}
+With the default \code{p_method = "overall"} forest-data metadata, the first
+nonmissing p-value for each subgroup and estimate group, when applicable,
+is displayed on its parent row and child p-value cells are suppressed.
+\code{p_method = "level"} retains p-values on child rows. For fitted models,
+first call \code{\link[=tidy_forest_model]{tidy_forest_model()}} with \code{subgroup}, \code{focal}, and the desired
+\code{p_method}; direct model calls do not perform post-estimation subgroup
+inference inside the plotting layer.}
+
+\item{p_method}{Subgroup p-value placement for data-frame input.
+\code{"overall"} displays one p-value on each subgroup header; \code{"level"}
+displays p-values on the subgroup estimate rows. Fitted-model subgroup
+data inherit this choice from \code{\link[=tidy_forest_model]{tidy_forest_model()}}.}
 }
 \value{
 A \code{ggplot} object. Use standard \code{ggplot2} functions such as

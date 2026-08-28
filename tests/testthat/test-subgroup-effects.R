@@ -75,6 +75,16 @@ test_that("lm subgroup rows match marginaleffects average slopes", {
   expect_equal(out$estimand, rep("average_slope", nrow(expected)))
   expect_equal(out$focal, rep("mpg", nrow(expected)))
   expect_equal(out$effect_scale, rep("identity", nrow(expected)))
+  expect_equal(forest_metadata(out)$p_method, "overall")
+
+  level_out <- suppressWarnings(tidy_forest_model(
+    fit,
+    subgroup = "auto",
+    focal = "mpg",
+    p_method = "level"
+  ))
+  expect_equal(level_out$p.value, expected$p.value, tolerance = 1e-8)
+  expect_equal(forest_metadata(level_out)$p_method, "level")
 })
 
 test_that("automatic and explicit interaction selection agree", {
@@ -219,6 +229,65 @@ test_that("interaction and covariate p-values share the canonical column", {
   ]))))
   expect_true(all(!nzchar(unname(p_lookup[
     as.character(display_data$row_key[children])
+  ]))))
+})
+
+test_that("level p-values stay on subgroup estimate rows", {
+  skip_if_not_installed("broom")
+  skip_if_not_installed("marginaleffects")
+
+  fit <- make_interaction_lm(include_covariates = TRUE)
+  out <- suppressWarnings(tidy_forest_model(
+    fit,
+    subgroup = "auto",
+    focal = "mpg",
+    p_method = "level"
+  ))
+  expected <- average_slopes(fit, "mpg", "cyl")
+  subgroup_rows <- !is.na(out$subgroup)
+
+  expect_equal(
+    out$p.value[subgroup_rows],
+    expected$p.value,
+    tolerance = 1e-8
+  )
+
+  plot <- ggforestplot(out)
+  display_data <- plot$ggforestplotR_state$display_data
+  header <- display_data$row_type == "subgroup_header"
+  children <- display_data$row_type == "estimate" &
+    !is.na(display_data$subgroup)
+  standalone <- display_data$row_type == "estimate" &
+    is.na(display_data$subgroup)
+
+  expect_true(all(is.na(display_data$p.value[header])))
+  expect_equal(
+    display_data$p.value[children],
+    expected$p.value,
+    tolerance = 1e-8
+  )
+  expect_true(all(!is.na(display_data$p.value[standalone])))
+
+  table_spec <- build_forest_table_data(
+    plot$ggforestplotR_state$forest_data,
+    columns = c("term", "p"),
+    display_data = display_data
+  )
+  p_cells <- table_spec$table_data[
+    table_spec$table_data$column_key == "p",
+    ,
+    drop = FALSE
+  ]
+  p_lookup <- stats::setNames(
+    p_cells$text,
+    as.character(p_cells$row_key)
+  )
+
+  expect_true(all(!nzchar(unname(p_lookup[
+    as.character(display_data$row_key[header])
+  ]))))
+  expect_true(all(nzchar(unname(p_lookup[
+    as.character(display_data$row_key[children | standalone])
   ]))))
 })
 
@@ -390,6 +459,25 @@ test_that("subgroup argument validation is conservative", {
   expect_error(
     ggforestplot(fit, subgroup = "auto"),
     "tidy_forest_model"
+  )
+  expect_error(
+    tidy_forest_model(
+      fit,
+      subgroup = "auto",
+      focal = "mpg",
+      p_method = "unsupported"
+    ),
+    "arg"
+  )
+
+  standardized <- suppressWarnings(tidy_forest_model(
+    fit,
+    subgroup = "auto",
+    focal = "mpg"
+  ))
+  expect_error(
+    ggforestplot(standardized, p_method = "level"),
+    "already defined"
   )
 })
 

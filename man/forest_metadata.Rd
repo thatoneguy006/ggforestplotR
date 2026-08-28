@@ -10,7 +10,8 @@ forest_metadata(x)
 \item{x}{A \code{forest_data} object.}
 }
 \value{
-A named metadata list.
+A named metadata list, including the effect scale, reference value,
+source mappings, and subgroup \code{p_method} display contract.
 }
 \description{
 Returns the semantic and provenance metadata attached to a \code{forest_data}

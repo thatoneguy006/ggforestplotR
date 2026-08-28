@@ -593,7 +593,9 @@
                                        focal,
                                        conf.level,
                                        estimate_info,
-                                       interaction = NULL) {
+                                       interaction = NULL,
+                                       p_method = c("overall", "level")) {
+  p_method <- match.arg(p_method)
   if (!requireNamespace("marginaleffects", quietly = TRUE)) {
     stop(
       paste0(
@@ -650,12 +652,16 @@
     model,
     terms = interaction$metadata$terms
   )
-  interaction_p_value <- .estimate_subgroup_interaction_p(
-    model = model,
-    interaction = interaction,
-    model_matrix = matrix,
-    joint_test = effect_dispatch$joint_test
-  )
+  p_values <- if (identical(p_method, "overall")) {
+    rep(.estimate_subgroup_interaction_p(
+      model = model,
+      interaction = interaction,
+      model_matrix = matrix,
+      joint_test = effect_dispatch$joint_test
+    ), nrow(result))
+  } else {
+    as.numeric(result$p.value)
+  }
 
   estimate <- as.numeric(result$estimate)
   conf.low <- as.numeric(result$conf.low)
@@ -681,7 +687,7 @@
     std.error = as.numeric(result$std.error),
     statistic = as.numeric(result$statistic),
     df = if ("df" %in% names(result)) as.numeric(result$df) else NA_real_,
-    p.value = rep(interaction_p_value, nrow(result)),
+    p.value = p_values,
     conf.low = conf.low,
     conf.high = conf.high,
     subgroup = rep(interaction$display_subgroup, nrow(result)),

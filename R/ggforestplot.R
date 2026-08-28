@@ -18,11 +18,13 @@
 #'   Missing or empty values identify ordinary standalone estimates. Each
 #'   non-empty subgroup must form one contiguous block within a facet. This is
 #'   a presentation-only mapping; subgroups and contrasts are not inferred.
-#'   When `p.value` is mapped, the first nonmissing value for each subgroup and
-#'   estimate group, when applicable, is displayed on its parent row; child
-#'   p-value cells are suppressed. For fitted models, first call
-#'   [tidy_forest_model()] with `subgroup` and `focal`; direct model calls do not
-#'   perform post-estimation subgroup inference inside the plotting layer.
+#'   With the default `p_method = "overall"` forest-data metadata, the first
+#'   nonmissing p-value for each subgroup and estimate group, when applicable,
+#'   is displayed on its parent row and child p-value cells are suppressed.
+#'   `p_method = "level"` retains p-values on child rows. For fitted models,
+#'   first call [tidy_forest_model()] with `subgroup`, `focal`, and the desired
+#'   `p_method`; direct model calls do not perform post-estimation subgroup
+#'   inference inside the plotting layer.
 #' @param facet Optional column name used to split rows into faceted plot
 #'   sections. If this column is a factor, its levels control facet order.
 #' @param facet_strip_position Positioning for facet strip labels.
@@ -36,6 +38,10 @@
 #' @param events Optional column name holding event counts or event labels for
 #'   table helpers.
 #' @param p.value Optional column name holding p-values.
+#' @param p_method Subgroup p-value placement for data-frame input.
+#'   `"overall"` displays one p-value on each subgroup header; `"level"`
+#'   displays p-values on the subgroup estimate rows. Fitted-model subgroup
+#'   data inherit this choice from [tidy_forest_model()].
 #' @param exponentiate Logical; if `TRUE`, transform the estimates and draw the
 #'   axis on the log scale with the reference line at 1. For model objects,
 #'   `NULL` uses the canonical scale when it can be inferred, such as hazard
@@ -135,9 +141,11 @@ ggforestplot <- function(data,
                          ref_label = NULL,
                          ref_linetype = 2,
                          ref_color = "grey60",
-                         subgroup = NULL) {
+                         subgroup = NULL,
+                         p_method = c("overall", "level")) {
   ref_line_missing <- missing(ref_line)
   conf_level_missing <- missing(conf.level)
+  p_method_missing <- missing(p_method)
 
   if (!missing(line_size)) {
     if (!missing(linewidth)) {
@@ -172,12 +180,16 @@ ggforestplot <- function(data,
   sort_terms <- match.arg(sort_terms)
   facet_strip_position <- match.arg(facet_strip_position)
   ci_arrow_type <- match.arg(ci_arrow_type)
+  p_method <- match.arg(p_method)
 
   if (inherits(data, "ggforestplot_bound_models") && !is.null(exponentiate)) {
     stop("`exponentiate` is set by `bind_forest_models()`; pass it there instead.", call. = FALSE)
   }
   if (inherits(data, "forest_data") && !conf_level_missing) {
     stop("`conf.level` is already defined by the `forest_data` metadata.", call. = FALSE)
+  }
+  if (inherits(data, "forest_data") && !p_method_missing) {
+    stop("`p_method` is already defined by the `forest_data` metadata.", call. = FALSE)
   }
 
   forest_data <- if (inherits(data, "forest_data")) {
@@ -203,6 +215,7 @@ ggforestplot <- function(data,
       n = n,
       events = events,
       p.value = p.value,
+      p_method = p_method,
       exponentiate = exponentiate,
       conf.level = conf.level,
       sort_terms = sort_terms

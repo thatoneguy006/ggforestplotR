@@ -18,6 +18,7 @@ test_that("bind_forest_models stacks model terms with model labels", {
   expect_equal(metadata$estimate_scale, "identity")
   expect_equal(metadata$effect_label, "Beta")
   expect_equal(metadata$reference_value, 0)
+  expect_equal(metadata$p_method, "overall")
   expect_named(metadata$source_model, c("Base", "Adjusted"))
   expect_named(metadata$source_package, c("Base", "Adjusted"))
 })

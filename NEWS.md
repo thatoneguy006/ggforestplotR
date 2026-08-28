@@ -15,7 +15,9 @@
   factor interaction, while explicit selection supports factor comparisons and
   preserves additive, odds-ratio, ratio, and hazard-ratio scales. Omnibus
   interaction p-values share the canonical `p.value` column with ordinary
-  covariate p-values and appear only on subgroup headers.
+  covariate p-values and appear only on subgroup headers. Set
+  `p_method = "level"` to place the post-estimation slope or comparison
+  p-values on individual subgroup rows instead.
 
 # ggforestplotR 0.4.0
 

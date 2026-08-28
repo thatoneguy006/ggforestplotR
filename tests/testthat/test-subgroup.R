@@ -209,6 +209,51 @@ test_that("multiple subgroup blocks are inserted immediately before their member
   expect_equal(which(display_data$row_type == "subgroup_header"), c(2L, 6L))
 })
 
+test_that("level p_method retains p-values on subgroup children", {
+  raw <- make_mixed_subgroup_data()
+  p <- ggforestplot(
+    raw,
+    subgroup = "subgroup_name",
+    p.value = "p_value",
+    p_method = "level"
+  )
+  display_data <- p$ggforestplotR_state$display_data
+  header <- display_data$row_type == "subgroup_header"
+  children <- display_data$row_type == "estimate" &
+    !is.na(display_data$subgroup) & nzchar(display_data$subgroup)
+
+  expect_equal(forest_metadata(
+    p$ggforestplotR_state$forest_data
+  )$p_method, "level")
+  expect_true(all(is.na(display_data$p.value[header])))
+  expect_equal(
+    display_data$p.value[children],
+    raw$p_value[!is.na(raw$subgroup_name) & nzchar(raw$subgroup_name)]
+  )
+
+  spec <- build_forest_table_data(
+    p$ggforestplotR_state$forest_data,
+    columns = c("term", "p"),
+    display_data = display_data
+  )
+  p_cells <- spec$table_data[
+    spec$table_data$column_key == "p",
+    ,
+    drop = FALSE
+  ]
+  p_lookup <- stats::setNames(
+    p_cells$text,
+    as.character(p_cells$row_key)
+  )
+
+  expect_true(all(!nzchar(unname(p_lookup[
+    as.character(display_data$row_key[header])
+  ]))))
+  expect_true(all(nzchar(unname(p_lookup[
+    as.character(display_data$row_key[children])
+  ]))))
+})
+
 test_that("explicit all-standalone subgroup values do not add headers", {
   raw <- make_mixed_subgroup_data()[c(1L, 4L), , drop = FALSE]
   display_data <- subgroup_plot(raw)$ggforestplotR_state$display_data

@@ -150,3 +150,22 @@ covariates retain their coefficient p-values, while every derived subgroup
 block receives an omnibus Wald test of the selected interaction. The display
 layer moves that interaction p-value to the subgroup header and leaves the
 individual levels blank, so one table column can present both kinds of tests.
+
+Use `p_method = "level"` when the subgroup-specific slope or comparison tests
+are the quantities that should appear beside the individual estimates:
+
+```{r model-subgroup-level-p-values}
+level_p_ready <- tidy_forest_model(
+  interaction_fit,
+  subgroup = "auto",
+  focal = "mpg",
+  p_method = "level"
+)
+
+ggforestplot(level_p_ready, striped_rows = TRUE) +
+  add_forest_table(columns = c("term", "estimate", "p"))
+```
+
+Both methods use the same canonical `p.value` column. `"overall"` changes the
+test and places it on the subgroup header; `"level"` retains the tests returned
+for the derived effects and places them on the subgroup rows.

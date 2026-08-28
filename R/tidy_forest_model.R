@@ -93,11 +93,12 @@ keep_fixed_effects <- function(out) {
 #' default. Other links fail rather than silently returning a response-scale
 #' estimand with a different interpretation.
 #'
-#' The canonical `p.value` column contains ordinary coefficient p-values for
-#' standalone covariates and an omnibus Wald test of the selected interaction
-#' for subgroup rows. The interaction p-value is repeated across the source
-#' subgroup rows so the display layer can promote it to the parent header and
-#' suppress it on individual levels.
+#' The canonical `p.value` column always contains both ordinary-covariate and
+#' interaction-related tests. With `p_method = "overall"`, subgroup rows store
+#' an omnibus Wald test of the selected interaction, which the display layer
+#' promotes to the parent header. With `p_method = "level"`, subgroup rows
+#' retain the post-estimation p-value for each slope or comparison and display
+#' it alongside that estimate.
 #'
 #' @param model A fitted model object supported by [broom::tidy()] or, for
 #'   mixed models, a `broom.mixed` tidy method.
@@ -118,12 +119,14 @@ keep_fixed_effects <- function(out) {
 #' @param focal Optional predictor whose conditional effect is estimated within
 #'   each subgroup level. It may be continuous or a factor. For factors, each
 #'   non-reference level is contrasted with the first factor level.
+#' @param p_method Subgroup p-value method. `"overall"` uses an omnibus Wald
+#'   test of the selected interaction on the subgroup header. `"level"` uses
+#'   the test returned for each subgroup-specific slope or comparison.
 #'
 #' @return A `forest_data` object ready for [ggforestplot()]. Derived rows add
 #'   `subgroup_level`, `focal`, `model_term`, `contrast`, `estimand`,
-#'   and `effect_scale` columns. Their canonical `p.value` is the omnibus
-#'   interaction test, allowing it to share one table column with ordinary
-#'   covariate p-values.
+#'   and `effect_scale` columns. Their canonical `p.value` follows `p_method`
+#'   and shares one table column with ordinary covariate p-values.
 #' @export
 #'
 #' @examples
@@ -161,7 +164,8 @@ tidy_forest_model <- function(model,
                               term_labels = NULL,
                               sort_terms = c("none", "descending", "ascending"),
                               subgroup = NULL,
-                              focal = NULL) {
+                              focal = NULL,
+                              p_method = c("overall", "level")) {
   as_forest_data(
     model,
     conf.int = conf.int,
@@ -171,7 +175,8 @@ tidy_forest_model <- function(model,
     term_labels = term_labels,
     sort_terms = sort_terms,
     subgroup = subgroup,
-    focal = focal
+    focal = focal,
+    p_method = p_method
   )
 }
 
@@ -184,7 +189,8 @@ tidy_forest_model_impl <- function(model,
                                    sort_terms = c("none", "descending", "ascending"),
                                    source_package = NULL,
                                    subgroup = NULL,
-                                   focal = NULL) {
+                                   focal = NULL,
+                                   p_method = c("overall", "level")) {
   if (!is.logical(conf.int) || length(conf.int) != 1L || is.na(conf.int)) {
     stop("`conf.int` must be `TRUE` or `FALSE`.", call. = FALSE)
   }
@@ -193,6 +199,7 @@ tidy_forest_model_impl <- function(model,
   }
 
   sort_terms <- match.arg(sort_terms)
+  p_method <- match.arg(p_method)
   if (is.null(subgroup) && !is.null(focal)) {
     stop("`focal` requires `subgroup`.", call. = FALSE)
   }
@@ -254,7 +261,8 @@ tidy_forest_model_impl <- function(model,
       focal = focal,
       conf.level = conf.level,
       estimate_info = estimate_info,
-      interaction = subgroup_interaction
+      interaction = subgroup_interaction,
+      p_method = p_method
     )
     out <- .splice_subgroup_effects(out, effects)
   }
@@ -285,7 +293,8 @@ tidy_forest_model_impl <- function(model,
     reference_value = estimate_info$reference_value,
     source_model = class(model),
     source_package = source_package,
-    sort_terms = sort_terms
+    sort_terms = sort_terms,
+    p_method = p_method
   )
   out
 }
@@ -300,6 +309,7 @@ model_as_forest_data <- function(data,
                                  source_package = NULL,
                                  subgroup = NULL,
                                  focal = NULL,
+                                 p_method = c("overall", "level"),
                                  ...) {
   tidy_forest_model_impl(
     model = data,
@@ -311,7 +321,8 @@ model_as_forest_data <- function(data,
     sort_terms = sort_terms,
     source_package = source_package,
     subgroup = subgroup,
-    focal = focal
+    focal = focal,
+    p_method = p_method
   )
 }
 
@@ -321,7 +332,8 @@ as_forest_data.lm <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
                               exponentiate = NULL, intercept = FALSE,
                               term_labels = NULL,
                               sort_terms = c("none", "descending", "ascending"),
-                              subgroup = NULL, focal = NULL) {
+                              subgroup = NULL, focal = NULL,
+                              p_method = c("overall", "level")) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -332,6 +344,7 @@ as_forest_data.lm <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
     sort_terms = sort_terms,
     subgroup = subgroup,
     focal = focal,
+    p_method = p_method,
     source_package = "stats",
     ...
   )
@@ -343,7 +356,8 @@ as_forest_data.glm <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
                                exponentiate = NULL, intercept = FALSE,
                                term_labels = NULL,
                                sort_terms = c("none", "descending", "ascending"),
-                               subgroup = NULL, focal = NULL) {
+                               subgroup = NULL, focal = NULL,
+                               p_method = c("overall", "level")) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -354,6 +368,7 @@ as_forest_data.glm <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
     sort_terms = sort_terms,
     subgroup = subgroup,
     focal = focal,
+    p_method = p_method,
     source_package = "stats",
     ...
   )
@@ -365,7 +380,8 @@ as_forest_data.coxph <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
                                  exponentiate = NULL, intercept = FALSE,
                                  term_labels = NULL,
                                  sort_terms = c("none", "descending", "ascending"),
-                                 subgroup = NULL, focal = NULL) {
+                                 subgroup = NULL, focal = NULL,
+                                 p_method = c("overall", "level")) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -376,6 +392,7 @@ as_forest_data.coxph <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
     sort_terms = sort_terms,
     subgroup = subgroup,
     focal = focal,
+    p_method = p_method,
     source_package = "survival",
     ...
   )
@@ -387,7 +404,8 @@ as_forest_data.merMod <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
                                   exponentiate = NULL, intercept = FALSE,
                                   term_labels = NULL,
                                   sort_terms = c("none", "descending", "ascending"),
-                                  subgroup = NULL, focal = NULL) {
+                                  subgroup = NULL, focal = NULL,
+                                  p_method = c("overall", "level")) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -398,6 +416,7 @@ as_forest_data.merMod <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
     sort_terms = sort_terms,
     subgroup = subgroup,
     focal = focal,
+    p_method = p_method,
     source_package = "lme4",
     ...
   )
@@ -409,7 +428,8 @@ as_forest_data.lme <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
                                exponentiate = NULL, intercept = FALSE,
                                term_labels = NULL,
                                sort_terms = c("none", "descending", "ascending"),
-                               subgroup = NULL, focal = NULL) {
+                               subgroup = NULL, focal = NULL,
+                               p_method = c("overall", "level")) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -420,6 +440,7 @@ as_forest_data.lme <- function(data, ..., conf.int = TRUE, conf.level = 0.95,
     sort_terms = sort_terms,
     subgroup = subgroup,
     focal = focal,
+    p_method = p_method,
     source_package = "nlme",
     ...
   )
@@ -431,7 +452,8 @@ as_forest_data.glmmTMB <- function(data, ..., conf.int = TRUE, conf.level = 0.95
                                    exponentiate = NULL, intercept = FALSE,
                                    term_labels = NULL,
                                    sort_terms = c("none", "descending", "ascending"),
-                                   subgroup = NULL, focal = NULL) {
+                                   subgroup = NULL, focal = NULL,
+                                   p_method = c("overall", "level")) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -442,6 +464,7 @@ as_forest_data.glmmTMB <- function(data, ..., conf.int = TRUE, conf.level = 0.95
     sort_terms = sort_terms,
     subgroup = subgroup,
     focal = focal,
+    p_method = p_method,
     source_package = "glmmTMB",
     ...
   )
@@ -453,7 +476,8 @@ as_forest_data.default <- function(data, ..., conf.int = TRUE, conf.level = 0.95
                                    exponentiate = NULL, intercept = FALSE,
                                    term_labels = NULL,
                                    sort_terms = c("none", "descending", "ascending"),
-                                   subgroup = NULL, focal = NULL) {
+                                   subgroup = NULL, focal = NULL,
+                                   p_method = c("overall", "level")) {
   model_as_forest_data(
     data,
     conf.int = conf.int,
@@ -464,6 +488,7 @@ as_forest_data.default <- function(data, ..., conf.int = TRUE, conf.level = 0.95
     sort_terms = sort_terms,
     subgroup = subgroup,
     focal = focal,
+    p_method = p_method,
     source_package = NULL,
     ...
   )

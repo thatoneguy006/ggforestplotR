@@ -20,6 +20,7 @@ as_forest_data(data, ...)
   term_labels = NULL,
   sort_terms = c("none", "descending", "ascending"),
   exponentiate = NULL,
+  p_method = NULL,
   ...
 )
 
@@ -47,6 +48,7 @@ as_forest_data(data, ...)
   source_package = NULL,
   sort_terms = c("none", "descending", "ascending"),
   subgroup = NULL,
+  p_method = c("overall", "level"),
   ...
 )
 
@@ -60,7 +62,8 @@ as_forest_data(data, ...)
   term_labels = NULL,
   sort_terms = c("none", "descending", "ascending"),
   subgroup = NULL,
-  focal = NULL
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 
 \method{as_forest_data}{glm}(
@@ -73,7 +76,8 @@ as_forest_data(data, ...)
   term_labels = NULL,
   sort_terms = c("none", "descending", "ascending"),
   subgroup = NULL,
-  focal = NULL
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 
 \method{as_forest_data}{coxph}(
@@ -86,7 +90,8 @@ as_forest_data(data, ...)
   term_labels = NULL,
   sort_terms = c("none", "descending", "ascending"),
   subgroup = NULL,
-  focal = NULL
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 
 \method{as_forest_data}{merMod}(
@@ -99,7 +104,8 @@ as_forest_data(data, ...)
   term_labels = NULL,
   sort_terms = c("none", "descending", "ascending"),
   subgroup = NULL,
-  focal = NULL
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 
 \method{as_forest_data}{lme}(
@@ -112,7 +118,8 @@ as_forest_data(data, ...)
   term_labels = NULL,
   sort_terms = c("none", "descending", "ascending"),
   subgroup = NULL,
-  focal = NULL
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 
 \method{as_forest_data}{glmmTMB}(
@@ -125,7 +132,8 @@ as_forest_data(data, ...)
   term_labels = NULL,
   sort_terms = c("none", "descending", "ascending"),
   subgroup = NULL,
-  focal = NULL
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 
 \method{as_forest_data}{default}(
@@ -138,7 +146,8 @@ as_forest_data(data, ...)
   term_labels = NULL,
   sort_terms = c("none", "descending", "ascending"),
   subgroup = NULL,
-  focal = NULL
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 }
 \arguments{
@@ -158,6 +167,12 @@ is preserved.}
 \item{exponentiate}{Compatibility argument. \code{TRUE} is equivalent to
 \code{estimate_scale = "ratio"}; \code{FALSE} is equivalent to
 \code{estimate_scale = "identity"} when \code{estimate_scale} is not supplied.}
+
+\item{p_method}{Subgroup p-value placement. \code{"overall"} displays one
+omnibus or block-level p-value on the subgroup header; \code{"level"} keeps
+p-values on the individual subgroup estimate rows. For fitted-model
+methods, this also selects whether \code{p.value} contains the omnibus
+interaction test or the post-estimation test for each derived effect.}
 
 \item{term}{Column name holding the model term identifier.}
 
@@ -218,8 +233,9 @@ model contrasts. For fitted-model methods, use \code{"auto"} to detect one
 unambiguous continuous-by-factor interaction, or supply a factor predictor
 name together with \code{focal} to derive covariance-aware post-estimation
 subgroup effects through \code{marginaleffects}. Fitted-model subgroup rows use
-the canonical \code{p.value} column for the omnibus interaction test, so it can
-share a table column with ordinary coefficient p-values.}
+the canonical \code{p.value} column for either the omnibus interaction test or
+row-level effect tests, according to \code{p_method}, so they can share a table
+column with ordinary coefficient p-values.}
 
 \item{conf.int}{Logical; model methods require \code{TRUE} because forest data
 include confidence-interval columns.}

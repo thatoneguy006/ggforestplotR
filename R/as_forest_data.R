@@ -26,8 +26,9 @@
 #'   unambiguous continuous-by-factor interaction, or supply a factor predictor
 #'   name together with `focal` to derive covariance-aware post-estimation
 #'   subgroup effects through `marginaleffects`. Fitted-model subgroup rows use
-#'   the canonical `p.value` column for the omnibus interaction test, so it can
-#'   share a table column with ordinary coefficient p-values.
+#'   the canonical `p.value` column for either the omnibus interaction test or
+#'   row-level effect tests, according to `p_method`, so they can share a table
+#'   column with ordinary coefficient p-values.
 #' @param focal For fitted-model methods, the predictor whose conditional
 #'   effect is estimated within each subgroup level. It may be continuous or a
 #'   factor. Factor effects compare each non-reference level with the first
@@ -41,6 +42,11 @@
 #' @param events Optional column name holding event counts or event labels for
 #'   table helpers.
 #' @param p.value Optional column name holding p-values.
+#' @param p_method Subgroup p-value placement. `"overall"` displays one
+#'   omnibus or block-level p-value on the subgroup header; `"level"` keeps
+#'   p-values on the individual subgroup estimate rows. For fitted-model
+#'   methods, this also selects whether `p.value` contains the omnibus
+#'   interaction test or the post-estimation test for each derived effect.
 #' @param exponentiate Compatibility argument. `TRUE` is equivalent to
 #'   `estimate_scale = "ratio"`; `FALSE` is equivalent to
 #'   `estimate_scale = "identity"` when `estimate_scale` is not supplied.
@@ -98,6 +104,7 @@ as_forest_data.forest_data <- function(data,
                                        term_labels = NULL,
                                        sort_terms = c("none", "descending", "ascending"),
                                        exponentiate = NULL,
+                                       p_method = NULL,
                                        ...) {
   if (!is.null(exponentiate)) {
     stop(
@@ -113,6 +120,12 @@ as_forest_data.forest_data <- function(data,
   out <- data
   if (!"label" %in% names(out)) {
     out$label <- out$term
+  }
+  if (!is.null(p_method)) {
+    stop(
+      "`p_method` is already defined by the `forest_data` metadata.",
+      call. = FALSE
+    )
   }
   subgroup_mapping <- metadata$column_mapping
   has_explicit_subgroup_mapping <- is.character(subgroup_mapping) &&
@@ -173,6 +186,7 @@ as_forest_data.data.frame <- function(data,
                                       source_package = NULL,
                                       sort_terms = c("none", "descending", "ascending"),
                                       subgroup = NULL,
+                                      p_method = c("overall", "level"),
                                       ...) {
   if (!inherits(data, "data.frame")) {
     stop(
@@ -187,6 +201,7 @@ as_forest_data.data.frame <- function(data,
   source_column_names <- names(data)
   reference_value_missing <- missing(reference_value)
   sort_terms <- match.arg(sort_terms)
+  p_method <- match.arg(p_method)
 
   if (!is.null(exponentiate) &&
       (!is.logical(exponentiate) || length(exponentiate) != 1L || is.na(exponentiate))) {
@@ -343,7 +358,8 @@ as_forest_data.data.frame <- function(data,
     source_package = source_package,
     source_columns = source_storage,
     column_mapping = column_mapping,
-    grouping_levels = grouping_levels
+    grouping_levels = grouping_levels,
+    p_method = p_method
   )
 
   new_forest_data(out, metadata)

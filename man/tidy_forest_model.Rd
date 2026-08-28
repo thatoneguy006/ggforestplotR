@@ -13,7 +13,8 @@ tidy_forest_model(
   term_labels = NULL,
   sort_terms = c("none", "descending", "ascending"),
   subgroup = NULL,
-  focal = NULL
+  focal = NULL,
+  p_method = c("overall", "level")
 )
 }
 \arguments{
@@ -44,13 +45,16 @@ defining subgroup levels. Explicit selection also requires \code{focal}.}
 \item{focal}{Optional predictor whose conditional effect is estimated within
 each subgroup level. It may be continuous or a factor. For factors, each
 non-reference level is contrasted with the first factor level.}
+
+\item{p_method}{Subgroup p-value method. \code{"overall"} uses an omnibus Wald
+test of the selected interaction on the subgroup header. \code{"level"} uses
+the test returned for each subgroup-specific slope or comparison.}
 }
 \value{
 A \code{forest_data} object ready for \code{\link[=ggforestplot]{ggforestplot()}}. Derived rows add
 \code{subgroup_level}, \code{focal}, \code{model_term}, \code{contrast}, \code{estimand},
-and \code{effect_scale} columns. Their canonical \code{p.value} is the omnibus
-interaction test, allowing it to share one table column with ordinary
-covariate p-values.
+and \code{effect_scale} columns. Their canonical \code{p.value} follows \code{p_method}
+and shares one table column with ordinary covariate p-values.
 }
 \description{
 Uses \code{\link[broom:tidy]{broom::tidy()}} to convert a fitted model into forest-plot data. When
@@ -88,11 +92,12 @@ estimated on the linear-predictor scale and returned as hazard ratios by
 default. Other links fail rather than silently returning a response-scale
 estimand with a different interpretation.
 
-The canonical \code{p.value} column contains ordinary coefficient p-values for
-standalone covariates and an omnibus Wald test of the selected interaction
-for subgroup rows. The interaction p-value is repeated across the source
-subgroup rows so the display layer can promote it to the parent header and
-suppress it on individual levels.
+The canonical \code{p.value} column always contains both ordinary-covariate and
+interaction-related tests. With \code{p_method = "overall"}, subgroup rows store
+an omnibus Wald test of the selected interaction, which the display layer
+promotes to the parent header. With \code{p_method = "level"}, subgroup rows
+retain the post-estimation p-value for each slope or comparison and display
+it alongside that estimate.
 }
 \examples{
 if (requireNamespace("broom", quietly = TRUE)) {

@@ -46,6 +46,7 @@ test_that("as_forest_data standardizes coefficient columns", {
   expect_equal(metadata$effect_label, "Estimate")
   expect_equal(metadata$conf_level, 0.95)
   expect_equal(metadata$reference_value, 0)
+  expect_equal(metadata$p_method, "overall")
   expect_equal(names(metadata$source_columns), names(raw))
   expect_equal(
     unname(metadata$column_mapping[c("term", "estimate", "conf.low", "conf.high")]),
