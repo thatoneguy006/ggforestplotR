@@ -1,5 +1,10 @@
 # ggforestplotR 0.5.0
 
+## Breaking Changes
+
+- Removed the deprecated `grouping` and `grouping_strip_position` arguments
+  from `ggforestplot()`. Use `facet` and `facet_strip_position`, respectively.
+
 ## Major Changes
 
 - Added explicit `subgroup` mappings for mixed hierarchical displays, allowing

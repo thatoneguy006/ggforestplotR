@@ -171,7 +171,7 @@
     table_spec = table_spec,
     stripe_data = state$stripe_data,
     has_groupings = state$has_groupings,
-    grouping_strip_position = state$grouping_strip_position,
+    facet_strip_position = state$facet_strip_position,
     table_position = position,
     striped_rows = striped_rows,
     stripe_fill = stripe_fill,

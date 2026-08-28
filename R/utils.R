@@ -2054,7 +2054,7 @@ build_ci_plot_data <- function(data, ci_limits = NULL, exponentiate = FALSE) {
 build_forest_table_plot <- function(table_spec,
                                     stripe_data,
                                     has_groupings = FALSE,
-                                    grouping_strip_position = c("left", "right"),
+                                    facet_strip_position = c("left", "right"),
                                     table_position = c("left", "right"),
                                     striped_rows = FALSE,
                                     stripe_fill = "grey95",
@@ -2072,7 +2072,7 @@ build_forest_table_plot <- function(table_spec,
                                     header_text_size = 11,
                                     header_fontface = "bold",
                                     header_family = NULL) {
-  grouping_strip_position <- match.arg(grouping_strip_position)
+  facet_strip_position <- match.arg(facet_strip_position)
   table_position <- match.arg(table_position)
 
   if (all(is.na(table_spec$positions))) {
@@ -2169,7 +2169,7 @@ build_forest_table_plot <- function(table_spec,
     p <- p + ggplot2::facet_wrap(
       ggplot2::vars(grouping_panel),
       ncol = 1, scales = "free_y",
-      strip.position = grouping_strip_position,
+      strip.position = facet_strip_position,
       drop = FALSE
     )
   }

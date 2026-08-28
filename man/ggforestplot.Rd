@@ -15,8 +15,6 @@ ggforestplot(
   group = NULL,
   facet = NULL,
   facet_strip_position = c("left", "right"),
-  grouping = NULL,
-  grouping_strip_position = NULL,
   separate_groups = NULL,
   n = NULL,
   events = NULL,
@@ -74,11 +72,6 @@ display.}
 sections. If this column is a factor, its levels control facet order.}
 
 \item{facet_strip_position}{Positioning for facet strip labels.}
-
-\item{grouping}{Deprecated. Use \code{facet} instead.}
-
-\item{grouping_strip_position}{Deprecated. Use \code{facet_strip_position}
-instead.}
 
 \item{separate_groups}{Optional column name used to identify labeled
 variable blocks that can be outlined with grid lines.}

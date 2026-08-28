@@ -12,29 +12,6 @@ test_that("add_forest_table validates N table requests", {
   )
 })
 
-test_that("deprecated ggforestplot facet arguments warn", {
-  raw <- make_simple_forest_data(
-    section = c("Clinical", "Tumor")
-  )
-
-  expect_warning(
-    ggforestplot(raw, grouping = "section"),
-    "`grouping` is deprecated"
-  )
-  expect_warning(
-    ggforestplot(raw, facet = "section", grouping_strip_position = "right"),
-    "`grouping_strip_position` is deprecated"
-  )
-  expect_error(
-    ggforestplot(raw, facet = "section", grouping = "section"),
-    "Use only one of"
-  )
-  expect_error(
-    ggforestplot(raw, facet_strip_position = "right", grouping_strip_position = "right"),
-    "Use only one of"
-  )
-})
-
 test_that("deprecated ggforestplot line_size argument warns", {
   raw <- make_simple_forest_data()
 
@@ -208,7 +185,7 @@ test_that("ggforestplot allows facet strip labels on the right", {
     table_spec = table_spec,
     stripe_data = p$ggforestplotR_state$stripe_data,
     has_groupings = p$ggforestplotR_state$has_groupings,
-    grouping_strip_position = p$ggforestplotR_state$facet_strip_position
+    facet_strip_position = p$ggforestplotR_state$facet_strip_position
   )
 
   expect_equal(p$facet$params$strip.position, "right")

@@ -28,9 +28,6 @@
 #' @param facet Optional column name used to split rows into faceted plot
 #'   sections. If this column is a factor, its levels control facet order.
 #' @param facet_strip_position Positioning for facet strip labels.
-#' @param grouping Deprecated. Use `facet` instead.
-#' @param grouping_strip_position Deprecated. Use `facet_strip_position`
-#'   instead.
 #' @param separate_groups Optional column name used to identify labeled
 #'   variable blocks that can be outlined with grid lines.
 #' @param n Optional column name holding sample sizes or other N labels for
@@ -110,8 +107,6 @@ ggforestplot <- function(data,
                          group = NULL,
                          facet = NULL,
                          facet_strip_position = c("left", "right"),
-                         grouping = NULL,
-                         grouping_strip_position = NULL,
                          separate_groups = NULL,
                          n = NULL,
                          events = NULL,
@@ -154,27 +149,6 @@ ggforestplot <- function(data,
 
     warn_deprecated_argument("line_size", "`linewidth`")
     linewidth <- line_size
-  }
-
-  if (!missing(grouping)) {
-    if (!is.null(facet)) {
-      stop("Use only one of `facet` or deprecated `grouping`.", call. = FALSE)
-    }
-
-    warn_deprecated_argument("grouping", "`facet`")
-    facet <- grouping
-  }
-
-  if (!missing(grouping_strip_position)) {
-    if (!missing(facet_strip_position)) {
-      stop(
-        "Use only one of `facet_strip_position` or deprecated `grouping_strip_position`.",
-        call. = FALSE
-      )
-    }
-
-    warn_deprecated_argument("grouping_strip_position", "`facet_strip_position`")
-    facet_strip_position <- grouping_strip_position
   }
 
   sort_terms <- match.arg(sort_terms)
@@ -618,7 +592,6 @@ ggforestplot <- function(data,
     separator_layer_index = separator_layer_index,
     has_groupings = display_data$has_groupings,
     facet_strip_position = facet_strip_position,
-    grouping_strip_position = facet_strip_position,
     defaults = list(
       striped_rows = striped_rows,
       stripe_fill = stripe_fill,
