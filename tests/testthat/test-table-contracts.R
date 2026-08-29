@@ -1,17 +1,10 @@
-make_contract_data <- function() {
-  data.frame(
-    term = c("Age", "BMI", "Treatment"),
-    estimate = c(0.30, -0.20, 0.40),
-    conf.low = c(0.10, -0.40, 0.20),
-    conf.high = c(0.50, 0.00, 0.60),
-    sample_size = c(120, 115, 98),
-    event_count = c(42, 39, 31),
-    p_value = c(0.012, 0.031, 0.004)
-  )
-}
-
 test_that("add_forest_table returns a two-panel patchwork", {
-  p <- ggforestplot(make_contract_data(), n = "sample_size", events = "event_count", p.value = "p_value")
+  p <- ggforestplot(
+    make_table_forest_data(),
+    n = "sample_size",
+    events = "event_count",
+    p.value = "p_value"
+  )
 
   out <- add_forest_table(
     p,
@@ -28,7 +21,12 @@ test_that("add_forest_table returns a two-panel patchwork", {
 })
 
 test_that("add_forest_table supports ggplot add syntax as a terminal step", {
-  out <- ggforestplot(make_contract_data(), n = "sample_size", events = "event_count", p.value = "p_value") +
+  out <- ggforestplot(
+    make_table_forest_data(),
+    n = "sample_size",
+    events = "event_count",
+    p.value = "p_value"
+  ) +
     ggplot2::labs(title = "Contract") +
     add_forest_table(position = "right", columns = c("term", "n", "events", "estimate", "p"))
 
@@ -39,7 +37,7 @@ test_that("add_forest_table supports ggplot add syntax as a terminal step", {
 })
 
 test_that("add_forest_table supports explicit table and plot widths", {
-  p <- ggforestplot(make_contract_data())
+  p <- ggforestplot(make_table_forest_data())
 
   left <- add_forest_table(
     p,
@@ -60,7 +58,12 @@ test_that("add_forest_table supports explicit table and plot widths", {
 })
 
 test_that("add_split_table returns left plot right panels in order", {
-  p <- ggforestplot(make_contract_data(), n = "sample_size", events = "event_count", p.value = "p_value")
+  p <- ggforestplot(
+    make_table_forest_data(),
+    n = "sample_size",
+    events = "event_count",
+    p.value = "p_value"
+  )
 
   out <- add_split_table(
     p,
@@ -78,7 +81,12 @@ test_that("add_split_table returns left plot right panels in order", {
 })
 
 test_that("add_split_table ggplot add syntax preserves a forest-plot center panel", {
-  out <- ggforestplot(make_contract_data(), n = "sample_size", events = "event_count", p.value = "p_value") +
+  out <- ggforestplot(
+    make_table_forest_data(),
+    n = "sample_size",
+    events = "event_count",
+    p.value = "p_value"
+  ) +
     add_split_table(left_columns = c("term", "n", "events"), right_columns = c("estimate", "p"))
 
   center_plot <- out$patches$plots[[2]]
@@ -89,7 +97,7 @@ test_that("add_split_table ggplot add syntax preserves a forest-plot center pane
 })
 
 test_that("group columns use the standard table column syntax", {
-  data <- make_contract_data()
+  data <- make_table_forest_data()
   data$model <- c("Base", "Adjusted", "Base")
   p <- ggforestplot(
     data,
@@ -153,7 +161,7 @@ test_that("group columns use the standard table column syntax", {
 })
 
 test_that("outer legends span the full table and plot composition", {
-  data <- make_contract_data()
+  data <- make_table_forest_data()
   data$cohort <- c("Base", "Adjusted", "Base")
 
   top_plot <- ggforestplot(data, group = "cohort") +

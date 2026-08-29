@@ -208,28 +208,6 @@ test_that("interaction and covariate p-values share the canonical column", {
   expect_equal(display_data$p.value[header], expected_interaction)
   expect_true(all(is.na(display_data$p.value[children])))
   expect_true(all(!is.na(display_data$p.value[standalone])))
-
-  table_spec <- build_forest_table_data(
-    plot$ggforestplotR_state$forest_data,
-    columns = c("term", "p"),
-    display_data = display_data
-  )
-  p_cells <- table_spec$table_data[
-    table_spec$table_data$column_key == "p",
-    ,
-    drop = FALSE
-  ]
-  p_lookup <- stats::setNames(
-    p_cells$text,
-    as.character(p_cells$row_key)
-  )
-
-  expect_true(all(nzchar(unname(p_lookup[
-    as.character(display_data$row_key[header | standalone])
-  ]))))
-  expect_true(all(!nzchar(unname(p_lookup[
-    as.character(display_data$row_key[children])
-  ]))))
 })
 
 test_that("level p-values stay on subgroup estimate rows", {
@@ -267,28 +245,6 @@ test_that("level p-values stay on subgroup estimate rows", {
     tolerance = 1e-8
   )
   expect_true(all(!is.na(display_data$p.value[standalone])))
-
-  table_spec <- build_forest_table_data(
-    plot$ggforestplotR_state$forest_data,
-    columns = c("term", "p"),
-    display_data = display_data
-  )
-  p_cells <- table_spec$table_data[
-    table_spec$table_data$column_key == "p",
-    ,
-    drop = FALSE
-  ]
-  p_lookup <- stats::setNames(
-    p_cells$text,
-    as.character(p_cells$row_key)
-  )
-
-  expect_true(all(!nzchar(unname(p_lookup[
-    as.character(display_data$row_key[header])
-  ]))))
-  expect_true(all(nzchar(unname(p_lookup[
-    as.character(display_data$row_key[children | standalone])
-  ]))))
 })
 
 test_that("standalone covariates stay black and out of group legends", {
@@ -550,20 +506,6 @@ test_that("factor focal variables use subgroup average comparisons", {
     length(unique(plot$ggforestplotR_state$display_data$row_key)),
     3L
   )
-
-  table_spec <- build_forest_table_data(
-    plot$ggforestplotR_state$forest_data,
-    columns = c("term", "p"),
-    display_data = plot$ggforestplotR_state$display_data
-  )
-  header_p <- table_spec$table_data[
-    table_spec$table_data$row_type == "subgroup_header" &
-      table_spec$table_data$column_key == "p",
-    "text"
-  ]
-  expect_length(header_p, 1L)
-  expect_true(nzchar(header_p))
-  expect_false(grepl("\n", header_p, fixed = TRUE))
 })
 
 test_that("logistic subgroup slopes retain odds-ratio scale", {

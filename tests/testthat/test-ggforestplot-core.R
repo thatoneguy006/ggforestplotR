@@ -6,6 +6,19 @@ test_that("ggforestplot defaults staple width to 0.2", {
   expect_true(all(built$data[[1]]$width == 0.2))
 })
 
+test_that("deprecated ggforestplot line_size argument warns", {
+  raw <- make_simple_forest_data()
+
+  expect_warning(
+    ggforestplot(raw, line_size = 0.8),
+    "`line_size` is deprecated"
+  )
+  expect_error(
+    ggforestplot(raw, linewidth = 0.8, line_size = 0.6),
+    "Use only one of"
+  )
+})
+
 test_that("ggforestplot can facet grouped rows and add stripes", {
   raw <- data.frame(
     term = c("Age", "BMI", "Smoking", "Stage II", "Stage III", "Nodes"),
@@ -25,6 +38,68 @@ test_that("ggforestplot can facet grouped rows and add stripes", {
   expect_equal(length(panel_rows), 2L)
   expect_equal(unname(panel_rows[[1]]), c(1, 2, 3))
   expect_equal(unname(panel_rows[[2]]), c(1, 2, 3))
+})
+
+test_that("ggforestplot can draw striped rows on exponentiated plots", {
+  raw <- data.frame(
+    term = c("Treatment", "Biomarker"),
+    estimate = c(1.2, 0.8),
+    conf.low = c(0.9, 0.6),
+    conf.high = c(1.6, 1.1)
+  )
+
+  expect_no_warning({
+    built <- ggplot2::ggplot_build(
+      ggforestplot(raw, exponentiate = TRUE, striped_rows = TRUE)
+    )
+  })
+
+  stripe_layers <- Filter(
+    function(x) all(c("xmin", "xmax", "ymin", "ymax") %in% names(x)),
+    built$data
+  )
+
+  expect_true(length(stripe_layers) >= 1L)
+  expect_true(all(is.finite(stripe_layers[[1]]$xmin)))
+  expect_true(all(is.finite(stripe_layers[[1]]$xmax)))
+
+  p <- ggforestplot(raw, exponentiate = TRUE, striped_rows = TRUE)
+  expected_limits <- default_plot_background_limits(
+    p$ggforestplotR_state$forest_data,
+    exponentiate = TRUE,
+    include_zero = TRUE
+  )
+
+  expect_equal(p$scales$get_scales("x")$limits, log10(expected_limits))
+
+  p_custom <- suppressMessages(
+    ggforestplot(raw, exponentiate = TRUE, striped_rows = TRUE) +
+      ggplot2::scale_x_log10(limits = c(0.5, 2), breaks = c(0.5, 1, 2))
+  )
+  stripe_index <- p_custom$ggforestplotR_state$stripe_layer_index
+  custom_stripe_data <- p_custom$layers[[stripe_index]]$data
+
+  expect_equal(p_custom$scales$get_scales("x")$limits, log10(c(0.5, 2)))
+  expect_equal(p_custom$scales$get_scales("x")$breaks, c(0.5, 1, 2))
+  expect_equal(unique(custom_stripe_data$xmin), 0.5)
+  expect_equal(unique(custom_stripe_data$xmax), 2)
+
+  p_partial <- suppressMessages(
+    p + ggplot2::scale_x_log10(limits = c(NA, 2))
+  )
+  partial_index <- p_partial$ggforestplotR_state$stripe_layer_index
+  partial_stripe_data <- p_partial$layers[[partial_index]]$data
+  original_index <- p$ggforestplotR_state$stripe_layer_index
+
+  expect_equal(p_partial$scales$get_scales("x")$limits[2], log10(2))
+  expect_equal(partial_stripe_data$xmin, p$layers[[original_index]]$data$xmin)
+  expect_equal(partial_stripe_data$xmax, 2)
+
+  p_breaks <- suppressMessages(
+    p + ggplot2::scale_x_log10(breaks = c(0.5, 1, 2))
+  )
+
+  expect_no_warning(ggplot2::ggplot_build(p_breaks))
 })
 
 test_that("ggforestplot respects factor level order for facets", {
@@ -81,6 +156,54 @@ test_that("faceted ggforestplot supports visible labels in scale_y_discrete limi
   expect_equal(levels(table_plot$data$row_key), c("Smoking", "Age", "Stage II"))
 })
 
+test_that("ggforestplot allows facet strip labels on the right", {
+  raw <- data.frame(
+    term = c("Age", "BMI", "Stage II", "Stage III"),
+    estimate = c(0.3, -0.2, 0.5, 0.8),
+    conf.low = c(0.1, -0.4, 0.2, 0.4),
+    conf.high = c(0.5, 0.0, 0.8, 1.2),
+    section = c("Clinical", "Clinical", "Tumor", "Tumor")
+  )
+
+  p <- ggforestplot(raw, facet = "section", facet_strip_position = "right")
+  table_spec <- build_forest_table_data(p$ggforestplotR_state$forest_data)
+  table_plot <- build_forest_table_plot(
+    table_spec = table_spec,
+    stripe_data = p$ggforestplotR_state$stripe_data,
+    has_groupings = p$ggforestplotR_state$has_groupings,
+    facet_strip_position = p$ggforestplotR_state$facet_strip_position
+  )
+
+  expect_equal(p$facet$params$strip.position, "right")
+  expect_equal(p$ggforestplotR_state$facet_strip_position, "right")
+  expect_equal(table_plot$facet$params$strip.position, "right")
+})
+
+test_that("ggforestplot can sort terms with grouped sections", {
+  raw <- data.frame(
+    term = c("Age", "BMI", "Stage II", "Stage III"),
+    estimate = c(0.3, -0.2, 0.5, 0.8),
+    conf.low = c(0.1, -0.4, 0.2, 0.4),
+    conf.high = c(0.5, 0.0, 0.8, 1.2),
+    section = c("Clinical", "Clinical", "Tumor", "Tumor")
+  )
+
+  p <- ggforestplot(
+    raw,
+    facet = "section",
+    striped_rows = TRUE,
+    stripe_fill = "grey94",
+    facet_strip_position = "right",
+    sort_terms = "descending"
+  )
+
+  expect_equal(
+    as.character(p$ggforestplotR_state$forest_data$term),
+    c("Age", "BMI", "Stage III", "Stage II")
+  )
+  expect_equal(p$facet$params$strip.position, "right")
+})
+
 test_that("ggforestplot supports point and interval geometry controls", {
   raw <- make_simple_forest_data()
 
@@ -131,6 +254,36 @@ test_that("ggforestplot truncates confidence intervals and draws arrows", {
   expect_equal(p$ggforestplotR_state$defaults$ci_limits, c(-1, 1))
 })
 
+test_that("ggforestplot truncates confidence intervals on exponentiated plots", {
+  raw <- data.frame(
+    term = c("Treatment", "Biomarker"),
+    estimate = c(1.2, 0.8),
+    conf.low = c(0.2, 0.6),
+    conf.high = c(4.0, 1.1)
+  )
+
+  p <- ggforestplot(raw, exponentiate = TRUE, ci_limits = c(0.5, 2))
+  built <- ggplot2::ggplot_build(p)
+  errorbar_layers <- Filter(
+    function(layer) all(c("xmin", "xmax", "width") %in% names(layer)),
+    built$data
+  )
+  truncated_interval <- Filter(
+    function(layer) all(layer$width == 0),
+    errorbar_layers
+  )[[1]]
+  complete_interval <- Filter(
+    function(layer) all(layer$width == 0.2) && any(layer$xmin != layer$xmax),
+    errorbar_layers
+  )[[1]]
+
+  expect_equal(p$scales$get_scales("x")$limits, log10(c(0.5, 2)))
+  expect_equal(truncated_interval$xmin, log10(0.5))
+  expect_equal(truncated_interval$xmax, log10(2.0))
+  expect_equal(complete_interval$xmin, log10(0.6))
+  expect_equal(complete_interval$xmax, log10(1.1))
+})
+
 test_that("ggforestplot can truncate confidence intervals without arrows", {
   raw <- data.frame(
     term = "Age",
@@ -179,6 +332,61 @@ test_that("ggforestplot validates confidence interval truncation limits", {
   expect_error(
     ggforestplot(raw, ci_limits = c(0, 2), ci_arrow_length = 0),
     "`ci_arrow_length` must be a single positive number."
+  )
+})
+
+test_that("ggforestplot relabels terms with a named vector", {
+  raw <- data.frame(
+    term = c("age", "bmi", "treatment"),
+    estimate = c(0.3, -0.2, 0.4),
+    conf.low = c(0.1, -0.4, 0.2),
+    conf.high = c(0.5, 0.0, 0.6)
+  )
+
+  p <- ggforestplot(
+    raw,
+    term_labels = c(age = "Age, years", treatment = "Treatment arm")
+  )
+
+  expect_equal(
+    as.character(p$ggforestplotR_state$forest_data$label),
+    c("Age, years", "bmi", "Treatment arm")
+  )
+})
+
+test_that("ggforestplot supports reference line naming and values", {
+  raw <- make_simple_forest_data()
+
+  p <- ggforestplot(
+    raw,
+    ref_line = 0.25,
+    ref_label = "Null",
+    ref_linetype = 3,
+    ref_color = "red"
+  )
+  built <- ggplot2::ggplot_build(p)
+  vline_layers <- Filter(function(x) "xintercept" %in% names(x), built$data)
+  label_layers <- Filter(
+    function(x) "label" %in% names(x) && any(x$label == "Null"),
+    built$data
+  )
+
+  expect_equal(vline_layers[[1]]$xintercept, 0.25)
+  expect_equal(vline_layers[[1]]$linetype, 3)
+  expect_equal(vline_layers[[1]]$colour, "red")
+  expect_equal(label_layers[[1]]$label, "Null")
+  expect_equal(p$ggforestplotR_state$defaults$ref_line, 0.25)
+
+  hidden <- ggplot2::ggplot_build(ggforestplot(raw, ref_line = NULL))
+  hidden_vline_layers <- Filter(
+    function(x) "xintercept" %in% names(x),
+    hidden$data
+  )
+
+  expect_length(hidden_vline_layers, 0L)
+  expect_error(
+    ggforestplot(raw, ref_line = "Null"),
+    "`ref_line` must be a single numeric value or `NULL`."
   )
 })
 
