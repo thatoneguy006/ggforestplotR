@@ -8,7 +8,7 @@
 ## Major Changes
 
 - Added `add_favors()` for composing two-sided directional arrows and labels
-  beneath the trained forest-plot panel. The fixed-height footer respects log
+  beneath the forest-plot panel. The fixed-height footer respects log
   scales, custom limits and expansion, and remains aligned when used after
   `add_forest_table()` or `add_split_table()`.
 - Added explicit `subgroup` mappings for mixed hierarchical displays, allowing
