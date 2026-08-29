@@ -211,10 +211,13 @@ test_that("add_favors exposes arrow and text customization", {
   expect_equal(state$arrow_type, "open")
   expect_equal(footer$layers[[1L]]$data$x, c(0.45, 0.55))
   expect_equal(footer$layers[[1L]]$data$xend, c(0, 1))
+  expect_equal(footer$layers[[1L]]$data$y, c(0.78, 0.78))
+  expect_equal(footer$layers[[1L]]$data$yend, c(0.78, 0.78))
   expect_equal(
     footer$layers[[2L]]$data$label,
     c("Custom left", "Custom right")
   )
+  expect_equal(footer$layers[[2L]]$data$y, c(0.26, 0.26))
   expect_false(identical(footer$coordinates$clip, "off"))
 })
 

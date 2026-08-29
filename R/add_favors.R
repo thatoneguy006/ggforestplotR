@@ -234,15 +234,15 @@ build_favors_footer <- function(left,
   segment_data <- data.frame(
     x = c(reference_position - gap, reference_position + gap),
     xend = c(0, 1),
-    y = c(0.72, 0.72),
-    yend = c(0.72, 0.72)
+    y = c(0.78, 0.78),
+    yend = c(0.78, 0.78)
   )
   text_data <- data.frame(
     x = c(
       (reference_position - gap) / 2,
       (1 + reference_position + gap) / 2
     ),
-    y = c(0.2, 0.2),
+    y = c(0.26, 0.26),
     label = c(left, right)
   )
   arrow <- grid::arrow(
