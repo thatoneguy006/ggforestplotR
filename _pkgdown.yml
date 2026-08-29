@@ -70,6 +70,7 @@ reference:
       - ggforestplot
       - add_forest_table
       - add_split_table
+      - add_favors
   - title: Data Preparation
     desc: Helpers for standardizing coefficient data and tidying model outputs.
     contents:
