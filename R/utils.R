@@ -2321,6 +2321,29 @@ wrap_forest_composition <- function(panels, widths, plot) {
     out <- out & ggplot2::theme(legend.position = legend_position)
   }
 
+  forest_index <- which(vapply(
+    panels,
+    function(panel) {
+      inherits(panel, "ggplot") &&
+        !is.null(panel$ggforestplotR_state)
+    },
+    logical(1)
+  ))
+
+  if (length(forest_index) != 1L) {
+    stop(
+      "A forest composition must contain exactly one forest-plot panel.",
+      call. = FALSE
+    )
+  }
+
+  attr(out, "ggforestplotR_composition") <- list(
+    panels = panels,
+    widths = widths,
+    forest_index = forest_index,
+    forest_plot = plot
+  )
+
   out
 }
 

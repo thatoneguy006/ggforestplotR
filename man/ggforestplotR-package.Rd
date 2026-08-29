@@ -21,11 +21,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Carson Richardson \email{carson.richardson@outlook.com} [copyright holder]
+\strong{Maintainer}: Carson Richardson \email{carson.richardson@outlook.com} (\href{https://orcid.org/0009-0004-8710-1097}{ORCID}) [copyright holder]
 
 Authors:
 \itemize{
-  \item Carson Richardson \email{carson.richardson@outlook.com} [copyright holder]
+  \item Carson Richardson \email{carson.richardson@outlook.com} (\href{https://orcid.org/0009-0004-8710-1097}{ORCID}) [copyright holder]
 }
 
 }
