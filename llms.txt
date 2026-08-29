@@ -131,6 +131,8 @@ Main plotting functions for forest plot creation and composition.
   : Add a summary table to a forest plot
 - [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_split_table.md)
   : Add split tables around a forest plot
+- [`add_favors()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_favors.md)
+  : Add directional favors labels beneath a forest plot
 
 ## Data Preparation
 

@@ -11,6 +11,14 @@
 
 ### Major Changes
 
+- Added
+  [`add_favors()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_favors.md)
+  for composing two-sided directional arrows and labels beneath the
+  forest-plot panel. The fixed-height footer respects log scales, custom
+  limits and expansion, and remains aligned when used after
+  [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_forest_table.md)
+  or
+  [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_split_table.md).
 - Added explicit `subgroup` mappings for mixed hierarchical displays,
   allowing standalone covariates and contiguous categorical blocks to
   share a forest plot. Subgroup p-values can be delegated as “overall”

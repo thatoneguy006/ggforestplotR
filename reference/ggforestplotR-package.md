@@ -18,8 +18,9 @@ Useful links:
 ## Author
 
 **Maintainer**: Carson Richardson <carson.richardson@outlook.com>
-\[copyright holder\]
+([ORCID](https://orcid.org/0009-0004-8710-1097)) \[copyright holder\]
 
 Authors:
 
-- Carson Richardson <carson.richardson@outlook.com> \[copyright holder\]
+- Carson Richardson <carson.richardson@outlook.com>
+  ([ORCID](https://orcid.org/0009-0004-8710-1097)) \[copyright holder\]
