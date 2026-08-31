@@ -19,8 +19,12 @@ template:
     btn-border-radius: 0.25rem
 
 home:
-  title: ggforestplotR
-  description: Build coefficient-based forest plots with a ggplot2-first workflow.
+  title: ggforestplotR: Publication-Ready Forest Plots in R with ggplot2
+  description: >
+    Create publication-ready forest plots in R with ggplot2. 
+    ggforestplotR supports fitted regression models and tidy coefficient
+    data, with flexible confidence intervals, summary tables, grouped
+    estimates, and publication-ready customization.
   sidebar:
     html: pkgdown/home-sidebar.html
 
