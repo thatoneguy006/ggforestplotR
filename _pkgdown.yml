@@ -19,7 +19,7 @@ template:
     btn-border-radius: 0.25rem
 
 home:
-  title: ggforestplotR: Publication-Ready Forest Plots in R with ggplot2
+  title: "ggforestplotR: Publication-Ready Forest Plots in R with ggplot2"
   description: >
     Create publication-ready forest plots in R with ggplot2. 
     ggforestplotR supports fitted regression models and tidy coefficient
