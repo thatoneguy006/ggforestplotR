@@ -11,29 +11,23 @@
 
 ### Major Changes
 
-- Added
+- Implemented
   [`add_favors()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_favors.md)
   for composing two-sided directional arrows and labels beneath the
-  forest-plot panel. The fixed-height footer respects log scales, custom
-  limits and expansion, and remains aligned when used after
-  [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_forest_table.md)
-  or
-  [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_split_table.md).
+  forest-plot panel.
 - Added explicit `subgroup` mappings for mixed hierarchical displays,
-  allowing standalone covariates and contiguous categorical blocks to
-  share a forest plot. Subgroup p-values can be delegated as “overall”
-  or “level” via `p_method` in
-  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
+  allowing standalone covariates and categorical subgroups to share a
+  forest plot. Subgroup p-values can be delegated as “overall” or
+  “level” via `p_method` in
+  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md).
 - Added covariance-aware subgroup effects for fitted interaction models.
   [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
   and fitted-model
   [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
   methods now use `marginaleffects` to derive average slopes or
-  comparisons from the original fit without refitting subgroup models or
-  displaying raw interaction coefficients. Conservative automatic
-  selection supports one continuous-by- factor interaction, while
-  explicit selection supports factor comparisons and preserves additive,
-  odds-ratio, ratio, and hazard-ratio scales.
+  comparisons from the original fit. Specify subgroups via either
+  `subgroup = "auto"` or `subgroup = "var"`. Currently,
+  continuous-by-factor and factor-by-factor interactions are supported.
 
 ### Minor Changes
 
