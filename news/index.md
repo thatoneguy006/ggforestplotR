@@ -19,7 +19,8 @@
   allowing standalone covariates and categorical subgroups to share a
   forest plot. Subgroup p-values can be delegated as “overall” or
   “level” via `p_method` in
-  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md).
+  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
+  ([\#11](https://github.com/thatoneguy006/ggforestplotR/issues/11))
 - Added covariance-aware subgroup effects for fitted interaction models.
   [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md)
   and fitted-model
@@ -56,11 +57,13 @@
   format. It stores validated effect-scale, axis, confidence-level,
   reference-value, source-model, source-package, and source-column
   metadata.
+  ([\#17](https://github.com/thatoneguy006/ggforestplotR/issues/17))
 - Converted
   [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
   into an S3 generic with methods for data frames, existing
   `forest_data` objects, linear and generalized linear models, Cox
   models, and supported mixed-model classes.
+  ([\#19](https://github.com/thatoneguy006/ggforestplotR/issues/19))
 - Refactored
   [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md)
   to consume the `forest_data` contract instead of determining plotting
@@ -134,14 +137,17 @@ CRAN release: 2026-07-07
   when `broom.mixed` is installed. Mixed-model tidiers are restricted to
   fixed effects so random-effect parameter rows are not plotted as
   terms.
+  ([\#21](https://github.com/thatoneguy006/ggforestplotR/issues/21))
 - Added confidence interval truncation support to
   [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md)
   via `ci_limits`, with optional arrowheads for intervals extending
   beyond the displayed range.
+  ([\#18](https://github.com/thatoneguy006/ggforestplotR/issues/18))
 - Added
   [`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/reference/bind_forest_models.md)
   to stack multiple fitted models into one grouped forest-plot data
   frame.
+  ([\#16](https://github.com/thatoneguy006/ggforestplotR/issues/16))
 
 ### Minor Changes
 
@@ -163,6 +169,7 @@ CRAN release: 2026-06-05
   [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/reference/ggforestplot.md)
   output when users add `scale_y_discrete(limits = ...)`, preserving
   per-facet row filtering while accepting visible term labels.
+  ([\#20](https://github.com/thatoneguy006/ggforestplotR/issues/20))
 
 ## ggforestplotR 0.2.1
 
@@ -191,8 +198,10 @@ CRAN release: 2026-05-30
 
 - Added `stripe_alpha` to control row stripe transparency across plots,
   side tables, and split tables.
+  ([\#7](https://github.com/thatoneguy006/ggforestplotR/issues/7))
 - Updated table helpers so they inherit custom y-axis ordering and
   filtering from the trained forest plot scale.
+  ([\#9](https://github.com/thatoneguy006/ggforestplotR/issues/9))
 - Updated vignettes and tests to use the clearer faceting and geometry
   argument names.
 
@@ -236,6 +245,8 @@ CRAN release: 2026-04-22
   [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_forest_table.md),
   and
   [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/reference/add_split_table.md).
+  ([\#2](https://github.com/thatoneguy006/ggforestplotR/issues/2))
+  ([\#3](https://github.com/thatoneguy006/ggforestplotR/issues/3))
   (Thanks [@sritchie73](https://github.com/sritchie73) for the
   suggestion)
 - Added table header styling controls for font size, font face, and font

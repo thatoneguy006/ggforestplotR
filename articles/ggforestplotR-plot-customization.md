@@ -110,6 +110,9 @@ fit2 |>
   ggforestplot(striped_rows = T) +
   theme(legend.position = "top") +
   add_forest_table(columns = c("term", "estimate", "p.value"))
+#> Warning: Some coefficients are `NA`, possibly because the model matrix is rank
+#> deficient. In such cases, the quantities produced by `marginaleffects` may
+#> depend on the order of factor levels. This warning appears once per session.
 #> Warning: Model matrix is rank deficient. Some variance-covariance parameters are
 #>   missing.
 #> Warning: The `cyl` variable is treated as a categorical (factor) variable, but
