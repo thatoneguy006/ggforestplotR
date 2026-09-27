@@ -1,0 +1,27 @@
+# Package index
+
+## Plot & Table Construction
+
+Main plotting functions for forest plot creation and composition.
+
+- [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/ggforestplot.md)
+  : Draw a ggplot2 forest plot
+- [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/add_forest_table.md)
+  : Add a summary table to a forest plot
+- [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/add_split_table.md)
+  : Add split tables around a forest plot
+- [`add_favors()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/add_favors.md)
+  : Add directional favors labels beneath a forest plot
+
+## Data Preparation
+
+Helpers for standardizing coefficient data and tidying model outputs.
+
+- [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data.md)
+  : Standardize coefficient data for forest plots
+- [`forest_metadata()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_metadata.md)
+  : Inspect forest-data metadata
+- [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/tidy_forest_model.md)
+  : Tidy a model object for forest plotting
+- [`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/bind_forest_models.md)
+  : Bind multiple model summaries for a grouped forest plot

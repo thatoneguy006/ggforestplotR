@@ -1,0 +1,120 @@
+# ggforestplotR ![](reference/figures/ggforestplotR_favicon.png)
+
+------------------------------------------------------------------------
+
+## Overview
+
+`ggforestplotR` provides a `ggplot2`-first workflow for building forest
+plots from tidy coefficient tables or fitted model objects.
+
+## Installation
+
+### CRAN
+
+``` r
+
+install.packages("ggforestplotR")
+```
+
+### Development
+
+``` r
+
+#install.packages("remotes")
+remotes::install_github("thatoneguy006/ggforestplotR")
+```
+
+## Supported workflows
+
+`ggforestplotR` currently supports two core workflows:
+
+- Plot directly from a table of coefficient data.
+- Plot using data from a fitted model object.
+
+Both workflows are converted to a validated `forest_data` object before
+plotting. This object records the effect scale, confidence level,
+reference value, and source provenance independently of the fitted-model
+class.
+
+## Basic example
+
+``` r
+
+library(ggforestplotR)
+library(ggplot2)
+
+sectioned_coefs <- data.frame(
+  term = c("Age", "BMI", "Smoking", "Stage II", "Stage III", "Nodes"),
+  estimate = c(0.10, -0.08, 0.20, 0.34, 0.52, 0.28),
+  conf.low = c(0.02, -0.16, 0.05, 0.12, 0.20, 0.06),
+  conf.high = c(0.18, 0.00, 0.35, 0.56, 0.84, 0.50),
+  section = c("Clinical", "Clinical", "Clinical", "Tumor", "Tumor", "Tumor")
+)
+
+ggforestplot(
+  sectioned_coefs,
+  facet = "section",
+  striped_rows = TRUE,
+  stripe_fill = "grey94",
+  facet_strip_position = "right"
+)
+```
+
+![](reference/figures/README-forestplot-example.png)
+
+## Add a summary table
+
+``` r
+
+ggforestplot(
+  sectioned_coefs,
+  striped_rows = TRUE,
+  stripe_fill = "grey94"
+) +
+  add_forest_table()
+```
+
+![](reference/figures/README-forestplot-table-example.png)
+
+## Add a split summary table
+
+``` r
+
+ggforestplot(
+  sectioned_coefs,
+  striped_rows = TRUE,
+  stripe_fill = "grey94"
+) +
+  add_split_table()
+```
+
+![](reference/figures/README-forestplot-split-table-example.png)
+
+## Learn more
+
+- Package website: <https://thatoneguy006.github.io/ggforestplotR/>
+- Get started:
+  <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-get-started.html>
+- Plot & Table customization:
+  <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-plot-customization.html>
+- Data helpers:
+  <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-data-helpers.html>
+
+## Main functions
+
+- [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/ggforestplot.md)
+  builds the plotting panel from a data frame or supported model object.
+- [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/add_forest_table.md)
+  attaches a summary table to the left or right side of the plot.
+- [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/add_split_table.md)
+  creates a more traditional forestplot layout with table columns on
+  both sides of the plot.
+- [`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/bind_forest_models.md)
+  binds output from several models for grouped plotting.
+- [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data.md)
+  is the S3 conversion interface for custom coefficient data and
+  supported fitted models.
+- [`forest_metadata()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_metadata.md)
+  inspects effect-scale and source metadata.
+- [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/tidy_forest_model.md)
+  is used as a post-estimation interface for fitted models.
