@@ -45,7 +45,8 @@ ggforestplot(
   ref_linetype = 2,
   ref_color = "grey60",
   subgroup = NULL,
-  p_method = c("overall", "level")
+  p_method = c("overall", "level"),
+  row_type = NULL
 )
 }
 \arguments{
@@ -168,6 +169,11 @@ inference inside the plotting layer.}
 \code{"overall"} displays one p-value on each subgroup header; \code{"level"}
 displays p-values on the subgroup estimate rows. Fitted-model subgroup
 data inherit this choice from \code{\link[=tidy_forest_model]{tidy_forest_model()}}.}
+
+\item{row_type}{Optional data-frame column mapping for semantic row types.
+\code{"estimate"} and \code{"summary"} rows draw points and intervals;
+\code{"reference"}, \code{"header"}, and \code{"spacer"} rows occupy display space
+without geometry. Existing \code{forest_data} objects define this internally.}
 }
 \value{
 A \code{ggplot} object. Use standard \code{ggplot2} functions such as

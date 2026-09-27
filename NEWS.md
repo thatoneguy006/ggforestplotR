@@ -1,3 +1,13 @@
+# ggforestplotR (development version)
+
+- Added semantic forest row types (`estimate`, `reference`, `header`, `summary`,
+  and `spacer`) so tables can contain reference categories and structural rows
+  without fabricated plot geometry.
+- Added vectorized `formatters` to both table helpers for estimates, confidence
+  bounds, p-values, and preserved source columns. Digit settings and text
+  templates remain available.
+- Added `reference_text` to both table helpers to customize reference cells.
+
 # ggforestplotR 0.5.0
 
 ## Breaking Changes

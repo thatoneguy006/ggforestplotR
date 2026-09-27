@@ -25,14 +25,15 @@ test_that("as_forest_data standardizes coefficient columns", {
   )
 
   expect_equal(
-    names(out)[seq_len(12)],
+    names(out)[seq_len(13)],
     c(
-      "term", "estimate", "conf.low", "conf.high", "label", "group",
+      "term", "estimate", "conf.low", "conf.high", "label", "row_type", "group",
       "subgroup", "grouping", "separate_groups", "n", "events", "p.value"
     )
   )
   expect_true(all(c("variable", "beta", "lower", "upper", "cohort", "section", "block", "sample_size", "event_count") %in% names(out)))
   expect_equal(as.character(out$term), c("Age", "BMI"))
+  expect_true(all(out$row_type == "estimate"))
   expect_equal(as.character(out$group), c("A", "A"))
   expect_equal(as.character(out$grouping), c("Clinical", "Clinical"))
   expect_equal(as.character(out$separate_groups), c("Anthropometrics", "Anthropometrics"))

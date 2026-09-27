@@ -13,6 +13,8 @@
                                   p_digits = NULL,
                                   estimate_fmt = NULL,
                                   ci_fmt = NULL,
+                                  formatters = NULL,
+                                  reference_text = "Reference",
                                   text_size = NULL,
                                   header_text_size = NULL,
                                   header_fontface = "bold",
@@ -140,6 +142,8 @@
     p_digits = digits$p_digits,
     estimate_fmt = estimate_fmt,
     ci_fmt = ci_fmt,
+    formatters = formatters,
+    reference_text = reference_text,
     columns = table_columns,
     display_data = display_data
   )
@@ -251,6 +255,13 @@
 #'   `columns` includes `"ci"`. Use `{conf.low}` and `{conf.high}` as
 #'   placeholders. The shorthand `{conf.low, conf.high}` is also supported.
 #'   Defaults to `"({conf.low}, {conf.high})"`.
+#' @param formatters Named list of vectorized functions for scalar table
+#'   values. Keys include `estimate`, `ci`, `conf.low`, `conf.high`, `p`
+#'   (or `p.value`), `n`, `events`, `group`, and preserved source columns.
+#'   Each function receives a vector and returns one value per input.
+#'   Functions take precedence over digit settings; `estimate_fmt` and
+#'   `ci_fmt` compose the resulting strings.
+#' @param reference_text Text shown in estimate cells for reference rows.
 #' @param text_size Text size for table contents. Defaults to `3.2`.
 #' @param header_text_size Header text size for table column labels. Defaults
 #'   to `11`.
@@ -317,6 +328,8 @@ add_forest_table <- function(plot = NULL,
                              p_digits = NULL,
                              estimate_fmt = NULL,
                              ci_fmt = NULL,
+                             formatters = NULL,
+                             reference_text = "Reference",
                              text_size = NULL,
                              header_text_size = NULL,
                              header_fontface = "bold",
@@ -361,6 +374,8 @@ add_forest_table <- function(plot = NULL,
         p_digits = p_digits,
         estimate_fmt = estimate_fmt,
         ci_fmt = ci_fmt,
+        formatters = formatters,
+        reference_text = reference_text,
         text_size = text_size,
         header_text_size = header_text_size,
         header_fontface = header_fontface,
@@ -396,6 +411,8 @@ add_forest_table <- function(plot = NULL,
     p_digits = p_digits,
     estimate_fmt = estimate_fmt,
     ci_fmt = ci_fmt,
+    formatters = formatters,
+    reference_text = reference_text,
     text_size = text_size,
     header_text_size = header_text_size,
     header_fontface = header_fontface,

@@ -49,6 +49,7 @@ as_forest_data(data, ...)
   sort_terms = c("none", "descending", "ascending"),
   subgroup = NULL,
   p_method = c("overall", "level"),
+  row_type = NULL,
   ...
 )
 
@@ -237,6 +238,12 @@ subgroup effects through \code{marginaleffects}. Fitted-model subgroup rows use
 the canonical \code{p.value} column for either the omnibus interaction test or
 row-level effect tests, according to \code{p_method}, so they can share a table
 column with ordinary coefficient p-values.}
+
+\item{row_type}{Optional column name defining semantic rows: \code{"estimate"},
+\code{"reference"}, \code{"header"}, \code{"summary"}, or \code{"spacer"}. Estimate and
+summary rows require finite estimate and CI values; other rows require
+missing geometry. Structured rows retain source order, so use
+\code{sort_terms = "none"}. If omitted, all rows are estimates.}
 
 \item{conf.int}{Logical; model methods require \code{TRUE} because forest data
 include confidence-interval columns.}

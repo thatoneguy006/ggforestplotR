@@ -26,6 +26,40 @@ library(ggplot2)
 This short article covers the `forest_data` interchange object and the helper
 functions that prepare it before a plot is drawn.
 
+## Structured forest data and reference rows
+
+Map a source column with `row_type =` to place reference categories and
+structural rows alongside estimates. `estimate` and `summary` rows need finite
+estimates and confidence bounds. `reference`, `header`, and `spacer` rows use
+`NA` for all three geometry values. Structured rows keep their source order;
+`sort_terms` must remain `"none"`.
+
+```{r structured-rows}
+structured <- data.frame(
+  term = c("Female", "Male", "Clinical", "Age", "", "Overall"),
+  estimate = c(NA, 1.42, NA, 1.03, NA, 1.18),
+  conf.low = c(NA, 1.10, NA, 1.01, NA, 1.04),
+  conf.high = c(NA, 1.84, NA, 1.05, NA, 1.34),
+  subgroup = c("Sex", "Sex", NA, NA, NA, NA),
+  row_type = c("reference", "estimate", "header", "estimate", "spacer", "summary")
+)
+
+ggforestplot(
+  structured,
+  subgroup = "subgroup",
+  row_type = "row_type",
+  exponentiate = TRUE
+) + add_split_table(
+  left_columns = "term",
+  right_columns = c("estimate", "ci"),
+  reference_text = "Reference"
+)
+```
+
+You can also supply explicit `"header"` and `"spacer"` rows in the source
+table. A mapped `subgroup` creates its own header; reference rows inside the
+subgroup appear as indented children.
+
 ## Use `as_forest_data()` to standardize a coefficient table
 
 `as_forest_data()` converts your column names into the internal structure used

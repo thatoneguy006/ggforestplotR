@@ -170,17 +170,23 @@ validate_forest_metadata <- function(data, metadata) {
       identical(metadata$axis_transform, "log10")
   )
 
+  geometry <- if ("row_type" %in% names(data)) {
+    data$row_type %in% forest_geometry_row_types()
+  } else {
+    rep(TRUE, nrow(data))
+  }
+
   bounded_columns <- c("estimate", "conf.low", "conf.high")
   if (identical(scale, "probability") &&
       any(vapply(bounded_columns, function(column) {
-        any(data[[column]] < 0 | data[[column]] > 1)
+        any(data[[column]][geometry] < 0 | data[[column]][geometry] > 1)
       }, logical(1)))) {
     stop("Probability estimates and intervals must be between 0 and 1.", call. = FALSE)
   }
 
   if (identical(scale, "risk_difference") &&
       any(vapply(bounded_columns, function(column) {
-        any(data[[column]] < -1 | data[[column]] > 1)
+        any(data[[column]][geometry] < -1 | data[[column]][geometry] > 1)
       }, logical(1)))) {
     stop("Risk-difference estimates and intervals must be between -1 and 1.", call. = FALSE)
   }
@@ -200,11 +206,13 @@ forest_axis_label <- function(metadata) {
   }
 }
 
-set_forest_metadata <- function(data, metadata) {
+set_forest_metadata <- function(data, metadata, validate = TRUE) {
   if (is.null(metadata$p_method)) {
     metadata$p_method <- "overall"
   }
-  validate_forest_metadata(data, metadata)
+  if (isTRUE(validate)) {
+    validate_forest_metadata(data, metadata)
+  }
   attr(data, "forest_meta") <- metadata
 
   # Transitional mirrors for code written against ggforestplotR <= 0.3.1.
@@ -283,7 +291,7 @@ strip_forest_data_class <- function(x) {
     return(strip_forest_data_class(out))
   }
 
-  set_forest_metadata(out, metadata)
+  set_forest_metadata(out, metadata, validate = nrow(out) > 0L)
 }
 
 #' @export
