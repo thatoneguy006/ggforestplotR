@@ -212,7 +212,7 @@ is_ggforestplot_faceted_y_scale <- function(scale, plot) {
   display_data <- forest_full_display_data(state)
   has_subgroup_headers <- !is.null(display_data) &&
     "row_type" %in% names(display_data) &&
-    any(display_data$row_type == "subgroup_header")
+    any(display_data$row_type != "estimate")
 
   if (!isTRUE(state$has_groupings) && !isTRUE(has_subgroup_headers)) {
     return(FALSE)

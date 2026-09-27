@@ -16,6 +16,10 @@
 #' @param group Optional column name used for color-grouping estimates. If this
 #'   column is a factor, its levels control the group legend and vertical dodge
 #'   order.
+#' @param row_type Optional data-frame column mapping for semantic row types.
+#'   `"estimate"` and `"summary"` rows draw points and intervals;
+#'   `"reference"`, `"header"`, and `"spacer"` rows occupy display space
+#'   without geometry. Existing `forest_data` objects define this internally.
 #' @param subgroup Optional column name defining hierarchical subgroup blocks.
 #'   Missing or empty values identify ordinary standalone estimates. Each
 #'   non-empty subgroup must form one contiguous block within a facet. This is
@@ -139,7 +143,8 @@ ggforestplot <- function(data,
                          ref_linetype = 2,
                          ref_color = "grey60",
                          subgroup = NULL,
-                         p_method = c("overall", "level")) {
+                         p_method = c("overall", "level"),
+                         row_type = NULL) {
   ref_line_missing <- missing(ref_line)
   conf_level_missing <- missing(conf.level)
   p_method_missing <- missing(p_method)
@@ -167,6 +172,12 @@ ggforestplot <- function(data,
   if (inherits(data, "forest_data") && !p_method_missing) {
     stop("`p_method` is already defined by the `forest_data` metadata.", call. = FALSE)
   }
+  if (!is.null(row_type) && !is.data.frame(data)) {
+    stop("`row_type` is only a mapping for data-frame input.", call. = FALSE)
+  }
+  if (!is.null(row_type) && inherits(data, "forest_data")) {
+    stop("`row_type` is already defined by the `forest_data` object.", call. = FALSE)
+  }
 
   forest_data <- if (inherits(data, "forest_data")) {
     as_forest_data(
@@ -186,6 +197,7 @@ ggforestplot <- function(data,
       term_labels = term_labels,
       group = group,
       subgroup = subgroup,
+      row_type = row_type,
       grouping = facet,
       separate_groups = separate_groups,
       n = n,
@@ -251,7 +263,9 @@ ggforestplot <- function(data,
   display_data <- build_forest_plot_data(forest_data)
   forest_data <- display_data$forest_data
   plot_data <- display_data$plot_data
-  estimate_data <- plot_data[plot_data$row_type == "estimate", , drop = FALSE]
+  geometry_data <- plot_data[
+    plot_data$row_type %in% forest_geometry_row_types(), , drop = FALSE
+  ]
   stripe_data <- display_data$stripe_data
   separator_data <- display_data$separator_data
   plot_stripe_data <- stripe_data
@@ -263,7 +277,7 @@ ggforestplot <- function(data,
     plot_x_limits <- ci_limits
   } else if (isTRUE(plot_exponentiate)) {
     plot_x_limits <- default_plot_background_limits(
-      estimate_data,
+      geometry_data,
       exponentiate = plot_exponentiate,
       include_zero = draw_ref_line,
       ref_line = ref_line
@@ -276,11 +290,11 @@ ggforestplot <- function(data,
   }
 
   ci_plot_data <- build_ci_plot_data(
-    estimate_data,
+    geometry_data,
     ci_limits = ci_limits,
     exponentiate = plot_exponentiate
   )
-  has_groups <- has_table_values(estimate_data, "group")
+  has_groups <- has_table_values(geometry_data, "group")
   dodge <- ggplot2::position_dodge(width = dodge_width)
   point_mapping <- if (has_groups) {
     ggplot2::aes(
@@ -312,12 +326,7 @@ ggforestplot <- function(data,
   }
 
   p <- ggplot2::ggplot(ci_plot_data, point_mapping)
-  header_data <- plot_data[
-    plot_data$row_type == "subgroup_header",
-    ,
-    drop = FALSE
-  ]
-  if (nrow(header_data) > 0L) {
+  if (any(plot_data$row_type != "estimate")) {
     p <- p + ggplot2::geom_blank(
       data = plot_data,
       mapping = ggplot2::aes(y = .data$row_key),

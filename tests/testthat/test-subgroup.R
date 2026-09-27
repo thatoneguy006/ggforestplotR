@@ -59,7 +59,7 @@ subgroup_is_indented <- function(display_label, original_label) {
 }
 
 expect_subgroup_header_blanks <- function(table_data, display_data) {
-  header_rows <- display_data$row_type == "subgroup_header"
+  header_rows <- display_data$row_type == "header"
   header_keys <- as.character(display_data$row_key[header_rows])
   expected_labels <- stats::setNames(
     display_data$display_label[header_rows],
@@ -107,7 +107,7 @@ test_that("subgroup is an explicit canonical mapping and is not inferred", {
 
   expect_equal(as.character(explicit$subgroup), raw$subgroup_name)
   expect_equal(nrow(explicit), nrow(raw))
-  expect_false("row_type" %in% names(explicit))
+  expect_true(all(explicit$row_type == "estimate"))
   expect_equal(
     unname(forest_metadata(explicit)$column_mapping[["subgroup"]]),
     "subgroup_name"
@@ -130,8 +130,8 @@ test_that("mixed standalone and subgroup rows preserve source order", {
   expect_equal(
     display_data$row_type,
     c(
-      "estimate", "subgroup_header", "estimate", "estimate",
-      "estimate", "subgroup_header", "estimate", "estimate"
+      "estimate", "header", "estimate", "estimate",
+      "estimate", "header", "estimate", "estimate"
     )
   )
   expect_equal(
@@ -173,7 +173,7 @@ test_that("p_method level keeps p-values on subgroup children", {
     p_method = "level"
   )
   display_data <- p$ggforestplotR_state$display_data
-  header_rows <- display_data$row_type == "subgroup_header"
+  header_rows <- display_data$row_type == "header"
   child_rows <- display_data$row_type == "estimate" &
     !is.na(display_data$subgroup) & nzchar(display_data$subgroup)
   standalone_rows <- display_data$row_type == "estimate" & !child_rows
@@ -205,13 +205,13 @@ test_that("subgroup hierarchy handles boundary compositions", {
   expect_equal(
     grouped_display$row_type,
     c(
-      "subgroup_header", "estimate", "estimate",
-      "subgroup_header", "estimate", "estimate"
+      "header", "estimate", "estimate",
+      "header", "estimate", "estimate"
     )
   )
   expect_equal(
     grouped_display$display_label[
-      grouped_display$row_type == "subgroup_header"
+      grouped_display$row_type == "header"
     ],
     c("Race", "Sex")
   )
@@ -251,7 +251,7 @@ test_that("point and confidence interval geoms exclude subgroup headers", {
   p <- subgroup_plot()
   display_data <- p$ggforestplotR_state$display_data
   header_keys <- as.character(
-    display_data$row_key[display_data$row_type == "subgroup_header"]
+    display_data$row_key[display_data$row_type == "header"]
   )
   point_indices <- subgroup_layer_indices(p, "GeomPoint")
   interval_indices <- subgroup_layer_indices(p, "GeomErrorbar")
@@ -297,7 +297,7 @@ test_that("subgroup forest table preserves hierarchy and row alignment", {
     display_data$display_label
   )
 
-  header_rows <- display_data$row_type == "subgroup_header"
+  header_rows <- display_data$row_type == "header"
   child_rows <- display_data$row_type == "estimate" &
     !is.na(display_data$subgroup) & nzchar(display_data$subgroup)
   standalone_rows <- display_data$row_type == "estimate" & !child_rows
@@ -472,7 +472,7 @@ test_that("subgroup parent p-values respect facets and estimate groups", {
     display_data = p$ggforestplotR_state$display_data
   )
   parent_p <- spec$table_data[
-    spec$table_data$row_type == "subgroup_header" &
+    spec$table_data$row_type == "header" &
       spec$table_data$column_key == "p",
     ,
     drop = FALSE
@@ -578,7 +578,7 @@ test_that("source columns are not shadowed by subgroup display internals", {
     display_data$row_key[display_data$row_type == "estimate"]
   )
   header_keys <- as.character(
-    display_data$row_key[display_data$row_type == "subgroup_header"]
+    display_data$row_key[display_data$row_type == "header"]
   )
 
   for (column in internal_names) {
@@ -641,7 +641,7 @@ test_that("custom y limits support header-only subgroup views", {
   expect_length(split_tables, 2L)
   expect_true(all(vapply(
     split_tables,
-    function(table) all(table$data$row_type == "subgroup_header"),
+    function(table) all(table$data$row_type == "header"),
     logical(1)
   )))
 })

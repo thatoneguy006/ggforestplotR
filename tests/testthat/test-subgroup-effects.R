@@ -199,7 +199,7 @@ test_that("interaction and covariate p-values share the canonical column", {
 
   plot <- ggforestplot(out)
   display_data <- plot$ggforestplotR_state$display_data
-  header <- display_data$row_type == "subgroup_header"
+  header <- display_data$row_type == "header"
   children <- display_data$row_type == "estimate" &
     !is.na(display_data$subgroup)
   standalone <- display_data$row_type == "estimate" &
@@ -232,7 +232,7 @@ test_that("level p-values stay on subgroup estimate rows", {
 
   plot <- ggforestplot(out)
   display_data <- plot$ggforestplotR_state$display_data
-  header <- display_data$row_type == "subgroup_header"
+  header <- display_data$row_type == "header"
   children <- display_data$row_type == "estimate" &
     !is.na(display_data$subgroup)
   standalone <- display_data$row_type == "estimate" &
@@ -297,12 +297,12 @@ test_that("model-derived rows stay aligned with plots and tables", {
 
   expect_equal(
     display_data$row_type,
-    c("subgroup_header", rep("estimate", 3L))
+    c("header", rep("estimate", 3L))
   )
   expect_equal(display_data$display_label[[1L]], "cyl")
   expect_equal(trimws(display_data$display_label[-1L]), c("4", "6", "8"))
   expect_true(all(!is.na(
-    display_data$p.value[display_data$row_type == "subgroup_header"]
+    display_data$p.value[display_data$row_type == "header"]
   )))
 
   table_spec <- build_forest_table_data(
@@ -312,7 +312,7 @@ test_that("model-derived rows stay aligned with plots and tables", {
   )
   table_data <- table_spec$table_data
   header_key <- as.character(
-    display_data$row_key[display_data$row_type == "subgroup_header"]
+    display_data$row_key[display_data$row_type == "header"]
   )
   header_cells <- table_data[
     as.character(table_data$row_key) == header_key,

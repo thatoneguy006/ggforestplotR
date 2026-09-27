@@ -25,6 +25,41 @@ library(ggplot2)
 
 This article focuses on utility and enhanced customization of forest plots and accompanied tables.
 
+## Formatting table values with functions
+
+`formatters` accepts a named list of vectorized functions. Each function
+receives a source vector and returns one value per input. You can format built
+in statistics and any preserved source column. A `ci` formatter applies to
+both confidence bounds unless `conf.low` or `conf.high` overrides it.
+
+```{r function-formatters}
+format_data <- data.frame(
+  term = c("Age", "BMI"),
+  estimate = c(0.31, -0.24),
+  conf.low = c(0.12, -0.40),
+  conf.high = c(0.56, -0.08),
+  p.value = c(0.0004, 0.023),
+  prevalence = c(0.1543, 0.2871)
+)
+
+ggforestplot(format_data, p.value = "p.value") +
+  add_forest_table(
+    columns = c("term", "prevalence", "estimate", "p"),
+    formatters = list(
+      estimate = function(x) sprintf("%.1f", x),
+      ci = function(x) sprintf("%.3f", x),
+      p = function(x) ifelse(x < 0.001, "<0.001", sprintf("%.3f", x)),
+      prevalence = function(x) sprintf("%.1f%%", 100 * x)
+    ),
+    estimate_fmt = "{estimate} [{conf.low}, {conf.high}]"
+  )
+```
+
+Formatter functions act on scalar source values before `estimate_fmt` and
+`ci_fmt` compose text, and before grouped cells are combined. Functions from
+other packages work when they follow the same vector input and output
+contract.
+
 ## Group rows and control strip placement
 
 `facet` creates section panels, and `facet_strip_position` controls which

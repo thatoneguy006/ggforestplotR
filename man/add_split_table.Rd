@@ -20,6 +20,8 @@ add_split_table(
   p_digits = NULL,
   estimate_fmt = NULL,
   ci_fmt = NULL,
+  formatters = NULL,
+  reference_text = "Reference",
   text_size = NULL,
   header_text_size = NULL,
   header_fontface = "bold",
@@ -95,6 +97,14 @@ columns include \code{"ci"}.}
 table columns include \code{"ci"}. Use \code{{conf.low}} and \code{{conf.high}} as
 placeholders. The shorthand \verb{\{conf.low, conf.high\}} is also supported.
 Defaults to \code{"({conf.low}, {conf.high})"}.}
+
+\item{formatters}{Named list of vectorized functions for scalar table
+values. Keys include \code{estimate}, \code{ci}, \code{conf.low}, \code{conf.high}, \code{p}
+(or \code{p.value}), \code{n}, \code{events}, \code{group}, and preserved source columns.
+Functions take precedence over digit settings; \code{estimate_fmt} and
+\code{ci_fmt} compose the resulting strings.}
+
+\item{reference_text}{Text shown in estimate cells for reference rows.}
 
 \item{text_size}{Text size for table contents. Defaults to \code{3.2}.}
 

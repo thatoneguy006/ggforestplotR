@@ -13,6 +13,11 @@
 #' @param term_labels Optional named vector used to relabel displayed terms.
 #'   Names should match values in the term column and values are the labels to
 #'   display.
+#' @param row_type Optional column name defining semantic rows: `"estimate"`,
+#'   `"reference"`, `"header"`, `"summary"`, or `"spacer"`. Estimate and
+#'   summary rows require finite estimate and CI values; other rows require
+#'   missing geometry. Structured rows retain source order, so use
+#'   `sort_terms = "none"`. If omitted, all rows are estimates.
 #' @param group Optional column name used for color-grouping multiple
 #'   estimates per row. If this column is a factor, its levels control the
 #'   group legend and vertical dodge order.
@@ -122,6 +127,9 @@ as_forest_data.forest_data <- function(data,
   if (!"label" %in% names(out)) {
     out$label <- out$term
   }
+  if (!"row_type" %in% names(out)) {
+    out$row_type <- rep("estimate", nrow(out))
+  }
   if (!is.null(p_method)) {
     stop(
       "`p_method` is already defined by the `forest_data` metadata.",
@@ -188,6 +196,7 @@ as_forest_data.data.frame <- function(data,
                                       sort_terms = c("none", "descending", "ascending"),
                                       subgroup = NULL,
                                       p_method = c("overall", "level"),
+                                      row_type = NULL,
                                       ...) {
   if (!inherits(data, "data.frame")) {
     stop(
@@ -239,6 +248,7 @@ as_forest_data.data.frame <- function(data,
     conf.low = resolve_column(data, conf.low, "conf.low"),
     conf.high = resolve_column(data, conf.high, "conf.high"),
     label = resolve_column(data, label, "label", required = FALSE),
+    row_type = resolve_column(data, row_type, "row_type", required = FALSE),
     group = resolve_column(data, group, "group", required = FALSE),
     subgroup = resolve_column(data, subgroup, "subgroup", required = FALSE),
     grouping = resolve_column(data, grouping, "grouping", required = FALSE),
@@ -269,6 +279,13 @@ as_forest_data.data.frame <- function(data,
     as.character(data[[cols$label]])
   }
   out$label <- apply_term_labels(out$term, out$label, term_labels)
+  out$row_type <- if (is.null(cols$row_type)) {
+    rep("estimate", nrow(out))
+  } else {
+    normalize_forest_row_type(data[[cols$row_type]])
+  }
+  out$term[out$row_type == "spacer" & is.na(out$term)] <- ""
+  out$label[out$row_type == "spacer" & is.na(out$label)] <- ""
 
   out$group <- if (is.null(cols$group)) {
     NA_character_

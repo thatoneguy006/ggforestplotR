@@ -22,7 +22,8 @@ resolve_column <- function(data, column, arg, required = TRUE) {
 forest_display_reserved_columns <- function() {
   c(
     "row_key", "grouping_panel", "row_type", "display_label",
-    ".forest_source_row", ".display_identity"
+    ".forest_source_row", ".display_identity",
+    ".forest_generated_subgroup_header"
   )
 }
 
@@ -49,14 +50,26 @@ validate_forest_data <- function(data, exponentiate = FALSE) {
     )
   }
 
+  row_type <- if ("row_type" %in% names(data)) {
+    normalize_forest_row_type(data$row_type)
+  } else {
+    rep("estimate", nrow(data))
+  }
+  geometry <- row_type %in% forest_geometry_row_types()
   numeric_cols <- c("estimate", "conf.low", "conf.high")
 
+  if (!any(geometry)) {
+    stop("Forest data must contain at least one `estimate` or `summary` row.", call. = FALSE)
+  }
   for (col in numeric_cols) {
-    if (anyNA(data[[col]])) {
-      stop(sprintf("Column `%s` cannot contain missing values.", col), call. = FALSE)
+    if (!is.numeric(data[[col]]) ||
+        any(!is.finite(data[[col]][geometry]))) {
+      stop(sprintf("Column `%s` must contain finite numeric values for estimate and summary rows.", col), call. = FALSE)
     }
-
-    if (isTRUE(exponentiate) && any(data[[col]] <= 0)) {
+    if (any(!is.na(data[[col]][!geometry]))) {
+      stop("Reference, header, and spacer rows cannot contain estimate or confidence-interval values.", call. = FALSE)
+    }
+    if (isTRUE(exponentiate) && any(data[[col]][geometry] <= 0)) {
       stop(
         "Ratio estimates and logarithmic axes require strictly positive `estimate`, `conf.low`, and `conf.high` values.",
         call. = FALSE
@@ -64,8 +77,16 @@ validate_forest_data <- function(data, exponentiate = FALSE) {
     }
   }
 
-  if (any(data$conf.low > data$conf.high)) {
+  if (any(data$conf.low[geometry] > data$conf.high[geometry])) {
     stop("`conf.low` cannot be greater than `conf.high`.", call. = FALSE)
+  }
+
+  labels <- if ("label" %in% names(data)) data$label else data$term
+  for (values in list(data$term, labels)) {
+    if (any(!is.na(row_type) & row_type != "spacer" &
+            (is.na(values) | !nzchar(trimws(as.character(values)))))) {
+      stop("Non-spacer rows require non-empty term and label values.", call. = FALSE)
+    }
   }
 
   invisible(data)
@@ -353,6 +374,13 @@ sort_forest_data <- function(data, sort_terms = c("none", "descending", "ascendi
   has_subgroups <- "subgroup" %in% names(data) &&
     any(!is.na(data$subgroup) & nzchar(data$subgroup))
 
+  has_structured_rows <- "row_type" %in% names(data) &&
+    any(data$row_type != "estimate")
+
+  if (isTRUE(has_structured_rows)) {
+    stop("`sort_terms` must be \"none\" when structured `row_type` values are used so row order is preserved.", call. = FALSE)
+  }
+
   if (isTRUE(has_subgroups)) {
     stop(
       "`sort_terms` must be \"none\" when `subgroup` is used so source row order is preserved.",
@@ -573,17 +601,19 @@ collapse_grouped_values <- function(formatted,
 }
 
 format_forest_p_values <- function(values, group = NULL, digits = 2, p_digits = digits,
-                                   force_group_labels = FALSE, align_groups = FALSE) {
+                                   force_group_labels = FALSE, align_groups = FALSE,
+                                   formatter = NULL) {
   p_digits <- resolve_table_digits(digits = digits, p_digits = p_digits)$p_digits
   values <- as.numeric(values)
   eps <- 10^(-p_digits)
-  formatted <- ifelse(
+  fallback <- function(values) ifelse(
     is.na(values),
     "",
     ifelse(values < eps, paste0("<", sprintf(paste0("%.", p_digits, "f"), eps)),
       sprintf(paste0("%.", p_digits, "f"), values)
     )
   )
+  formatted <- apply_table_formatter(values, formatter, fallback, key = "p")
   collapse_grouped_values(
     formatted,
     group,
@@ -598,7 +628,10 @@ format_forest_estimates <- function(estimate, conf.low, conf.high,
                                     interval_digits = digits,
                                     estimate_fmt = NULL,
                                     force_group_labels = FALSE,
-                                    align_groups = FALSE) {
+                                    align_groups = FALSE,
+                                    estimate_formatter = NULL,
+                                    conf_low_formatter = NULL,
+                                    conf_high_formatter = NULL) {
   digits <- resolve_table_digits(
     digits = digits,
     estimate_digits = estimate_digits,
@@ -611,9 +644,12 @@ format_forest_estimates <- function(estimate, conf.low, conf.high,
     stop("`estimate_fmt` must be a single character string.", call. = FALSE)
   }
 
-  estimate_text <- sprintf(paste0("%.", digits$estimate_digits, "f"), estimate)
-  conf_low_text <- sprintf(paste0("%.", digits$interval_digits, "f"), conf.low)
-  conf_high_text <- sprintf(paste0("%.", digits$interval_digits, "f"), conf.high)
+  estimate_text <- apply_table_formatter(estimate, estimate_formatter,
+    function(x) sprintf(paste0("%.", digits$estimate_digits, "f"), x), "estimate")
+  conf_low_text <- apply_table_formatter(conf.low, conf_low_formatter,
+    function(x) sprintf(paste0("%.", digits$interval_digits, "f"), x), "conf.low")
+  conf_high_text <- apply_table_formatter(conf.high, conf_high_formatter,
+    function(x) sprintf(paste0("%.", digits$interval_digits, "f"), x), "conf.high")
 
   formatted <- vapply(
     seq_along(estimate_text),
@@ -645,7 +681,9 @@ format_forest_intervals <- function(conf.low, conf.high,
                                     interval_digits = digits,
                                     ci_fmt = NULL,
                                     force_group_labels = FALSE,
-                                    align_groups = FALSE) {
+                                    align_groups = FALSE,
+                                    conf_low_formatter = NULL,
+                                    conf_high_formatter = NULL) {
   digits <- resolve_table_digits(
     digits = digits,
     interval_digits = interval_digits
@@ -657,8 +695,10 @@ format_forest_intervals <- function(conf.low, conf.high,
     stop("`ci_fmt` must be a single character string.", call. = FALSE)
   }
 
-  conf_low_text <- sprintf(paste0("%.", digits$interval_digits, "f"), conf.low)
-  conf_high_text <- sprintf(paste0("%.", digits$interval_digits, "f"), conf.high)
+  conf_low_text <- apply_table_formatter(conf.low, conf_low_formatter,
+    function(x) sprintf(paste0("%.", digits$interval_digits, "f"), x), "conf.low")
+  conf_high_text <- apply_table_formatter(conf.high, conf_high_formatter,
+    function(x) sprintf(paste0("%.", digits$interval_digits, "f"), x), "conf.high")
 
   formatted <- vapply(
     seq_along(conf_low_text),
@@ -687,9 +727,10 @@ format_forest_intervals <- function(conf.low, conf.high,
 format_forest_table_values <- function(values,
                                        group = NULL,
                                        force_group_labels = FALSE,
-                                       align_groups = FALSE) {
-  formatted <- as.character(values)
-  formatted[is.na(formatted)] <- ""
+                                       align_groups = FALSE,
+                                       formatter = NULL,
+                                       key = "value") {
+  formatted <- apply_table_formatter(values, formatter, as.character, key)
   collapse_grouped_values(
     formatted,
     group,
@@ -856,7 +897,7 @@ assign_hierarchical_row_keys <- function(data, has_groupings) {
 
   factor_levels <- if (
     "row_type" %in% names(data) &&
-      any(data$row_type == "subgroup_header")
+      any(data$row_type != "estimate")
   ) {
     rev(all_levels)
   } else {
@@ -939,8 +980,12 @@ expand_subgroup_display_rows <- function(data, has_groupings) {
   display_data <- as_forest_display_frame(data)
   p_method <- forest_p_method(display_data)
   display_data$.forest_source_row <- seq_len(nrow(display_data))
-  display_data$row_type <- "estimate"
+  if (!"row_type" %in% names(display_data)) {
+    display_data$row_type <- "estimate"
+  }
+  display_data$.forest_generated_subgroup_header <- FALSE
   display_data$display_label <- display_data$label
+  display_data$display_label[display_data$row_type == "spacer"] <- ""
 
   has_subgroups <- "subgroup" %in% names(display_data) &&
     any(!is.na(display_data$subgroup) & nzchar(display_data$subgroup))
@@ -975,7 +1020,8 @@ expand_subgroup_display_rows <- function(data, has_groupings) {
         header$label <- subgroup
         header$subgroup <- subgroup
         header$grouping_panel <- display_data$grouping_panel[row_index]
-        header$row_type <- "subgroup_header"
+        header$row_type <- "header"
+        header$.forest_generated_subgroup_header <- TRUE
         header$display_label <- subgroup
 
         block_end <- position
@@ -1043,7 +1089,8 @@ subgroup_header_rows <- function(data, header_row) {
 format_subgroup_header_p_values <- function(data,
                                             header_row,
                                             p_digits,
-                                            align_groups) {
+                                            align_groups,
+                                            formatter = NULL) {
   block <- subgroup_header_rows(data, header_row)
 
   if (nrow(block) == 0L) {
@@ -1055,7 +1102,7 @@ format_subgroup_header_p_values <- function(data,
       length(unique(block_values)) == 1L) {
     return(format_forest_p_values(
       block_values[[1L]],
-      p_digits = p_digits
+      p_digits = p_digits, formatter = formatter
     ))
   }
 
@@ -1064,7 +1111,7 @@ format_subgroup_header_p_values <- function(data,
   if (!isTRUE(has_groups)) {
     values <- block$p.value[!is.na(block$p.value)]
     value <- if (length(values) == 0L) NA_real_ else values[[1L]]
-    return(format_forest_p_values(value, p_digits = p_digits))
+    return(format_forest_p_values(value, p_digits = p_digits, formatter = formatter))
   }
 
   group_key <- ifelse(
@@ -1082,7 +1129,8 @@ format_subgroup_header_p_values <- function(data,
     values,
     group = group_levels,
     p_digits = p_digits,
-    align_groups = align_groups
+    align_groups = align_groups,
+    formatter = formatter
   )
 }
 
@@ -1214,14 +1262,23 @@ build_forest_plot_data <- function(data) {
   plot_data <- expand_subgroup_display_rows(forest_data, has_groupings)
   plot_data$.display_identity <- encode_display_identity(
     plot_data$row_type,
-    ifelse(plot_data$row_type == "estimate", plot_data$subgroup, NA_character_),
+    ifelse(plot_data$.forest_generated_subgroup_header |
+             plot_data$row_type %in% c("estimate", "reference", "summary"),
+           plot_data$subgroup, NA_character_),
     plot_data$label
+  )
+  unique_source_rows <- plot_data$row_type == "spacer" |
+    (plot_data$row_type == "header" &
+       !plot_data$.forest_generated_subgroup_header)
+  plot_data$.display_identity[unique_source_rows] <- paste0(
+    plot_data$.display_identity[unique_source_rows],
+    "|source:", plot_data$.forest_source_row[unique_source_rows]
   )
   plot_data <- assign_row_keys(plot_data, has_groupings)
 
-  estimate_rows <- plot_data$row_type == "estimate"
-  source_rows <- plot_data$.forest_source_row[estimate_rows]
-  source_keys <- as.character(plot_data$row_key[estimate_rows])
+  original_rows <- !is.na(plot_data$.forest_source_row)
+  source_rows <- plot_data$.forest_source_row[original_rows]
+  source_keys <- as.character(plot_data$row_key[original_rows])
   forest_data$row_key <- factor(
     source_keys[match(seq_len(nrow(forest_data)), source_rows)],
     levels = levels(plot_data$row_key)
@@ -1386,6 +1443,8 @@ build_forest_table_data <- function(data,
                                     p_digits = NULL,
                                     estimate_fmt = NULL,
                                     ci_fmt = NULL,
+                                    formatters = NULL,
+                                    reference_text = "Reference",
                                     column_labels = NULL,
                                     columns = NULL,
                                     display_data = data) {
@@ -1395,6 +1454,11 @@ build_forest_table_data <- function(data,
     interval_digits = interval_digits,
     p_digits = p_digits
   )
+  if (!is.character(reference_text) || length(reference_text) != 1L ||
+      is.na(reference_text)) {
+    stop("`reference_text` must be a single non-missing character string.", call. = FALSE)
+  }
+  formatters <- normalize_table_formatters(formatters, data)
   if (is.null(conf.level) && inherits(data, "forest_data")) {
     conf.level <- forest_metadata(data)$conf_level
   }
@@ -1437,8 +1501,8 @@ build_forest_table_data <- function(data,
   row_label_data_columns <- unique(c(
     "term", "label", mapped_row_label_columns
   ))
-  has_subgroup_headers <- "row_type" %in% names(display_data) &&
-    any(display_data$row_type == "subgroup_header")
+  has_subgroup_headers <- ".forest_generated_subgroup_header" %in%
+    names(display_data) && any(display_data$.forest_generated_subgroup_header)
   visible_data_columns <- names(display_data)[
     !startsWith(names(display_data), "..source..") &
       !names(display_data) %in% forest_display_reserved_columns()
@@ -1476,9 +1540,15 @@ build_forest_table_data <- function(data,
     } else {
       "estimate"
     }
-    row_types[[row_key]] <- row_type
-    is_header <- identical(row_type, "subgroup_header")
-    is_child <- !is_header &&
+    row_types[[i]] <- row_type
+    is_header <- identical(row_type, "header")
+    is_generated_header <- is_header &&
+      ".forest_generated_subgroup_header" %in% names(rd) &&
+      isTRUE(rd$.forest_generated_subgroup_header[[1L]])
+    is_reference <- identical(row_type, "reference")
+    is_spacer <- identical(row_type, "spacer")
+    is_geometry <- row_type %in% forest_geometry_row_types()
+    is_child <- !is_header && !is_spacer &&
       any(!is.na(rd$subgroup) & nzchar(rd$subgroup))
     term_text <- if ("display_label" %in% names(rd)) {
       rd$display_label[[1L]]
@@ -1490,7 +1560,7 @@ build_forest_table_data <- function(data,
     } else {
       rd$group
     }
-    row_group_values[[i]] <- if (is_header && identical(p_method, "overall")) {
+    row_group_values[[i]] <- if (is_generated_header && identical(p_method, "overall")) {
       subgroup_header_group_values(data, rd)
     } else {
       as.character(rd$group)
@@ -1499,50 +1569,67 @@ build_forest_table_data <- function(data,
       row_key = row_key,
       grouping_panel = rd$grouping_panel[1L],
       term_text = term_text,
-      group_text = if (is_header) "" else format_forest_table_values(
-        group_values, rd$group, align_groups = align_groups
+      group_text = if (is_header || is_spacer) "" else format_forest_table_values(
+        group_values, rd$group, align_groups = align_groups,
+        formatter = formatters[["group"]], key = "group"
       ),
-      n_text = if (is_header) "" else format_forest_table_values(
-        rd$n, rd$group, align_groups = align_groups
+      n_text = if (is_header || is_spacer) "" else format_forest_table_values(
+        rd$n, rd$group, align_groups = align_groups,
+        formatter = formatters[["n"]], key = "n"
       ),
-      events_text = if (is_header) "" else format_forest_table_values(
-        rd$events, rd$group, align_groups = align_groups
+      events_text = if (is_header || is_spacer) "" else format_forest_table_values(
+        rd$events, rd$group, align_groups = align_groups,
+        formatter = formatters[["events"]], key = "events"
       ),
-      estimate_text = if (is_header) "" else format_forest_estimates(
+      estimate_text = if (is_reference) collapse_grouped_values(
+        rep(reference_text, nrow(rd)), rd$group, align_groups = align_groups
+      ) else if (!is_geometry) "" else format_forest_estimates(
         rd$estimate, rd$conf.low, rd$conf.high, rd$group,
         estimate_digits = digits$estimate_digits,
         interval_digits = digits$interval_digits,
         estimate_fmt = estimate_fmt,
-        align_groups = align_groups
+        align_groups = align_groups,
+        estimate_formatter = formatters[["estimate"]],
+        conf_low_formatter = resolve_table_formatter(formatters, "conf.low"),
+        conf_high_formatter = resolve_table_formatter(formatters, "conf.high")
       ),
-      estimate_value_text = if (is_header) "" else format_forest_estimates(
+      estimate_value_text = if (is_reference) collapse_grouped_values(
+        rep(reference_text, nrow(rd)), rd$group, align_groups = align_groups
+      ) else if (!is_geometry) "" else format_forest_estimates(
         rd$estimate, rd$conf.low, rd$conf.high, rd$group,
         estimate_digits = digits$estimate_digits,
         interval_digits = digits$interval_digits,
         estimate_fmt = if (is.null(estimate_fmt)) "{estimate}" else estimate_fmt,
-        align_groups = align_groups
+        align_groups = align_groups,
+        estimate_formatter = formatters[["estimate"]],
+        conf_low_formatter = resolve_table_formatter(formatters, "conf.low"),
+        conf_high_formatter = resolve_table_formatter(formatters, "conf.high")
       ),
-      ci_text = if (is_header) "" else format_forest_intervals(
+      ci_text = if (!is_geometry) "" else format_forest_intervals(
         rd$conf.low, rd$conf.high, rd$group,
         interval_digits = digits$interval_digits,
         ci_fmt = ci_fmt,
-        align_groups = align_groups
+        align_groups = align_groups,
+        conf_low_formatter = resolve_table_formatter(formatters, "conf.low"),
+        conf_high_formatter = resolve_table_formatter(formatters, "conf.high")
       ),
-      p_text = if (is_header && identical(p_method, "overall")) {
+      p_text = if (is_generated_header && identical(p_method, "overall")) {
         format_subgroup_header_p_values(
           data,
           rd,
           p_digits = digits$p_digits,
-          align_groups = align_groups
+          align_groups = align_groups,
+          formatter = formatters[["p"]]
         )
-      } else if (is_header ||
+      } else if (is_reference || is_spacer || is_generated_header ||
                  (is_child && identical(p_method, "overall"))) {
         ""
       } else {
         format_forest_p_values(
           rd$p.value, rd$group,
           p_digits = digits$p_digits,
-          align_groups = align_groups
+          align_groups = align_groups,
+          formatter = formatters[["p"]]
         )
       },
       stringsAsFactors = FALSE
@@ -1550,8 +1637,12 @@ build_forest_table_data <- function(data,
 
     for (extra in extra_columns) {
       storage_field <- extra_storage_lookup[[extra]]
+      if (is_spacer) {
+        row_parts[[i]][[storage_field]] <- ""
+        next
+      }
       if (isTRUE(has_subgroup_headers) && extra %in% row_label_data_columns) {
-        if (is_header) {
+        if (is_generated_header) {
           row_parts[[i]][[storage_field]] <- term_text
           next
         }
@@ -1564,7 +1655,8 @@ build_forest_table_data <- function(data,
         label_text <- format_forest_table_values(
           label_values,
           rd$group,
-          align_groups = FALSE
+          align_groups = FALSE,
+          formatter = formatters[[extra]], key = extra
         )
         if (is_child) {
           label_text <- paste0(
@@ -1576,7 +1668,7 @@ build_forest_table_data <- function(data,
         next
       }
 
-      if (is_header) {
+      if (is_generated_header) {
         row_parts[[i]][[storage_field]] <- ""
         next
       }
@@ -1589,7 +1681,8 @@ build_forest_table_data <- function(data,
       row_parts[[i]][[storage_field]] <- format_forest_table_values(
         values,
         rd$group,
-        align_groups = align_groups
+        align_groups = align_groups,
+        formatter = formatters[[extra]], key = extra
       )
     }
   }
@@ -1660,7 +1753,7 @@ build_forest_table_data <- function(data,
     long_part <- data.frame(
       row_key = table_rows$row_key,
       grouping_panel = table_rows$grouping_panel,
-      row_type = unname(row_types[as.character(table_rows$row_key)]),
+      row_type = unname(row_types[match(as.character(table_rows$row_key), row_levels)]),
       column_key = key,
       column_position = NA_real_,
       text = table_rows[[column_field_lookup[[key]]]],
