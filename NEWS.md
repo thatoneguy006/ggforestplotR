@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- Fixed table alignment when `subgroup` and `group` are both mapped. Split
+  tables now keep estimates and subgroup p-values on their intended rows (#40).
 - Added semantic forest row types (`estimate`, `reference`, `header`, `summary`,
   and `spacer`) so tables can contain reference categories and structural rows
   without fabricated plot geometry.

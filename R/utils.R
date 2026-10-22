@@ -2289,6 +2289,15 @@ build_forest_table_plot <- function(table_spec,
   grouped_text <- text_data[text_data$dodge_text, , drop = FALSE]
   text_layers <- list()
 
+  if (nrow(grouped_text) > 0L) {
+    # Train every row before separate text layers can reorder the y scale.
+    p <- p + ggplot2::geom_blank(
+      data = table_spec$table_data,
+      mapping = ggplot2::aes(y = .data$row_key),
+      inherit.aes = FALSE
+    )
+  }
+
   if (nrow(centered_text) > 0L) {
     text_layers[[length(text_layers) + 1L]] <- if (
       "text_hjust" %in% names(centered_text)

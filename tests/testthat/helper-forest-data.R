@@ -34,3 +34,17 @@ make_mixed_subgroup_data <- function() {
     stringsAsFactors = FALSE
   )
 }
+
+make_grouped_subgroup_data <- function() {
+  raw <- make_mixed_subgroup_data()
+  raw <- raw[rep(seq_len(nrow(raw)), each = 2L), ]
+  raw$model <- factor(
+    rep(c("Base", "Adjusted"), 6L),
+    levels = c("Adjusted", "Base")
+  )
+  raw$estimate <- seq_len(nrow(raw)) / 10
+  raw$conf.low <- raw$estimate - 0.04
+  raw$conf.high <- raw$estimate + 0.04
+  raw$p_value <- raw$p_value + rep(c(0, 0.01), 6L)
+  raw
+}
