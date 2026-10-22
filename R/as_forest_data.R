@@ -349,7 +349,9 @@ as_forest_data.data.frame <- function(data,
     canonical_uses_source <- source_name %in% names(column_mapping) &&
       identical(unname(column_mapping[[source_name]]), source_name)
 
-    if (!canonical_uses_source) {
+    # Preserve numeric source values even when canonical labels become text.
+    if (!canonical_uses_source ||
+        !identical(out[[source_name]], data[[source_name]])) {
       stored_name <- paste0("..source..", source_name)
       while (stored_name %in% names(out)) {
         stored_name <- paste0(stored_name, ".")

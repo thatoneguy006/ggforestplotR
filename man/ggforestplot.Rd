@@ -99,7 +99,11 @@ interval columns. Defaults to \code{0.95}.}
 \code{"ascending"}. Subgroup hierarchies require \code{"none"} so their source order
 is preserved.}
 
-\item{point_size}{Point size for coefficient markers.}
+\item{point_size}{A finite non-negative number for a constant marker size,
+or a single column name for sizes mapped from numeric data. Mapped values
+must be finite and non-negative on estimate and summary rows. Column-based
+sizes use the standard ggplot2 size scale; customize them with
+\code{\link[ggplot2:scale_size_continuous]{ggplot2::scale_size_continuous()}} or \code{\link[ggplot2:scale_size_area]{ggplot2::scale_size_area()}}.}
 
 \item{point_shape}{Shape used for coefficient markers.}
 

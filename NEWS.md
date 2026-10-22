@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- `point_size` now accepts a numeric source column name, such as `"N"`, to
+  map marker sizes through a customizable ggplot2 size scale (#38).
 - Fixed table alignment when `subgroup` and `group` are both mapped. Split
   tables now keep estimates and subgroup p-values on their intended rows (#40).
 - Added semantic forest row types (`estimate`, `reference`, `header`, `summary`,
