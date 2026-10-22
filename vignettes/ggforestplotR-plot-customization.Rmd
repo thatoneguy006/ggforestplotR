@@ -25,6 +25,29 @@ library(ggplot2)
 
 This article focuses on utility and enhanced customization of forest plots and accompanied tables.
 
+## Size markers by a data column
+
+Use a number such as `point_size = 3` for constant marker sizes, or a column
+name such as `point_size = "N"` to map sizes from numeric source data. Values
+must be finite and non-negative for rows that draw points. Sizes follow the
+standard ggplot2 size scale, including its legend, and can be customized with
+`scale_size_continuous()` or `scale_size_area()`.
+
+```{r mapped-point-sizes}
+sized_coefs <- data.frame(
+  term = c("Age", "BMI", "Treatment"),
+  estimate = c(0.3, -0.2, 0.4),
+  conf.low = c(0.1, -0.4, 0.2),
+  conf.high = c(0.5, 0.0, 0.6),
+  N = c(80, 160, 320)
+)
+
+ggforestplot(sized_coefs, point_size = "N") +
+  scale_size_continuous(range = c(2, 6)) +
+  theme(legend.position = "bottom") +
+  add_split_table(left_columns = "term", right_columns = "estimate")
+```
+
 ## Formatting table values with functions
 
 `formatters` accepts a named list of vectorized functions. Each function

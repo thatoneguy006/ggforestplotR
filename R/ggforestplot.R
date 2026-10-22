@@ -54,7 +54,11 @@
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
 #'   `"ascending"`. Subgroup hierarchies require `"none"` so their source order
 #'   is preserved.
-#' @param point_size Point size for coefficient markers.
+#' @param point_size A finite non-negative number for a constant marker size,
+#'   or a single column name for sizes mapped from numeric data. Mapped values
+#'   must be finite and non-negative on estimate and summary rows. Column-based
+#'   sizes use the standard ggplot2 size scale; customize them with
+#'   [ggplot2::scale_size_continuous()] or [ggplot2::scale_size_area()].
 #' @param point_shape Shape used for coefficient markers.
 #' @param linewidth Line width for confidence intervals.
 #' @param line_size Deprecated. Use `linewidth` instead.
@@ -232,6 +236,7 @@ ggforestplot <- function(data,
   estimate_label <- metadata$effect_label
   axis_label <- forest_axis_label(metadata)
   column_mapping <- metadata$column_mapping
+  point_size_column <- resolve_point_size_column(forest_data, point_size)
 
   default_ref_line <- metadata$reference_value
 
@@ -526,11 +531,22 @@ ggforestplot <- function(data,
     )
   }
 
-  p <- p + ggplot2::geom_point(
-    size = point_size,
+  point_args <- list(
     shape = point_shape,
     position = dodge
   )
+  if (is.null(point_size_column)) {
+    point_args$size <- point_size
+  } else {
+    # Use source values before CI clipping adds its own derived columns.
+    point_args$data <- geometry_data
+    point_args$mapping <- ggplot2::aes(size = .data[[point_size_column]])
+  }
+  p <- p + do.call(ggplot2::geom_point, point_args)
+
+  if (!is.null(point_size_column)) {
+    p <- p + ggplot2::labs(size = point_size)
+  }
 
   p <- p +
     ggplot2::scale_y_discrete(
