@@ -317,10 +317,11 @@ align_striped_rows_to_x_scale <- function(scale, plot) {
     return(plot)
   }
 
-  plot$layers[[stripe_layer_index]]$data$xmin <- stripe_limits[1]
-  plot$layers[[stripe_layer_index]]$data$xmax <- stripe_limits[2]
+  new_stripe_data <- stripe_data
+  new_stripe_data$xmin <- stripe_limits[1]
+  new_stripe_data$xmax <- stripe_limits[2]
 
-  plot
+  replace_layer_data(plot, stripe_layer_index, new_stripe_data)
 }
 
 x_scale_limits_for_stripes <- function(scale, stripe_data) {

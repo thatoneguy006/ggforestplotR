@@ -1403,6 +1403,17 @@ align_forest_state_to_row_levels <- function(state, requested_levels) {
   aligned_state
 }
 
+# Layers are ggproto environments shared between plots by `+`; clone before
+# replacing data so only the returned plot sees the new data.
+replace_layer_data <- function(plot, index, data) {
+  old <- plot$layers[[index]]
+  new <- rlang::env_clone(old)
+  class(new) <- class(old)
+  new$data <- data
+  plot$layers[[index]] <- new
+  plot
+}
+
 align_forest_row_layers_to_state <- function(plot, state) {
   stripe_index <- state$stripe_layer_index
   if (!is.null(stripe_index) && stripe_index <= length(plot$layers)) {
@@ -1417,13 +1428,13 @@ align_forest_row_layers_to_state <- function(plot, state) {
       new_stripes$xmin <- old_stripes$xmin[[1L]]
       new_stripes$xmax <- old_stripes$xmax[[1L]]
     }
-    plot$layers[[stripe_index]]$data <- new_stripes
+    plot <- replace_layer_data(plot, stripe_index, new_stripes)
   }
 
   separator_index <- state$separator_layer_index
   if (!is.null(separator_index) && separator_index <= length(plot$layers) &&
       !is.null(state$separator_data)) {
-    plot$layers[[separator_index]]$data <- state$separator_data
+    plot <- replace_layer_data(plot, separator_index, state$separator_data)
   }
 
   plot$ggforestplotR_state <- state

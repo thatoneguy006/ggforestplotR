@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- Adding scales or tables to a forest plot no longer modifies the original plot object's stripe and separator layers.
+
 - `point_size` now accepts a numeric source column name, such as `"N"`, to
   map marker sizes through a customizable ggplot2 size scale (#38).
 - Fixed table alignment when `subgroup` and `group` are both mapped. Split
