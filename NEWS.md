@@ -1,30 +1,53 @@
-# ggforestplotR (development version)
+# ggforestplotR 0.6.0
 
-- Unsupported inputs to `ggforestplot()` now fail with a clear error identifying the expected data frame or fitted model.
+## Major Changes
 
-- Building table compositions no longer opens a graphics device (e.g. creating `Rplots.pdf` in scripts).
+- Mixed-model subgroup effects are now population-level, excluding 
+  cluster-specific random slopes.
+- Quasibinomial models now default to odds ratios (logit link) or risk ratios 
+  (log link), matching binomial models.
+- `bind_forest_models()` now stores model labels as a factor, so legends and 
+  dodge order follow the order models were supplied in rather than alphabetical 
+  order.
+- Fitted `glmmTMB` models now plot only conditional-model coefficients; 
+  zero-inflation and dispersion coefficients were previously included and 
+  mislabelled.
+- `point_size` now accepts a numeric source column name, such as `"N"`, to
+  map marker sizes through a customizable ggplot2 size scale (#38).
+- Fixed table alignment when `subgroup` and `group` are both mapped. Split
+  tables now keep estimates and subgroup p-values on their intended rows (#40).
+- Added vectorized `formatters` to both table helpers for estimates, confidence
+  bounds, p-values, and preserved source columns. Digit settings and text
+  templates remain available.
+- Added semantic forest row types (`estimate`, `reference`, `header`, `summary`,
+  and `spacer`) so tables can contain reference categories and structural rows
+  without fabricated plot geometry.
+- Added `reference_text` to both table helpers to customize reference cells.
 
-- Mixed-model subgroup effects are now population-level, excluding cluster-specific random slopes.
+## Minor Changes
 
-- Subgroup contrast labels no longer depend on the installed `marginaleffects` version's label format.
-
-- Numeric source columns shown in tables are now rounded to `estimate_digits` by default.
-
-- Subsetting a `forest_data` object to fewer columns now drops metadata for removed source columns instead of erroring.
-
-- The colour legend title now matches the table's group header ("Model" for `bind_forest_models()`, otherwise the mapped group column name).
-
-- `as_forest_data()` for data frames now defaults to `term`, `estimate`, `conf.low`, and `conf.high` column names, matching `ggforestplot()`.
-
-- Clarified that `exponentiate` transforms fitted-model coefficients but only declares the scale of data-frame columns.
-
-- Quasibinomial models now default to odds ratios (logit link) or risk ratios (log link), matching binomial models.
-
-- Fitted-model `as_forest_data()` methods now error on unknown arguments instead of silently ignoring them.
-
-- `bind_forest_models()` now stores model labels as a factor, so legends and dodge order follow the order models were supplied in rather than alphabetical order.
-
-- Fitted `glmmTMB` models now plot only conditional-model coefficients; zero-inflation and dispersion coefficients were previously included and mislabelled.
+- Building table compositions no longer opens a graphics device 
+  (e.g. creating `Rplots.pdf` in scripts).
+- Unsupported inputs to `ggforestplot()` now fail with a clear error identifying
+  the expected data frame or fitted model.
+- Subgroup contrast labels no longer depend on the installed `marginaleffects` 
+  version's label format.
+- Numeric source columns shown in tables are now rounded to `estimate_digits` by
+  default.
+- Subsetting a `forest_data` object to fewer columns now drops metadata for 
+  removed source columns instead of erroring.
+- The colour legend title now matches the table's group header 
+  ("Model" for `bind_forest_models()`, otherwise the mapped group column name).
+- `as_forest_data()` for data frames now defaults to `term`, `estimate`, 
+  `conf.low`, and `conf.high` column names, matching `ggforestplot()`.
+- Clarified that `exponentiate` transforms fitted-model coefficients but only 
+  declares the scale of data-frame columns.
+- Fitted-model `as_forest_data()` methods now error on unknown arguments instead
+  of silently ignoring them.
+- Removed redundant `inherit.aes` arguments from horizontal separators to avoid 
+  warnings on older ggplot2 releases.
+- Adding scales or tables to a forest plot no longer modifies the original plot
+  object's stripe and separator layers.
 
 ## Breaking changes
 
@@ -32,26 +55,10 @@
   `separator_linewidth` in `ggforestplot()`, `grid_line_size` to `grid_linewidth`
   in `add_forest_table()`, and the data-frame `grouping` argument to `facet`.
   The former names remain as deprecated aliases; supplying both names errors.
-
-- Forest-plot rows now always read top-to-bottom in data order. Previously, plots without structured rows or subgroups were drawn bottom-to-top, so adding a single header or subgroup inverted the plot, and `sort_terms = "descending"` placed the largest estimate at the bottom.
-
-## Changes
-
-- Removed redundant `inherit.aes` arguments from horizontal separators to avoid warnings on older ggplot2 releases.
-
-- Adding scales or tables to a forest plot no longer modifies the original plot object's stripe and separator layers.
-
-- `point_size` now accepts a numeric source column name, such as `"N"`, to
-  map marker sizes through a customizable ggplot2 size scale (#38).
-- Fixed table alignment when `subgroup` and `group` are both mapped. Split
-  tables now keep estimates and subgroup p-values on their intended rows (#40).
-- Added semantic forest row types (`estimate`, `reference`, `header`, `summary`,
-  and `spacer`) so tables can contain reference categories and structural rows
-  without fabricated plot geometry.
-- Added vectorized `formatters` to both table helpers for estimates, confidence
-  bounds, p-values, and preserved source columns. Digit settings and text
-  templates remain available.
-- Added `reference_text` to both table helpers to customize reference cells.
+- Forest-plot rows now always read top-to-bottom in data order. Previously, 
+  plots without structured rows or subgroups were drawn bottom-to-top, so adding
+  a single header or subgroup inverted the plot, and `sort_terms = "descending"`
+  placed the largest estimate at the bottom.
 
 # ggforestplotR 0.5.0
 

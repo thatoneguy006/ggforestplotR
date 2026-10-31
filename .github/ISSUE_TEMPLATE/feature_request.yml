@@ -1,0 +1,79 @@
+
+name: Feature Request
+description: Suggest a new feature or enhancement for ggforestplotR
+title: "[Feature]: "
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an improvement to ggforestplotR!
+        Please describe the proposed feature and how it would
+        improve creating publication-ready forest plots.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature category
+      description: Which part of ggforestplotR would this affect?
+      options:
+        - Plot creation
+        - Table creation
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: |
+        What problem or limitation does this feature address?
+        Describe the statistical or practical use case.
+      placeholder: |
+        I would like to...
+        Currently, this requires...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-feature
+    attributes:
+      label: Proposed feature
+      description: |
+        Describe how you envision the feature working,
+        including its expected behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example usage
+      description: |
+        If applicable, provide an example of how you would
+        like to use this feature in R.
+      render: r
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: |
+        Have you considered any alternative approaches
+        or existing R packages?
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: |
+        Include any relevant references, methodological
+        considerations, or other supporting information.
+    validations:
+      required: false
