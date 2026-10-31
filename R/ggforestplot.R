@@ -365,7 +365,6 @@ ggforestplot <- function(data,
     p <- p + ggplot2::geom_hline(
       data = separator_data,
       mapping = ggplot2::aes(yintercept = .data$yintercept),
-      inherit.aes = FALSE,
       linetype = separator_line_linetype,
       colour = separator_line_colour,
       linewidth = separator_line_size

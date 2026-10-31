@@ -24,6 +24,8 @@
 
 ## Changes
 
+- Removed redundant `inherit.aes` arguments from horizontal separators to avoid warnings on older ggplot2 releases.
+
 - Adding scales or tables to a forest plot no longer modifies the original plot object's stripe and separator layers.
 
 - `point_size` now accepts a numeric source column name, such as `"N"`, to

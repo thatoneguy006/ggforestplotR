@@ -2287,7 +2287,6 @@ build_forest_table_plot <- function(table_spec,
       p <- p + ggplot2::geom_hline(
         data = line_data,
         mapping = ggplot2::aes(yintercept = .data$yintercept),
-        inherit.aes = FALSE,
         colour = grid_line_colour,
         linewidth = grid_line_size,
         linetype = grid_line_linetype
