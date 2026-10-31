@@ -369,7 +369,6 @@ as_forest_data.data.frame <- function(data,
   attr(out, "grouping_levels") <- grouping_levels
 
   validate_forest_data(out, exponentiate = identical(estimate_scale, "ratio"))
-  validate_subgroup_blocks(out)
 
   out <- sort_forest_data(out, sort_terms = sort_terms)
   validate_subgroup_blocks(out)
