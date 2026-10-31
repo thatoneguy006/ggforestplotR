@@ -45,10 +45,12 @@
 #'   `"overall"` displays one p-value on each subgroup header; `"level"`
 #'   displays p-values on the subgroup estimate rows. Fitted-model subgroup
 #'   data inherit this choice from [tidy_forest_model()].
-#' @param exponentiate Logical; if `TRUE`, transform the estimates and draw the
-#'   axis on the log scale with the reference line at 1. For model objects,
-#'   `NULL` uses the canonical scale when it can be inferred, such as hazard
-#'   ratios for Cox models.
+#' @param exponentiate For fitted models, `TRUE` exponentiates the coefficients
+#'   (e.g. log-odds to odds ratios) and `NULL` uses the model's conventional scale,
+#'   such as hazard ratios for Cox models. For data frames, `exponentiate` does
+#'   **not** transform anything: `TRUE` declares that the estimate and interval
+#'   columns are already ratios, which draws a log10 axis with the reference line
+#'   at 1. Exponentiate log-scale columns yourself before plotting them as ratios.
 #' @param conf.level Confidence level represented by model or data-frame
 #'   interval columns. Defaults to `0.95`.
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or

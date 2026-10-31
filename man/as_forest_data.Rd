@@ -166,9 +166,11 @@ display.}
 \code{"ascending"}. Subgroup hierarchies require \code{"none"} so their source order
 is preserved.}
 
-\item{exponentiate}{Compatibility argument. \code{TRUE} is equivalent to
-\code{estimate_scale = "ratio"}; \code{FALSE} is equivalent to
-\code{estimate_scale = "identity"} when \code{estimate_scale} is not supplied.}
+\item{exponentiate}{Declares the scale of the supplied columns; values are never
+transformed for data frames. \code{TRUE} is equivalent to
+\code{estimate_scale = "ratio"} (columns already contain ratios); \code{FALSE} is
+equivalent to \code{estimate_scale = "identity"} when \code{estimate_scale} is not
+supplied.}
 
 \item{p_method}{Subgroup p-value placement. \code{"overall"} displays one
 omnibus or block-level p-value on the subgroup header; \code{"level"} keeps

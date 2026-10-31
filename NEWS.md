@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- Clarified that `exponentiate` transforms fitted-model coefficients but only declares the scale of data-frame columns.
+
 - Quasibinomial models now default to odds ratios (logit link) or risk ratios (log link), matching binomial models.
 
 - Fitted-model `as_forest_data()` methods now error on unknown arguments instead of silently ignoring them.

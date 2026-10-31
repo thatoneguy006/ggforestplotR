@@ -71,7 +71,12 @@ validate_forest_data <- function(data, exponentiate = FALSE) {
     }
     if (isTRUE(exponentiate) && any(data[[col]][geometry] <= 0)) {
       stop(
-        "Ratio estimates and logarithmic axes require strictly positive `estimate`, `conf.low`, and `conf.high` values.",
+        paste0(
+          "Ratio estimates and logarithmic axes require strictly positive ",
+          "`estimate`, `conf.low`, and `conf.high` values. For data frames, ",
+          "`exponentiate = TRUE` declares values that are already ratios; ",
+          "exponentiate log-scale estimates before plotting."
+        ),
         call. = FALSE
       )
     }

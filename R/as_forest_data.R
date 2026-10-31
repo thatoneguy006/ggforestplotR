@@ -53,9 +53,11 @@
 #'   p-values on the individual subgroup estimate rows. For fitted-model
 #'   methods, this also selects whether `p.value` contains the omnibus
 #'   interaction test or the post-estimation test for each derived effect.
-#' @param exponentiate Compatibility argument. `TRUE` is equivalent to
-#'   `estimate_scale = "ratio"`; `FALSE` is equivalent to
-#'   `estimate_scale = "identity"` when `estimate_scale` is not supplied.
+#' @param exponentiate Declares the scale of the supplied columns; values are never
+#'   transformed for data frames. `TRUE` is equivalent to
+#'   `estimate_scale = "ratio"` (columns already contain ratios); `FALSE` is
+#'   equivalent to `estimate_scale = "identity"` when `estimate_scale` is not
+#'   supplied.
 #' @param estimate_scale Semantic scale of the stored estimates. One of
 #'   `"identity"`, `"log"`, `"ratio"`, `"probability"`, or
 #'   `"risk_difference"`.

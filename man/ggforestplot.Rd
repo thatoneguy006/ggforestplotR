@@ -87,10 +87,12 @@ table helpers.}
 
 \item{p.value}{Optional column name holding p-values.}
 
-\item{exponentiate}{Logical; if \code{TRUE}, transform the estimates and draw the
-axis on the log scale with the reference line at 1. For model objects,
-\code{NULL} uses the canonical scale when it can be inferred, such as hazard
-ratios for Cox models.}
+\item{exponentiate}{For fitted models, \code{TRUE} exponentiates the coefficients
+(e.g. log-odds to odds ratios) and \code{NULL} uses the model's conventional scale,
+such as hazard ratios for Cox models. For data frames, \code{exponentiate} does
+\strong{not} transform anything: \code{TRUE} declares that the estimate and interval
+columns are already ratios, which draws a log10 axis with the reference line
+at 1. Exponentiate log-scale columns yourself before plotting them as ratios.}
 
 \item{conf.level}{Confidence level represented by model or data-frame
 interval columns. Defaults to \code{0.95}.}
