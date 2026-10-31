@@ -291,6 +291,16 @@ strip_forest_data_class <- function(x) {
     return(strip_forest_data_class(out))
   }
 
+  source_columns <- metadata$source_columns
+  if (!is.null(source_columns)) {
+    source_columns <- source_columns[unname(source_columns) %in% names(out)]
+    metadata["source_columns"] <- list(if (length(source_columns) == 0L) {
+      NULL
+    } else {
+      source_columns
+    })
+  }
+
   set_forest_metadata(out, metadata, validate = nrow(out) > 0L)
 }
 

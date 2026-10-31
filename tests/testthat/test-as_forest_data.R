@@ -239,3 +239,14 @@ test_that("data-frame method defaults to broom column names", {
   expect_s3_class(fd, "forest_data")
   expect_equal(fd$term, c("a", "b"))
 })
+
+test_that("column subsetting prunes source-column metadata", {
+  fd <- as_forest_data(
+    data.frame(variable = c("a", "b"), beta = 1:2, lo = 0:1, hi = 2:3),
+    term = "variable", estimate = "beta", conf.low = "lo", conf.high = "hi"
+  )
+  sub <- fd[, c("term", "estimate", "conf.low", "conf.high")]
+  expect_s3_class(sub, "forest_data")
+  expect_true(all(unname(forest_metadata(sub)$source_columns) %in% names(sub)))
+  expect_s3_class(ggforestplot(sub), "ggplot")
+})

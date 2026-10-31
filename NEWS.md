@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- Subsetting a `forest_data` object to fewer columns now drops metadata for removed source columns instead of erroring.
+
 - The colour legend title now matches the table's group header ("Model" for `bind_forest_models()`, otherwise the mapped group column name).
 
 - `as_forest_data()` for data frames now defaults to `term`, `estimate`, `conf.low`, and `conf.high` column names, matching `ggforestplot()`.
