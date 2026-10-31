@@ -656,3 +656,9 @@ test_that("unsupported mixed-model structures fail clearly", {
     "currently support"
   )
 })
+
+test_that("contrast labels are normalised across marginaleffects versions", {
+  f <- ggforestplotR:::.subgroup_contrast_labels
+  expect_equal(f(c("mean(6) - mean(4)", "8 - 4"), c("4", "6", "8")),
+               c("6 - 4", "8 - 4"))
+})

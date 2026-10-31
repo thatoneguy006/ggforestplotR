@@ -588,6 +588,39 @@
   invisible(result)
 }
 
+.subgroup_focal_levels <- function(model, focal) {
+  frame <- .subgroup_model_frame(model)
+  if (is.null(frame)) {
+    return(NULL)
+  }
+  values <- if (focal$expression %in% names(frame)) {
+    frame[[focal$expression]]
+  } else if (focal$variable_name %in% names(frame)) {
+    frame[[focal$variable_name]]
+  } else {
+    return(NULL)
+  }
+  if (is.factor(values)) levels(values) else levels(factor(values))
+}
+
+.subgroup_contrast_labels <- function(contrast, focal_levels) {
+  if (is.null(focal_levels) || length(focal_levels) < 2L) {
+    return(contrast)
+  }
+  reference <- focal_levels[[1L]]
+  candidates <- focal_levels[-1L]
+  vapply(contrast, function(value) {
+    hits <- candidates[
+      value == sprintf("%s - %s", candidates, reference) |
+        value == sprintf("mean(%s) - mean(%s)", candidates, reference)
+    ]
+    if (length(hits) != 1L) {
+      return(value)
+    }
+    sprintf("%s - %s", hits, reference)
+  }, character(1), USE.NAMES = FALSE)
+}
+
 .estimate_subgroup_effects <- function(model,
                                        subgroup,
                                        focal,
@@ -675,7 +708,10 @@
 
   terms <- as.character(result[[subgroup_column]])
   contrast <- if ("contrast" %in% names(result)) {
-    as.character(result$contrast)
+    .subgroup_contrast_labels(
+      as.character(result$contrast),
+      .subgroup_focal_levels(model, interaction$focal)
+    )
   } else {
     rep(paste0(interaction$focal$name, " slope"), nrow(result))
   }

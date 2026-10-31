@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- Subgroup contrast labels no longer depend on the installed `marginaleffects` version's label format.
+
 - Numeric source columns shown in tables are now rounded to `estimate_digits` by default.
 
 - Subsetting a `forest_data` object to fewer columns now drops metadata for removed source columns instead of erroring.
