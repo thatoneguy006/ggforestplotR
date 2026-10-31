@@ -15,7 +15,7 @@ supported through broom.mixed tidy methods when that package is installed."></he
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -155,7 +155,8 @@ order.</p>
 predictors use <code><a href="https://rdrr.io/pkg/marginaleffects/man/comparisons.html" class="external-link">marginaleffects::avg_comparisons()</a></code> and compare each
 non-reference level with the first factor level. Both functions use the
 original fitted model and its variance-covariance matrix; no subgroup models
-are refitted.</p>
+are refitted. For mixed models, subgroup effects are population-level
+(random effects set to zero).</p>
 <p>Automatic selection is deliberately conservative. It accepts one
 unambiguous continuous-by-factor interaction. Factor-by-factor interactions
 require explicit <code>focal</code> and <code>subgroup</code> names. Continuous subgroups,
@@ -204,14 +205,14 @@ it alongside that estimate.</p>
 <span class="r-in"><span>  <span class="fu">tidy_forest_model</span><span class="op">(</span><span class="va">logit_fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;forest_data&gt; OR; scale: ratio; reference: 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 term estimate conf.low conf.high              label group</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                age 1.103890 1.061512  1.151411                age  &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                bmi 1.118858 1.043220  1.204389                bmi  &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 treatmentTreatment 3.133149 1.782915  5.613038 treatmentTreatment  &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   subgroup grouping separate_groups    n events      p.value  std.error</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     &lt;NA&gt;     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 1.719452e-06 0.02066110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     &lt;NA&gt;     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 2.093412e-03 0.03650339</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3     &lt;NA&gt;     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 9.087778e-05 0.29180238</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 term estimate conf.low conf.high              label row_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                age 1.103890 1.061512  1.151411                age estimate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                bmi 1.118858 1.043220  1.204389                bmi estimate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 treatmentTreatment 3.133149 1.782915  5.613038 treatmentTreatment estimate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   group subgroup grouping separate_groups    n events      p.value  std.error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 1.719452e-06 0.02066110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 2.093412e-03 0.03650339</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 9.087778e-05 0.29180238</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   statistic</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1  4.783878</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2  3.076650</span>

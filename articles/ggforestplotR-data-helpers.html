@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,6 +84,42 @@
 object and the helper functions that prepare it before a plot is
 drawn.</p>
 <div class="section level2">
+<h2 id="structured-forest-data-and-reference-rows">Structured forest data and reference rows<a class="anchor" aria-label="anchor" href="#structured-forest-data-and-reference-rows"></a>
+</h2>
+<p>Map a source column with <code>row_type =</code> to place reference
+categories and structural rows alongside estimates.
+<code>estimate</code> and <code>summary</code> rows need finite
+estimates and confidence bounds. <code>reference</code>,
+<code>header</code>, and <code>spacer</code> rows use <code>NA</code>
+for all three geometry values. Structured rows keep their source order;
+<code>sort_terms</code> must remain <code>"none"</code>.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">structured</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  term <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Female"</span>, <span class="st">"Male"</span>, <span class="st">"Clinical"</span>, <span class="st">"Age"</span>, <span class="st">""</span>, <span class="st">"Overall"</span><span class="op">)</span>,</span>
+<span>  estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">1.42</span>, <span class="cn">NA</span>, <span class="fl">1.03</span>, <span class="cn">NA</span>, <span class="fl">1.18</span><span class="op">)</span>,</span>
+<span>  conf.low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">1.10</span>, <span class="cn">NA</span>, <span class="fl">1.01</span>, <span class="cn">NA</span>, <span class="fl">1.04</span><span class="op">)</span>,</span>
+<span>  conf.high <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">1.84</span>, <span class="cn">NA</span>, <span class="fl">1.05</span>, <span class="cn">NA</span>, <span class="fl">1.34</span><span class="op">)</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sex"</span>, <span class="st">"Sex"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
+<span>  row_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reference"</span>, <span class="st">"estimate"</span>, <span class="st">"header"</span>, <span class="st">"estimate"</span>, <span class="st">"spacer"</span>, <span class="st">"summary"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span></span>
+<span>  <span class="va">structured</span>,</span>
+<span>  subgroup <span class="op">=</span> <span class="st">"subgroup"</span>,</span>
+<span>  row_type <span class="op">=</span> <span class="st">"row_type"</span>,</span>
+<span>  exponentiate <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/add_split_table.html">add_split_table</a></span><span class="op">(</span></span>
+<span>  left_columns <span class="op">=</span> <span class="st">"term"</span>,</span>
+<span>  right_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"estimate"</span>, <span class="st">"ci"</span><span class="op">)</span>,</span>
+<span>  reference_text <span class="op">=</span> <span class="st">"Reference"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="ggforestplotR-data-helpers_files/figure-html/structured-rows-1.png" class="r-plt" alt="" width="768"></p>
+<p>You can also supply explicit <code>"header"</code> and
+<code>"spacer"</code> rows in the source table. A mapped
+<code>subgroup</code> creates its own header; reference rows inside the
+subgroup appear as indented children.</p>
+</div>
+<div class="section level2">
 <h2 id="use-as_forest_data-to-standardize-a-coefficient-table">Use <code>as_forest_data()</code> to standardize a coefficient
 table<a class="anchor" aria-label="anchor" href="#use-as_forest_data-to-standardize-a-coefficient-table"></a>
 </h2>
@@ -92,7 +128,7 @@ internal structure used by <code>ggforestplotR</code>. The result is a
 <code>forest_data</code> data-frame subclass containing the columns
 expected by <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>,
 <code><a href="../reference/add_forest_table.html">add_forest_table()</a></code>, and <code><a href="../reference/add_split_table.html">add_split_table()</a></code>.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">raw_coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Age"</span>, <span class="st">"BMI"</span>, <span class="st">"Treatment"</span><span class="op">)</span>,</span>
 <span>  beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.10</span>, <span class="op">-</span><span class="fl">0.08</span>, <span class="fl">0.34</span><span class="op">)</span>,</span>
@@ -111,7 +147,7 @@ expected by <code><a href="../reference/ggforestplot.html">ggforestplot()</a></c
 <span>  conf.low <span class="op">=</span> <span class="st">"lower"</span>,</span>
 <span>  conf.high <span class="op">=</span> <span class="st">"upper"</span>,</span>
 <span>  label <span class="op">=</span> <span class="st">"display"</span>,</span>
-<span>  grouping <span class="op">=</span> <span class="st">"section"</span>,</span>
+<span>  facet <span class="op">=</span> <span class="st">"section"</span>,</span>
 <span>  n <span class="op">=</span> <span class="st">"sample_size"</span>,</span>
 <span>  p.value <span class="op">=</span> <span class="st">"p_value"</span>,</span>
 <span>  estimate_scale <span class="op">=</span> <span class="st">"identity"</span>,</span>
@@ -121,7 +157,7 @@ expected by <code><a href="../reference/ggforestplot.html">ggforestplot()</a></c
 <p>Use <code><a href="../reference/forest_metadata.html">forest_metadata()</a></code> to inspect the semantic and
 provenance contract. The complete fitted model and a duplicate copy of
 the source data are not retained.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/forest_metadata.html">forest_metadata</a></span><span class="op">(</span><span class="va">forest_ready</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"estimate_scale"</span>, <span class="st">"axis_transform"</span>, <span class="st">"effect_label"</span>, <span class="st">"conf_level"</span>,</span>
 <span>  <span class="st">"reference_value"</span>, <span class="st">"source_model"</span>, <span class="st">"source_package"</span>, <span class="st">"source_columns"</span></span>
@@ -154,7 +190,7 @@ the source data are not retained.</p>
 <span><span class="co">#&gt;     "section" "sample_size"     "p_value"</span></span></code></pre></div>
 <p>Once the data are standardized, you can pass them straight into
 <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">forest_ready</span><span class="op">)</span></span></code></pre></div>
 <p><img src="ggforestplotR-data-helpers_files/figure-html/helper-to-plot-1.png" class="r-plt" alt="" width="768"></p>
 </div>
@@ -166,13 +202,13 @@ the source data are not retained.</p>
 confidence limits from a fitted model. The method also assigns model
 semantics such as <code>Beta</code>, <code>OR</code>, or
 <code>HR</code>.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">wt</span> <span class="op">+</span> <span class="va">hp</span> <span class="op">+</span> <span class="va">qsec</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">model_ready</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_forest_data.html">as_forest_data</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <p>The returned object can be passed directly into
 <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">model_ready</span><span class="op">)</span></span></code></pre></div>
 <p><img src="ggforestplotR-data-helpers_files/figure-html/helper-to-plot-model-1.png" class="r-plt" alt="" width="768"></p>
 <p><code><a href="../reference/tidy_forest_model.html">tidy_forest_model()</a></code> remains available as a compatibility
@@ -185,7 +221,7 @@ wrapper and returns the same <code>forest_data</code> object.</p>
 <code>subgroup = "auto"</code> identifies the factor from model metadata
 and estimates the focal variable’s average slope within each observed
 factor level.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">interaction_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wt</span> <span class="op">~</span> <span class="va">hp</span> <span class="op">+</span> <span class="va">mpg</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">cyl</span><span class="op">)</span> <span class="op">+</span> <span class="va">qsec</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">subgroup_ready</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_forest_model.html">tidy_forest_model</a></span><span class="op">(</span></span>
@@ -215,25 +251,25 @@ focal main effect, factor main-effect coefficients, and raw interaction
 coefficients are replaced by the derived block; unrelated coefficients
 remain standalone in formula order.</p>
 <p>The same interaction can be selected explicitly:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/tidy_forest_model.html">tidy_forest_model</a></span><span class="op">(</span></span>
 <span>  <span class="va">interaction_fit</span>,</span>
 <span>  subgroup <span class="op">=</span> <span class="st">"cyl"</span>,</span>
 <span>  focal <span class="op">=</span> <span class="st">"mpg"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;forest_data&gt; Beta; scale: identity; reference: 0</span></span>
-<span><span class="co">#&gt;   term     estimate     conf.low    conf.high label group subgroup grouping</span></span>
-<span><span class="co">#&gt; 1   hp  0.002211858 -0.003019553  0.007443269    hp  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 2    4 -0.063790596 -0.121760403 -0.005820789     4  &lt;NA&gt;      cyl     &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3    6 -0.045622115 -0.273096846  0.181852616     6  &lt;NA&gt;      cyl     &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 4    8 -0.168851554 -0.258484920 -0.079218188     8  &lt;NA&gt;      cyl     &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 5 qsec  0.237491332  0.105815640  0.369167024  qsec  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;   separate_groups    n events     p.value   std.error  statistic df</span></span>
-<span><span class="co">#&gt; 1            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.391515516 0.002534723  0.8726232 NA</span></span>
-<span><span class="co">#&gt; 2            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.133731900 0.029576976 -2.1567653 NA</span></span>
-<span><span class="co">#&gt; 3            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.133731900 0.116060669 -0.3930885 NA</span></span>
-<span><span class="co">#&gt; 4            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.133731900 0.045732150 -3.6921849 NA</span></span>
-<span><span class="co">#&gt; 5            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.001059097 0.063799498  3.7224640 NA</span></span>
+<span><span class="co">#&gt;   term     estimate     conf.low    conf.high label row_type group subgroup</span></span>
+<span><span class="co">#&gt; 1   hp  0.002211858 -0.003019553  0.007443269    hp estimate  &lt;NA&gt;     &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2    4 -0.063790596 -0.121760403 -0.005820789     4 estimate  &lt;NA&gt;      cyl</span></span>
+<span><span class="co">#&gt; 3    6 -0.045622115 -0.273096846  0.181852616     6 estimate  &lt;NA&gt;      cyl</span></span>
+<span><span class="co">#&gt; 4    8 -0.168851554 -0.258484920 -0.079218188     8 estimate  &lt;NA&gt;      cyl</span></span>
+<span><span class="co">#&gt; 5 qsec  0.237491332  0.105815640  0.369167024  qsec estimate  &lt;NA&gt;     &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;   grouping separate_groups    n events     p.value   std.error  statistic df</span></span>
+<span><span class="co">#&gt; 1     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.391515516 0.002534723  0.8726232 NA</span></span>
+<span><span class="co">#&gt; 2     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.133731900 0.029576976 -2.1567653 NA</span></span>
+<span><span class="co">#&gt; 3     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.133731900 0.116060669 -0.3930885 NA</span></span>
+<span><span class="co">#&gt; 4     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.133731900 0.045732150 -3.6921849 NA</span></span>
+<span><span class="co">#&gt; 5     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt; 0.001059097 0.063799498  3.7224640 NA</span></span>
 <span><span class="co">#&gt;   subgroup_level focal      model_term contrast      estimand effect_scale</span></span>
 <span><span class="co">#&gt; 1           &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;     &lt;NA&gt;          &lt;NA&gt;         &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; 2              4   mpg mpg:factor(cyl)    dY/dX average_slope     identity</span></span>
@@ -257,7 +293,7 @@ table column can present both kinds of tests.</p>
 <p>Use <code>p_method = "level"</code> when the subgroup-specific slope
 or comparison tests are the quantities that should appear beside the
 individual estimates:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">level_p_ready</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_forest_model.html">tidy_forest_model</a></span><span class="op">(</span></span>
 <span>  <span class="va">interaction_fit</span>,</span>
 <span>  subgroup <span class="op">=</span> <span class="st">"auto"</span>,</span>

@@ -9,7 +9,7 @@ on both sides of the plotting panel."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,6 +71,8 @@ on both sides of the plotting panel.</p>
 <span>  p_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  estimate_fmt <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ci_fmt <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  formatters <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  reference_text <span class="op">=</span> <span class="st">"Reference"</span>,</span>
 <span>  text_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  header_text_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  header_fontface <span class="op">=</span> <span class="st">"bold"</span>,</span>
@@ -179,6 +181,20 @@ columns include <code>"ci"</code>.</p></dd>
 table columns include <code>"ci"</code>. Use <code>{conf.low}</code> and <code>{conf.high}</code> as
 placeholders. The shorthand <code>{conf.low, conf.high}</code> is also supported.
 Defaults to <code>"({conf.low}, {conf.high})"</code>.</p></dd>
+
+
+<dt id="arg-formatters">formatters<a class="anchor" aria-label="anchor" href="#arg-formatters"></a></dt>
+<dd><p>Named list of vectorized functions for scalar table
+values. Keys include <code>estimate</code>, <code>ci</code>, <code>conf.low</code>, <code>conf.high</code>, <code>p</code>
+(or <code>p.value</code>), <code>n</code>, <code>events</code>, <code>group</code>, and preserved source columns.
+Functions take precedence over digit settings; <code>estimate_fmt</code> and
+<code>ci_fmt</code> compose the resulting strings.
+Numeric source columns without a formatter are rounded to <code>estimate_digits</code>;
+whole numbers are shown without decimals.</p></dd>
+
+
+<dt id="arg-reference-text">reference_text<a class="anchor" aria-label="anchor" href="#arg-reference-text"></a></dt>
+<dd><p>Text shown in estimate cells for reference rows.</p></dd>
 
 
 <dt id="arg-text-size">text_size<a class="anchor" aria-label="anchor" href="#arg-text-size"></a></dt>

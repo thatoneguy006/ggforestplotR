@@ -106,7 +106,8 @@ within each observed subgroup. Factor focal predictors use
 [`marginaleffects::avg_comparisons()`](https://rdrr.io/pkg/marginaleffects/man/comparisons.html)
 and compare each non-reference level with the first factor level. Both
 functions use the original fitted model and its variance-covariance
-matrix; no subgroup models are refitted.
+matrix; no subgroup models are refitted. For mixed models, subgroup
+effects are population-level (random effects set to zero).
 
 Automatic selection is deliberately conservative. It accepts one
 unambiguous continuous-by-factor interaction. Factor-by-factor
@@ -158,14 +159,14 @@ if (requireNamespace("broom", quietly = TRUE)) {
   tidy_forest_model(logit_fit, exponentiate = TRUE)
 }
 #> <forest_data> OR; scale: ratio; reference: 1
-#>                 term estimate conf.low conf.high              label group
-#> 1                age 1.103890 1.061512  1.151411                age  <NA>
-#> 2                bmi 1.118858 1.043220  1.204389                bmi  <NA>
-#> 3 treatmentTreatment 3.133149 1.782915  5.613038 treatmentTreatment  <NA>
-#>   subgroup grouping separate_groups    n events      p.value  std.error
-#> 1     <NA>     <NA>            <NA> <NA>   <NA> 1.719452e-06 0.02066110
-#> 2     <NA>     <NA>            <NA> <NA>   <NA> 2.093412e-03 0.03650339
-#> 3     <NA>     <NA>            <NA> <NA>   <NA> 9.087778e-05 0.29180238
+#>                 term estimate conf.low conf.high              label row_type
+#> 1                age 1.103890 1.061512  1.151411                age estimate
+#> 2                bmi 1.118858 1.043220  1.204389                bmi estimate
+#> 3 treatmentTreatment 3.133149 1.782915  5.613038 treatmentTreatment estimate
+#>   group subgroup grouping separate_groups    n events      p.value  std.error
+#> 1  <NA>     <NA>     <NA>            <NA> <NA>   <NA> 1.719452e-06 0.02066110
+#> 2  <NA>     <NA>     <NA>            <NA> <NA>   <NA> 2.093412e-03 0.03650339
+#> 3  <NA>     <NA>     <NA>            <NA> <NA>   <NA> 9.087778e-05 0.29180238
 #>   statistic
 #> 1  4.783878
 #> 2  3.076650

@@ -112,7 +112,7 @@ either side of the plot.
 
 ``` r
 
-ggforestplot(tabled_coefs, n = "sample_size", striped_rows = T) +
+ggforestplot(tabled_coefs, n = "sample_size", striped_rows = TRUE) +
   add_split_table(
     left_columns = c("term", "n"),
     right_columns = c("estimate"),
@@ -134,7 +134,7 @@ fit <- lm(mpg ~ wt + hp + qsec, data = mtcars)
 
 ggforestplot(fit, sort_terms = "descending",
              term_labels = c("wt" = "Weight"),
-             striped_rows = T) +
+             striped_rows = TRUE) +
   scale_x_continuous(breaks = seq(-6,2,1)) +
   add_forest_table()
 ```

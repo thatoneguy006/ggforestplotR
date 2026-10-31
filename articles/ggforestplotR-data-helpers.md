@@ -9,6 +9,43 @@ library(ggplot2)
 This short article covers the `forest_data` interchange object and the
 helper functions that prepare it before a plot is drawn.
 
+## Structured forest data and reference rows
+
+Map a source column with `row_type =` to place reference categories and
+structural rows alongside estimates. `estimate` and `summary` rows need
+finite estimates and confidence bounds. `reference`, `header`, and
+`spacer` rows use `NA` for all three geometry values. Structured rows
+keep their source order; `sort_terms` must remain `"none"`.
+
+``` r
+
+structured <- data.frame(
+  term = c("Female", "Male", "Clinical", "Age", "", "Overall"),
+  estimate = c(NA, 1.42, NA, 1.03, NA, 1.18),
+  conf.low = c(NA, 1.10, NA, 1.01, NA, 1.04),
+  conf.high = c(NA, 1.84, NA, 1.05, NA, 1.34),
+  subgroup = c("Sex", "Sex", NA, NA, NA, NA),
+  row_type = c("reference", "estimate", "header", "estimate", "spacer", "summary")
+)
+
+ggforestplot(
+  structured,
+  subgroup = "subgroup",
+  row_type = "row_type",
+  exponentiate = TRUE
+) + add_split_table(
+  left_columns = "term",
+  right_columns = c("estimate", "ci"),
+  reference_text = "Reference"
+)
+```
+
+![](ggforestplotR-data-helpers_files/figure-html/structured-rows-1.png)
+
+You can also supply explicit `"header"` and `"spacer"` rows in the
+source table. A mapped `subgroup` creates its own header; reference rows
+inside the subgroup appear as indented children.
+
 ## Use `as_forest_data()` to standardize a coefficient table
 
 [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/reference/as_forest_data.md)
@@ -40,7 +77,7 @@ forest_ready <- as_forest_data(
   conf.low = "lower",
   conf.high = "upper",
   label = "display",
-  grouping = "section",
+  facet = "section",
   n = "sample_size",
   p.value = "p_value",
   estimate_scale = "identity",
@@ -179,18 +216,18 @@ tidy_forest_model(
   focal = "mpg"
 )
 #> <forest_data> Beta; scale: identity; reference: 0
-#>   term     estimate     conf.low    conf.high label group subgroup grouping
-#> 1   hp  0.002211858 -0.003019553  0.007443269    hp  <NA>     <NA>     <NA>
-#> 2    4 -0.063790596 -0.121760403 -0.005820789     4  <NA>      cyl     <NA>
-#> 3    6 -0.045622115 -0.273096846  0.181852616     6  <NA>      cyl     <NA>
-#> 4    8 -0.168851554 -0.258484920 -0.079218188     8  <NA>      cyl     <NA>
-#> 5 qsec  0.237491332  0.105815640  0.369167024  qsec  <NA>     <NA>     <NA>
-#>   separate_groups    n events     p.value   std.error  statistic df
-#> 1            <NA> <NA>   <NA> 0.391515516 0.002534723  0.8726232 NA
-#> 2            <NA> <NA>   <NA> 0.133731900 0.029576976 -2.1567653 NA
-#> 3            <NA> <NA>   <NA> 0.133731900 0.116060669 -0.3930885 NA
-#> 4            <NA> <NA>   <NA> 0.133731900 0.045732150 -3.6921849 NA
-#> 5            <NA> <NA>   <NA> 0.001059097 0.063799498  3.7224640 NA
+#>   term     estimate     conf.low    conf.high label row_type group subgroup
+#> 1   hp  0.002211858 -0.003019553  0.007443269    hp estimate  <NA>     <NA>
+#> 2    4 -0.063790596 -0.121760403 -0.005820789     4 estimate  <NA>      cyl
+#> 3    6 -0.045622115 -0.273096846  0.181852616     6 estimate  <NA>      cyl
+#> 4    8 -0.168851554 -0.258484920 -0.079218188     8 estimate  <NA>      cyl
+#> 5 qsec  0.237491332  0.105815640  0.369167024  qsec estimate  <NA>     <NA>
+#>   grouping separate_groups    n events     p.value   std.error  statistic df
+#> 1     <NA>            <NA> <NA>   <NA> 0.391515516 0.002534723  0.8726232 NA
+#> 2     <NA>            <NA> <NA>   <NA> 0.133731900 0.029576976 -2.1567653 NA
+#> 3     <NA>            <NA> <NA>   <NA> 0.133731900 0.116060669 -0.3930885 NA
+#> 4     <NA>            <NA> <NA>   <NA> 0.133731900 0.045732150 -3.6921849 NA
+#> 5     <NA>            <NA> <NA>   <NA> 0.001059097 0.063799498  3.7224640 NA
 #>   subgroup_level focal      model_term contrast      estimand effect_scale
 #> 1           <NA>  <NA>            <NA>     <NA>          <NA>         <NA>
 #> 2              4   mpg mpg:factor(cyl)    dY/dX average_slope     identity

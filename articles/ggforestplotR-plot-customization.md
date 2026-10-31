@@ -9,6 +9,45 @@ library(ggplot2)
 This article focuses on utility and enhanced customization of forest
 plots and accompanied tables.
 
+## Formatting table values with functions
+
+`formatters` accepts a named list of vectorized functions. Each function
+receives a source vector and returns one value per input. You can format
+built in statistics and any preserved source column. A `ci` formatter
+applies to both confidence bounds unless `conf.low` or `conf.high`
+overrides it.
+
+``` r
+
+format_data <- data.frame(
+  term = c("Age", "BMI"),
+  estimate = c(0.31, -0.24),
+  conf.low = c(0.12, -0.40),
+  conf.high = c(0.56, -0.08),
+  p.value = c(0.0004, 0.023),
+  prevalence = c(0.1543, 0.2871)
+)
+
+ggforestplot(format_data, p.value = "p.value") +
+  add_forest_table(
+    columns = c("term", "prevalence", "estimate", "p"),
+    formatters = list(
+      estimate = function(x) sprintf("%.1f", x),
+      ci = function(x) sprintf("%.3f", x),
+      p = function(x) ifelse(x < 0.001, "<0.001", sprintf("%.3f", x)),
+      prevalence = function(x) sprintf("%.1f%%", 100 * x)
+    ),
+    estimate_fmt = "{estimate} [{conf.low}, {conf.high}]"
+  )
+```
+
+![](ggforestplotR-plot-customization_files/figure-html/function-formatters-1.png)
+
+Formatter functions act on scalar source values before `estimate_fmt`
+and `ci_fmt` compose text, and before grouped cells are combined.
+Functions from other packages work when they follow the same vector
+input and output contract.
+
 ## Group rows and control strip placement
 
 `facet` creates section panels, and `facet_strip_position` controls
@@ -93,7 +132,7 @@ fit <- lm(wt ~ mpg*as.factor(cyl) + hp, data = mtcars)
 
 fit |>
   tidy_forest_model(subgroup = "auto", focal = "mpg", p_method = "overall") |>
-    ggforestplot(striped_rows = T) +
+    ggforestplot(striped_rows = TRUE) +
     add_forest_table(columns = c("term", "estimate", "p.value"))
 ```
 
@@ -107,7 +146,7 @@ fit2 <- lm(wt ~ as.factor(gear)*as.factor(cyl) + hp + am, data = mtcars)
 
 fit2 |>
   tidy_forest_model(subgroup = "gear", focal = "cyl", p_method = "level") |>
-  ggforestplot(striped_rows = T) +
+  ggforestplot(striped_rows = TRUE) +
   theme(legend.position = "top") +
   add_forest_table(columns = c("term", "estimate", "p.value"))
 #> Warning: Some coefficients are `NA`, possibly because the model matrix is rank
@@ -210,7 +249,7 @@ ggforestplot(
 ) +
   add_forest_table(
     position = "left",
-    grid_lines = T,
+    grid_lines = TRUE,
     grid_line_linetype = 2,
     grid_line_colour = "red"
   )
@@ -268,7 +307,7 @@ l1 <- glm(Treatment ~ conc + uptake + Type, family = binomial(link = "logit"),
 ``` r
 
 
-ggforestplot(l1, exponentiate = TRUE, striped_rows = T, term_labels = c("TypeMississippi" = "Mississippi")) +
+ggforestplot(l1, exponentiate = TRUE, striped_rows = TRUE, term_labels = c("TypeMississippi" = "Mississippi")) +
   add_forest_table(position = "left", 
                    columns = c("term", "estimate"))
 ```
@@ -291,7 +330,7 @@ s1 <- survival::coxph(Surv(time, status) ~ sex + age + ph.karno + pat.karno, dat
 
 ``` r
 
-ggforestplot(s1, exponentiate = T, striped_rows = T) +
+ggforestplot(s1, exponentiate = TRUE, striped_rows = TRUE) +
   add_forest_table()
 ```
 
@@ -347,7 +386,7 @@ bound_models <- bind_forest_models(list(fit1,fit2,fit3),
                                                     "Adjusted", 
                                                     "Fully Adjusted"))
 
-ggforestplot(bound_models, striped_rows = T, p.value = "p.value") +
+ggforestplot(bound_models, striped_rows = TRUE, p.value = "p.value") +
   scale_x_continuous(limits = c(-6,1)) +
   theme(legend.position = "top") +
   scale_color_manual(values = c("#1F968BFF", "#453781FF", "#FDE725FF")) +

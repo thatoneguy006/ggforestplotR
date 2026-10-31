@@ -22,6 +22,8 @@ add_split_table(
   p_digits = NULL,
   estimate_fmt = NULL,
   ci_fmt = NULL,
+  formatters = NULL,
+  reference_text = "Reference",
   text_size = NULL,
   header_text_size = NULL,
   header_fontface = "bold",
@@ -129,6 +131,20 @@ add_split_table(
   include `"ci"`. Use `{conf.low}` and `{conf.high}` as placeholders.
   The shorthand `{conf.low, conf.high}` is also supported. Defaults to
   `"({conf.low}, {conf.high})"`.
+
+- formatters:
+
+  Named list of vectorized functions for scalar table values. Keys
+  include `estimate`, `ci`, `conf.low`, `conf.high`, `p` (or `p.value`),
+  `n`, `events`, `group`, and preserved source columns. Functions take
+  precedence over digit settings; `estimate_fmt` and `ci_fmt` compose
+  the resulting strings. Numeric source columns without a formatter are
+  rounded to `estimate_digits`; whole numbers are shown without
+  decimals.
+
+- reference_text:
+
+  Text shown in estimate cells for reference rows.
 
 - text_size:
 

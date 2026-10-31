@@ -9,7 +9,7 @@ structure used throughout ggforestplotR."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,14 +70,14 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span><span class="co"># S3 method for class 'data.frame'</span></span>
 <span><span class="fu">as_forest_data</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  <span class="va">term</span>,</span>
-<span>  <span class="va">estimate</span>,</span>
-<span>  <span class="va">conf.low</span>,</span>
-<span>  <span class="va">conf.high</span>,</span>
+<span>  term <span class="op">=</span> <span class="st">"term"</span>,</span>
+<span>  estimate <span class="op">=</span> <span class="st">"estimate"</span>,</span>
+<span>  conf.low <span class="op">=</span> <span class="st">"conf.low"</span>,</span>
+<span>  conf.high <span class="op">=</span> <span class="st">"conf.high"</span>,</span>
 <span>  label <span class="op">=</span> <span class="va">term</span>,</span>
 <span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  grouping <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  facet <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  separate_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  events <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -93,7 +93,9 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span>  sort_terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"descending"</span>, <span class="st">"ascending"</span><span class="op">)</span>,</span>
 <span>  subgroup <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  p_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"level"</span><span class="op">)</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  row_type <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  grouping <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'lm'</span></span>
@@ -212,7 +214,8 @@ estimates and intervals. Tibbles and <code>data.table</code> objects are support
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Arguments passed to an <code>as_forest_data()</code> method.</p></dd>
+<dd><p>Not used by the model methods; must be empty. Unknown or misspelled
+arguments raise an error.</p></dd>
 
 
 <dt id="arg-term-labels">term_labels<a class="anchor" aria-label="anchor" href="#arg-term-labels"></a></dt>
@@ -228,9 +231,11 @@ is preserved.</p></dd>
 
 
 <dt id="arg-exponentiate">exponentiate<a class="anchor" aria-label="anchor" href="#arg-exponentiate"></a></dt>
-<dd><p>Compatibility argument. <code>TRUE</code> is equivalent to
-<code>estimate_scale = "ratio"</code>; <code>FALSE</code> is equivalent to
-<code>estimate_scale = "identity"</code> when <code>estimate_scale</code> is not supplied.</p></dd>
+<dd><p>Declares the scale of the supplied columns; values are never
+transformed for data frames. <code>TRUE</code> is equivalent to
+<code>estimate_scale = "ratio"</code> (columns already contain ratios); <code>FALSE</code> is
+equivalent to <code>estimate_scale = "identity"</code> when <code>estimate_scale</code> is not
+supplied.</p></dd>
 
 
 <dt id="arg-p-method">p_method<a class="anchor" aria-label="anchor" href="#arg-p-method"></a></dt>
@@ -267,7 +272,7 @@ estimates per row. If this column is a factor, its levels control the
 group legend and vertical dodge order.</p></dd>
 
 
-<dt id="arg-grouping">grouping<a class="anchor" aria-label="anchor" href="#arg-grouping"></a></dt>
+<dt id="arg-facet">facet<a class="anchor" aria-label="anchor" href="#arg-facet"></a></dt>
 <dd><p>Optional column name used to split rows into grouped plot
 sections.</p></dd>
 
@@ -343,6 +348,20 @@ row-level effect tests, according to <code>p_method</code>, so they can share a 
 column with ordinary coefficient p-values.</p></dd>
 
 
+<dt id="arg-row-type">row_type<a class="anchor" aria-label="anchor" href="#arg-row-type"></a></dt>
+<dd><p>Optional column name defining semantic rows: <code>"estimate"</code>,
+<code>"reference"</code>, <code>"header"</code>, <code>"summary"</code>, or <code>"spacer"</code>. Estimate and
+summary rows require finite estimate and CI values; other rows require
+missing geometry. Structured rows retain source order, so use
+<code>sort_terms = "none"</code>. If omitted, all rows are estimates.
+Summary rows are currently drawn with the same point and interval geometry
+as estimate rows; the row type is recorded for tables and downstream styling.</p></dd>
+
+
+<dt id="arg-grouping">grouping<a class="anchor" aria-label="anchor" href="#arg-grouping"></a></dt>
+<dd><p>Deprecated. Use <code>facet</code> instead.</p></dd>
+
+
 <dt id="arg-conf-int">conf.int<a class="anchor" aria-label="anchor" href="#arg-conf-int"></a></dt>
 <dd><p>Logical; model methods require <code>TRUE</code> because forest data
 include confidence-interval columns.</p></dd>
@@ -385,14 +404,14 @@ for table helpers so they can be displayed with
 <span class="r-in"><span>  conf.high <span class="op">=</span> <span class="st">"upper"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;forest_data&gt; Estimate; scale: identity; reference: 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        term estimate conf.low conf.high     label group subgroup grouping</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       Age     0.10     0.02      0.18       Age  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       BMI    -0.08    -0.16      0.00       BMI  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Treatment     0.34     0.12      0.56 Treatment  &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   separate_groups    n events p.value  variable  beta lower upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt;      NA       Age  0.10  0.02  0.18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt;      NA       BMI -0.08 -0.16  0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt;      NA Treatment  0.34  0.12  0.56</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        term estimate conf.low conf.high     label row_type group subgroup</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       Age     0.10     0.02      0.18       Age estimate  &lt;NA&gt;     &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       BMI    -0.08    -0.16      0.00       BMI estimate  &lt;NA&gt;     &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Treatment     0.34     0.12      0.56 Treatment estimate  &lt;NA&gt;     &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   grouping separate_groups    n events p.value  variable  beta lower upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt;      NA       Age  0.10  0.02  0.18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt;      NA       BMI -0.08 -0.16  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3     &lt;NA&gt;            &lt;NA&gt; &lt;NA&gt;   &lt;NA&gt;      NA Treatment  0.34  0.12  0.56</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

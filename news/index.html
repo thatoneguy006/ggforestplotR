@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,7 +46,44 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.5.0" id="ggforestplotr-050">ggforestplotR 0.5.0<a class="anchor" aria-label="anchor" href="#ggforestplotr-050"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.6.0" id="ggforestplotr-060">ggforestplotR 0.6.0<a class="anchor" aria-label="anchor" href="#ggforestplotr-060"></a></h2>
+<div class="section level3">
+<h3 id="major-changes-0-6-0">Major Changes<a class="anchor" aria-label="anchor" href="#major-changes-0-6-0"></a></h3>
+<ul><li>Mixed-model subgroup effects are now population-level, excluding cluster-specific random slopes.</li>
+<li>Quasibinomial models now default to odds ratios (logit link) or risk ratios (log link), matching binomial models.</li>
+<li>
+<code><a href="../reference/bind_forest_models.html">bind_forest_models()</a></code> now stores model labels as a factor, so legends and dodge order follow the order models were supplied in rather than alphabetical order.</li>
+<li>Fitted <code>glmmTMB</code> models now plot only conditional-model coefficients; zero-inflation and dispersion coefficients were previously included and mislabelled.</li>
+<li>
+<code>point_size</code> now accepts a numeric source column name, such as <code>"N"</code>, to map marker sizes through a customizable ggplot2 size scale (<a href="https://github.com/thatoneguy006/ggforestplotR/issues/38" class="external-link">#38</a>).</li>
+<li>Fixed table alignment when <code>subgroup</code> and <code>group</code> are both mapped. Split tables now keep estimates and subgroup p-values on their intended rows (<a href="https://github.com/thatoneguy006/ggforestplotR/issues/40" class="external-link">#40</a>).</li>
+<li>Added vectorized <code>formatters</code> to both table helpers for estimates, confidence bounds, p-values, and preserved source columns. Digit settings and text templates remain available.</li>
+<li>Added semantic forest row types (<code>estimate</code>, <code>reference</code>, <code>header</code>, <code>summary</code>, and <code>spacer</code>) so tables can contain reference categories and structural rows without fabricated plot geometry.</li>
+<li>Added <code>reference_text</code> to both table helpers to customize reference cells.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="minor-changes-0-6-0">Minor Changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-6-0"></a></h3>
+<ul><li>Building table compositions no longer opens a graphics device (e.g. creating <code>Rplots.pdf</code> in scripts).</li>
+<li>Unsupported inputs to <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code> now fail with a clear error identifying the expected data frame or fitted model.</li>
+<li>Subgroup contrast labels no longer depend on the installed <code>marginaleffects</code> version’s label format.</li>
+<li>Numeric source columns shown in tables are now rounded to <code>estimate_digits</code> by default.</li>
+<li>Subsetting a <code>forest_data</code> object to fewer columns now drops metadata for removed source columns instead of erroring.</li>
+<li>The colour legend title now matches the table’s group header (“Model” for <code><a href="../reference/bind_forest_models.html">bind_forest_models()</a></code>, otherwise the mapped group column name).</li>
+<li>
+<code><a href="../reference/as_forest_data.html">as_forest_data()</a></code> for data frames now defaults to <code>term</code>, <code>estimate</code>, <code>conf.low</code>, and <code>conf.high</code> column names, matching <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>.</li>
+<li>Clarified that <code>exponentiate</code> transforms fitted-model coefficients but only declares the scale of data-frame columns.</li>
+<li>Fitted-model <code><a href="../reference/as_forest_data.html">as_forest_data()</a></code> methods now error on unknown arguments instead of silently ignoring them.</li>
+<li>Removed redundant <code>inherit.aes</code> arguments from horizontal separators to avoid warnings on older ggplot2 releases.</li>
+<li>Adding scales or tables to a forest plot no longer modifies the original plot object’s stripe and separator layers.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="breaking-changes-0-6-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-6-0"></a></h3>
+<ul><li>Renamed <code>ref_color</code> to <code>ref_colour</code> and <code>separator_line_size</code> to <code>separator_linewidth</code> in <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>, <code>grid_line_size</code> to <code>grid_linewidth</code> in <code><a href="../reference/add_forest_table.html">add_forest_table()</a></code>, and the data-frame <code>grouping</code> argument to <code>facet</code>. The former names remain as deprecated aliases; supplying both names errors.</li>
+<li>Forest-plot rows now always read top-to-bottom in data order. Previously, plots without structured rows or subgroups were drawn bottom-to-top, so adding a single header or subgroup inverted the plot, and <code>sort_terms = "descending"</code> placed the largest estimate at the bottom.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.0" id="ggforestplotr-050">ggforestplotR 0.5.0<a class="anchor" aria-label="anchor" href="#ggforestplotr-050"></a></h2><p class="text-muted">CRAN release: 2026-09-14</p>
 <div class="section level3">
 <h3 id="breaking-changes-0-5-0">Breaking Changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-5-0"></a></h3>
 <ul><li>Removed the deprecated <code>grouping</code> and <code>grouping_strip_position</code> arguments from <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>. Use <code>facet</code> and <code>facet_strip_position</code> instead.</li>

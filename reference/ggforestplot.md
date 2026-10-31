@@ -37,7 +37,7 @@ ggforestplot(
   separate_lines = FALSE,
   separator_line_linetype = 2,
   separator_line_colour = "black",
-  separator_line_size = 0.4,
+  separator_linewidth = 0.4,
   striped_rows = FALSE,
   stripe_fill = "grey95",
   stripe_colour = NA,
@@ -45,9 +45,12 @@ ggforestplot(
   ref_line = NULL,
   ref_label = NULL,
   ref_linetype = 2,
-  ref_color = "grey60",
+  ref_colour = "grey60",
   subgroup = NULL,
-  p_method = c("overall", "level")
+  p_method = c("overall", "level"),
+  row_type = NULL,
+  ref_color = NULL,
+  separator_line_size = NULL
 )
 ```
 
@@ -119,10 +122,13 @@ ggforestplot(
 
 - exponentiate:
 
-  Logical; if `TRUE`, transform the estimates and draw the axis on the
-  log scale with the reference line at 1. For model objects, `NULL` uses
-  the canonical scale when it can be inferred, such as hazard ratios for
-  Cox models.
+  For fitted models, `TRUE` exponentiates the coefficients (e.g.
+  log-odds to odds ratios) and `NULL` uses the model's conventional
+  scale, such as hazard ratios for Cox models. For data frames,
+  `exponentiate` does **not** transform anything: `TRUE` declares that
+  the estimate and interval columns are already ratios, which draws a
+  log10 axis with the reference line at 1. Exponentiate log-scale
+  columns yourself before plotting them as ratios.
 
 - conf.level:
 
@@ -136,7 +142,13 @@ ggforestplot(
 
 - point_size:
 
-  Point size for coefficient markers.
+  A finite non-negative number for a constant marker size, or a single
+  column name for sizes mapped from numeric data. Mapped values must be
+  finite and non-negative on estimate and summary rows. Column-based
+  sizes use the standard ggplot2 size scale; customize them with
+  [`ggplot2::scale_size_continuous()`](https://ggplot2.tidyverse.org/reference/scale_size.html)
+  or
+  [`ggplot2::scale_size_area()`](https://ggplot2.tidyverse.org/reference/scale_size.html).
 
 - point_shape:
 
@@ -192,7 +204,7 @@ ggforestplot(
 
   Colour used for separator lines.
 
-- separator_line_size:
+- separator_linewidth:
 
   Line width used for separator lines.
 
@@ -226,9 +238,9 @@ ggforestplot(
 
   Line type for the reference line.
 
-- ref_color:
+- ref_colour:
 
-  Color for the reference line.
+  Colour for the reference line.
 
 - subgroup:
 
@@ -253,6 +265,24 @@ ggforestplot(
   the subgroup estimate rows. Fitted-model subgroup data inherit this
   choice from
   [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/reference/tidy_forest_model.md).
+
+- row_type:
+
+  Optional data-frame column mapping for semantic row types.
+  `"estimate"` and `"summary"` rows draw points and intervals;
+  `"reference"`, `"header"`, and `"spacer"` rows occupy display space
+  without geometry. Existing `forest_data` objects define this
+  internally. Summary rows are currently drawn with the same point and
+  interval geometry as estimate rows; the row type is recorded for
+  tables and downstream styling.
+
+- ref_color:
+
+  Deprecated. Use `ref_colour` instead.
+
+- separator_line_size:
+
+  Deprecated. Use `separator_linewidth` instead.
 
 ## Value
 
