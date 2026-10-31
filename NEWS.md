@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- Quasibinomial models now default to odds ratios (logit link) or risk ratios (log link), matching binomial models.
+
 - Fitted-model `as_forest_data()` methods now error on unknown arguments instead of silently ignoring them.
 
 - `bind_forest_models()` now stores model labels as a factor, so legends and dodge order follow the order models were supplied in rather than alphabetical order.

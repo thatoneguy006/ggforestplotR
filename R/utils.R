@@ -512,13 +512,14 @@ infer_model_estimate_info <- function(model,
     family <- model_family$family
     link <- model_family$link
 
-    if (identical(family, "binomial") && identical(link, "logit")) {
+    is_binomial <- family %in% c("binomial", "quasibinomial")
+    if (isTRUE(is_binomial) && identical(link, "logit")) {
       auto_exponentiate <- TRUE
       canonical_label <- "OR"
-    } else if (identical(family, "binomial") && identical(link, "log")) {
+    } else if (isTRUE(is_binomial) && identical(link, "log")) {
       auto_exponentiate <- TRUE
       canonical_label <- "RR"
-    } else if (identical(family, "binomial") && identical(link, "identity")) {
+    } else if (isTRUE(is_binomial) && identical(link, "identity")) {
       estimate_scale <- "risk_difference"
       canonical_label <- "RD"
     } else if (identical(link, "log")) {

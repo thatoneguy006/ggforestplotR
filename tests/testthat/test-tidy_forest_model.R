@@ -244,3 +244,11 @@ test_that("misspelled arguments to model methods are rejected", {
     "exponentate"
   )
 })
+
+test_that("quasibinomial logit models use odds ratios like binomial models", {
+  skip_if_not_installed("broom")
+  fit <- suppressWarnings(glm(vs ~ wt, family = quasibinomial, data = mtcars))
+  meta <- forest_metadata(as_forest_data(fit))
+  expect_equal(meta$estimate_scale, "ratio")
+  expect_equal(meta$effect_label, "OR")
+})
