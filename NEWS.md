@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- Numeric source columns shown in tables are now rounded to `estimate_digits` by default.
+
 - Subsetting a `forest_data` object to fewer columns now drops metadata for removed source columns instead of erroring.
 
 - The colour legend title now matches the table's group header ("Model" for `bind_forest_models()`, otherwise the mapped group column name).

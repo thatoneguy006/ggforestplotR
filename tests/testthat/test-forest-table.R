@@ -276,7 +276,7 @@ test_that("forest table columns can use original dataframe vectors", {
     c("variable", "beta", "lower", "upper", "adjustment", "review_date", "selected", "group")
   )
   expect_true(any(table_spec$table_data$text == "Age"))
-  expect_true(any(table_spec$table_data$text == "0.345"))
+  expect_true(any(table_spec$table_data$text == "0.34"))
   expect_true(any(table_spec$table_data$text == "0.12"))
   expect_true(any(table_spec$table_data$text == "0.57"))
   expect_true(any(table_spec$table_data$text == "Clinical"))

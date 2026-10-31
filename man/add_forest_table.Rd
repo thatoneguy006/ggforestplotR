@@ -102,7 +102,9 @@ values. Keys include \code{estimate}, \code{ci}, \code{conf.low}, \code{conf.hig
 (or \code{p.value}), \code{n}, \code{events}, \code{group}, and preserved source columns.
 Each function receives a vector and returns one value per input.
 Functions take precedence over digit settings; \code{estimate_fmt} and
-\code{ci_fmt} compose the resulting strings.}
+\code{ci_fmt} compose the resulting strings.
+Numeric source columns without a formatter are rounded to \code{estimate_digits};
+whole numbers are shown without decimals.}
 
 \item{reference_text}{Text shown in estimate cells for reference rows.}
 

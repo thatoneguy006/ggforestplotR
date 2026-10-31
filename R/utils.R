@@ -735,8 +735,9 @@ format_forest_table_values <- function(values,
                                        force_group_labels = FALSE,
                                        align_groups = FALSE,
                                        formatter = NULL,
-                                       key = "value") {
-  formatted <- apply_table_formatter(values, formatter, as.character, key)
+                                       key = "value",
+                                       fallback = as.character) {
+  formatted <- apply_table_formatter(values, formatter, fallback, key)
   collapse_grouped_values(
     formatted,
     group,
@@ -1667,7 +1668,8 @@ build_forest_table_data <- function(data,
           label_values,
           rd$group,
           align_groups = FALSE,
-          formatter = formatters[[extra]], key = extra
+          formatter = formatters[[extra]], key = extra,
+        fallback = default_table_value_formatter(digits$estimate_digits)
         )
         if (is_child) {
           label_text <- paste0(
@@ -1693,7 +1695,8 @@ build_forest_table_data <- function(data,
         values,
         rd$group,
         align_groups = align_groups,
-        formatter = formatters[[extra]], key = extra
+        formatter = formatters[[extra]], key = extra,
+        fallback = default_table_value_formatter(digits$estimate_digits)
       )
     }
   }
