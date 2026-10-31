@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- Fitted `glmmTMB` models now plot only conditional-model coefficients; zero-inflation and dispersion coefficients were previously included and mislabelled.
+
 ## Breaking changes
 
 - Forest-plot rows now always read top-to-bottom in data order. Previously, plots without structured rows or subgroups were drawn bottom-to-top, so adding a single header or subgroup inverted the plot, and `sort_terms = "descending"` placed the largest estimate at the bottom.

@@ -22,6 +22,7 @@ Suggests:
     broom,
     broom.mixed,
     dplyr,
+    glmmTMB,
     knitr,
     lme4,
     marginaleffects,

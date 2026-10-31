@@ -44,16 +44,25 @@ tidy_model_coefficients <- function(model,
 }
 
 keep_fixed_effects <- function(out) {
-  if (!"effect" %in% names(out)) {
-    return(out)
+  if ("effect" %in% names(out)) {
+    fixed <- !is.na(out$effect) & as.character(out$effect) == "fixed"
+    if (!any(fixed)) {
+      stop("`tidy()` returned no fixed-effect rows to plot.", call. = FALSE)
+    }
+    out <- out[fixed, , drop = FALSE]
   }
 
-  fixed <- !is.na(out$effect) & as.character(out$effect) == "fixed"
-  if (!any(fixed)) {
-    stop("`tidy()` returned no fixed-effect rows to plot.", call. = FALSE)
+  # glmmTMB (and similar) return several model components. Only the conditional
+  # component shares the link and effect label inferred for the model.
+  if ("component" %in% names(out)) {
+    component <- as.character(out$component)
+    conditional <- !is.na(component) & component == "cond"
+    if (any(conditional)) {
+      out <- out[conditional, , drop = FALSE]
+    }
   }
 
-  out[fixed, , drop = FALSE]
+  out
 }
 
 #' Tidy a model object for forest plotting
