@@ -1,4 +1,4 @@
-# ─── Column resolution ────────────────────────────────────────────────────────
+# --- Column resolution --------------------------------------------------------
 
 resolve_column <- function(data, column, arg, required = TRUE) {
   if (is.null(column)) {
@@ -37,7 +37,7 @@ forest_p_method <- function(data) {
   if (is.null(method)) "overall" else method
 }
 
-# ─── Data validation ──────────────────────────────────────────────────────────
+# --- Data validation ----------------------------------------------------------
 
 validate_forest_data <- function(data, exponentiate = FALSE) {
   required <- c("term", "estimate", "conf.low", "conf.high")
@@ -97,7 +97,7 @@ validate_forest_data <- function(data, exponentiate = FALSE) {
   invisible(data)
 }
 
-# ─── Column normalisation ────────────────────────────────────────────────────
+# --- Column normalisation ----------------------------------------------------
 
 normalize_table_columns <- function(columns, data = NULL) {
   if (is.null(columns)) {
@@ -556,7 +556,7 @@ infer_model_estimate_info <- function(model,
   )
 }
 
-# ─── Formatting helpers ──────────────────────────────────────────────────────
+# --- Formatting helpers ------------------------------------------------------
 
 #' Shared logic for collapsing formatted values with optional group labels.
 #'
@@ -746,7 +746,7 @@ format_forest_table_values <- function(values,
   )
 }
 
-# ─── Plot data construction (decomposed into single-purpose passes) ──────────
+# --- Plot data construction (decomposed into single-purpose passes) ----------
 
 observed_grouping_panels <- function(data, has_groupings) {
   if (!isTRUE(has_groupings)) {
@@ -1262,7 +1262,7 @@ build_forest_plot_data <- function(data) {
   )
 }
 
-# ─── Table data construction ─────────────────────────────────────────────────
+# --- Table data construction -------------------------------------------------
 
 extract_trained_y_limits <- function(plot) {
   built <- tryCatch(
@@ -1784,7 +1784,7 @@ expand_grouped_table_text <- function(table_data, group_levels = NULL) {
   out
 }
 
-# ─── Grid line data ──────────────────────────────────────────────────────────
+# --- Grid line data ----------------------------------------------------------
 
 build_table_line_data <- function(stripe_data, has_groupings = FALSE) {
   if (isTRUE(has_groupings)) {
@@ -1816,7 +1816,7 @@ build_table_line_data <- function(stripe_data, has_groupings = FALSE) {
   }
 }
 
-# ─── Text measurement ────────────────────────────────────────────────────────
+# --- Text measurement --------------------------------------------------------
 
 with_measurement_device <- function(code) {
   if (grDevices::dev.cur() == 1L) {
@@ -1894,7 +1894,7 @@ measure_table_text_widths <- function(table_spec,
   })
 }
 
-# ─── Column width estimation ─────────────────────────────────────────────────
+# --- Column width estimation -------------------------------------------------
 
 #' Default per-column base padding.  Uses a known lookup for the four standard
 #' keys and a sensible fallback for anything else.
@@ -1931,7 +1931,7 @@ estimate_split_column_widths <- function(table_spec,
   }, numeric(1)), table_spec$column_keys)
 }
 
-# ─── Layout engines ──────────────────────────────────────────────────────────
+# --- Layout engines ----------------------------------------------------------
 
 #' Lay out a table spec for a split forest plot.
 #'
@@ -2107,7 +2107,7 @@ validate_composition_width <- function(value, arg) {
   invisible(value)
 }
 
-# ─── Plot limits ─────────────────────────────────────────────────────────────
+# --- Plot limits -------------------------------------------------------------
 
 default_plot_background_limits <- function(forest_data,
                                            exponentiate = FALSE,
@@ -2136,7 +2136,7 @@ default_plot_background_limits <- function(forest_data,
   }
 }
 
-# ─── ggplot2 table panel ─────────────────────────────────────────────────────
+# --- ggplot2 table panel -----------------------------------------------------
 
 validate_ci_limits <- function(ci_limits = NULL, exponentiate = FALSE) {
   if (is.null(ci_limits)) {
@@ -2376,7 +2376,7 @@ build_forest_table_plot <- function(table_spec,
   p
 }
 
-# ─── Final assembly ──────────────────────────────────────────────────────────
+# --- Final assembly ----------------------------------------------------------
 
 resolved_plot_legend_position <- function(plot) {
   position <- plot$theme$legend.position
