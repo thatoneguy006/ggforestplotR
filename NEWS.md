@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- Fitted-model `as_forest_data()` methods now error on unknown arguments instead of silently ignoring them.
+
 - `bind_forest_models()` now stores model labels as a factor, so legends and dodge order follow the order models were supplied in rather than alphabetical order.
 
 - Fitted `glmmTMB` models now plot only conditional-model coefficients; zero-inflation and dispersion coefficients were previously included and mislabelled.

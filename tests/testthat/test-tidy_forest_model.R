@@ -234,3 +234,13 @@ test_that("glmmTMB zero-inflation terms are not plotted", {
   expect_equal(fd$term, c("x", "z"))
   expect_false(anyDuplicated(fd$term) > 0)
 })
+
+test_that("misspelled arguments to model methods are rejected", {
+  skip_if_not_installed("broom")
+  fit <- glm(am ~ wt, family = binomial, data = mtcars)
+  expect_error(as_forest_data(fit, exponentate = FALSE), "exponentate")
+  expect_error(
+    bind_forest_models(list(a = fit), exponentate = FALSE),
+    "exponentate"
+  )
+})

@@ -77,7 +77,8 @@
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
 #'   `"ascending"`. Subgroup hierarchies require `"none"` so their source order
 #'   is preserved.
-#' @param ... Arguments passed to an `as_forest_data()` method.
+#' @param ... Not used by the model methods; must be empty. Unknown or misspelled
+#'   arguments raise an error.
 #'
 #' @return A `forest_data` data-frame subclass ready for [ggforestplot()] and
 #'   the table composition helpers. Original data-frame columns are retained

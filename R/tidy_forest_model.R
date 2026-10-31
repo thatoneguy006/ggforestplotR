@@ -320,6 +320,7 @@ model_as_forest_data <- function(data,
                                  focal = NULL,
                                  p_method = c("overall", "level"),
                                  ...) {
+  rlang::check_dots_empty(call = rlang::caller_env())
   tidy_forest_model_impl(
     model = data,
     conf.int = conf.int,

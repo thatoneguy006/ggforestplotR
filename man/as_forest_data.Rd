@@ -155,7 +155,8 @@ as_forest_data(data, ...)
 \item{data}{A data frame or data-frame subclass containing coefficient
 estimates and intervals. Tibbles and \code{data.table} objects are supported.}
 
-\item{...}{Arguments passed to an \code{as_forest_data()} method.}
+\item{...}{Not used by the model methods; must be empty. Unknown or misspelled
+arguments raise an error.}
 
 \item{term_labels}{Optional named vector used to relabel displayed terms.
 Names should match values in the term column and values are the labels to
