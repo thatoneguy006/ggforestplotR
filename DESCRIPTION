@@ -15,9 +15,9 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Imports:
-    ggplot2,
-    patchwork,
-    rlang
+    ggplot2 (>= 3.4.0),
+    patchwork (>= 1.2.0),
+    rlang (>= 1.1.0)
 Suggests:
     broom,
     broom.mixed,
@@ -25,7 +25,7 @@ Suggests:
     glmmTMB,
     knitr,
     lme4,
-    marginaleffects,
+    marginaleffects (>= 0.29.0),
     nlme,
     rmarkdown,
     survival,

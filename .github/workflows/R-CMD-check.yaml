@@ -13,7 +13,7 @@ jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
 
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }}) ${{ matrix.config.name }}
 
     strategy:
       fail-fast: false
@@ -24,6 +24,10 @@ jobs:
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,   r: 'release'}
           - {os: ubuntu-latest,   r: 'oldrel-1'}
+          - {os: ubuntu-latest, r: 'release', name: 'oldest-deps',
+             extra: 'any::rcmdcheck, ggplot2@3.4.4, patchwork@1.2.0'}
+          - {os: ubuntu-latest, r: 'release', name: 'ggplot2-dev',
+             extra: 'any::rcmdcheck, tidyverse/ggplot2'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -41,7 +45,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: ${{ matrix.config.extra || 'any::rcmdcheck' }}
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
