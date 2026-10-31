@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- Unsupported inputs to `ggforestplot()` now fail with a clear error identifying the expected data frame or fitted model.
+
 - Building table compositions no longer opens a graphics device (e.g. creating `Rplots.pdf` in scripts).
 
 - Mixed-model subgroup effects are now population-level, excluding cluster-specific random slopes.

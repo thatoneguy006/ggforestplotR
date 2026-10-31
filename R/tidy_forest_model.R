@@ -489,6 +489,16 @@ as_forest_data.default <- function(data, ..., conf.int = TRUE, conf.level = 0.95
                                    sort_terms = c("none", "descending", "ascending"),
                                    subgroup = NULL, focal = NULL,
                                    p_method = c("overall", "level")) {
+  if (is.null(data) || is.atomic(data) || is.function(data)) {
+    stop(
+      sprintf(
+        "`data` must be a data frame or a fitted model object, not %s.",
+        paste0("<", class(data)[[1L]], ">")
+      ),
+      call. = FALSE
+    )
+  }
+
   model_as_forest_data(
     data,
     conf.int = conf.int,

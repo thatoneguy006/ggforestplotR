@@ -461,3 +461,12 @@ test_that("legend title uses the mapped group column name", {
                   conf.high = c(2, 3), cohort = c("A", "B"))
   expect_equal(ggforestplot(d, group = "cohort")$labels$colour, "cohort")
 })
+
+test_that("unsupported objects fail with a clear input error", {
+  for (data in list(1:3, NULL, "text", function() NULL)) {
+    expect_error(
+      ggforestplot(data),
+      "must be a data frame or a fitted model"
+    )
+  }
+})
