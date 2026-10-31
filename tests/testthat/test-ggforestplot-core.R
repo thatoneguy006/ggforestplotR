@@ -455,3 +455,9 @@ test_that("sort_terms = 'descending' puts the largest estimate at the top", {
   )$y$get_limits()
   expect_equal(rev(limits), c("Treatment", "Age", "BMI"))
 })
+
+test_that("legend title uses the mapped group column name", {
+  d <- data.frame(term = c("a", "a"), estimate = c(1, 2), conf.low = c(0, 1),
+                  conf.high = c(2, 3), cohort = c("A", "B"))
+  expect_equal(ggforestplot(d, group = "cohort")$labels$colour, "cohort")
+})

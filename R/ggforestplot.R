@@ -238,6 +238,7 @@ ggforestplot <- function(data,
   estimate_label <- metadata$effect_label
   axis_label <- forest_axis_label(metadata)
   column_mapping <- metadata$column_mapping
+  group_title <- default_group_table_header(forest_data)
   point_size_column <- resolve_point_size_column(forest_data, point_size)
 
   default_ref_line <- metadata$reference_value
@@ -614,7 +615,7 @@ ggforestplot <- function(data,
   p <- p + ggplot2::labs(
     x = axis_label,
     y = NULL,
-    colour = if (has_groups) "Group" else NULL
+    colour = if (has_groups) group_title else NULL
   )
 
   p$ggforestplotR_state <- list(

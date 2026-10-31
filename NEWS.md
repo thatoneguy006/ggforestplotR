@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- The colour legend title now matches the table's group header ("Model" for `bind_forest_models()`, otherwise the mapped group column name).
+
 - `as_forest_data()` for data frames now defaults to `term`, `estimate`, `conf.low`, and `conf.high` column names, matching `ggforestplot()`.
 
 - Clarified that `exponentiate` transforms fitted-model coefficients but only declares the scale of data-frame columns.

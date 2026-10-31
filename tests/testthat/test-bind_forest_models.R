@@ -35,7 +35,7 @@ test_that("ggforestplot uses bound model labels as groups", {
 
   p <- ggforestplot(bound)
 
-  expect_equal(p$labels$colour, "Group")
+  expect_equal(p$labels$colour, "Model")
   expect_equal(unique(as.character(p$ggforestplotR_state$forest_data$group)), c("Clinical", "Adjusted"))
   expect_s3_class(p, "ggplot")
 })
