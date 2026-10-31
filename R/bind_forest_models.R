@@ -116,7 +116,7 @@ bind_forest_models <- function(models,
       exponentiate = exponentiate[[i]],
       ...
     )
-    part$group <- model_labels[[i]]
+    part$group <- factor(rep(model_labels[[i]], nrow(part)), levels = model_labels)
 
     parts[[i]] <- part
   }

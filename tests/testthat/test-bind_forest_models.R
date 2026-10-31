@@ -8,7 +8,7 @@ test_that("bind_forest_models stacks model terms with model labels", {
 
   expect_s3_class(out, "ggforestplot_bound_models")
   expect_s3_class(out, "forest_data")
-  expect_equal(unique(out$group), c("Base", "Adjusted"))
+  expect_equal(unique(as.character(out$group)), c("Base", "Adjusted"))
   expect_false("(Intercept)" %in% out$term)
   expect_true(all(c("term", "estimate", "conf.low", "conf.high", "group") %in% names(out)))
   expect_equal(attr(out, "estimate_label"), "Beta")
@@ -36,7 +36,7 @@ test_that("ggforestplot uses bound model labels as groups", {
   p <- ggforestplot(bound)
 
   expect_equal(p$labels$colour, "Group")
-  expect_equal(unique(p$ggforestplotR_state$forest_data$group), c("Clinical", "Adjusted"))
+  expect_equal(unique(as.character(p$ggforestplotR_state$forest_data$group)), c("Clinical", "Adjusted"))
   expect_s3_class(p, "ggplot")
 })
 
@@ -250,4 +250,15 @@ test_that("ggforestplot rejects exponentiate overrides for bound models", {
     ggforestplot(bound, exponentiate = TRUE),
     "`exponentiate` is set by `bind_forest_models\\(\\)`"
   )
+})
+
+test_that("bound model order follows the supplied list order", {
+  skip_if_not_installed("broom")
+  fit1 <- lm(mpg ~ wt + hp, data = mtcars)
+  fit2 <- lm(mpg ~ wt + qsec, data = mtcars)
+  bound <- bind_forest_models(list(Zeta = fit1, Alpha = fit2))
+  expect_s3_class(bound$group, "factor")
+  expect_equal(levels(bound$group), c("Zeta", "Alpha"))
+  built <- ggplot2::ggplot_build(ggforestplot(bound))
+  expect_equal(as.character(built$plot$scales$get_scales("colour")$get_breaks()), c("Zeta", "Alpha"))
 })
