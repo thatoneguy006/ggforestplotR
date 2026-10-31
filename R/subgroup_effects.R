@@ -457,13 +457,18 @@
 
 .subgroup_effect_dispatch <- function(model) {
   if (inherits(model, "coxph")) {
-    return(list(type = "lp", joint_test = "chisq"))
+    return(list(type = "lp", joint_test = "chisq", predict_args = list()))
   }
   if (inherits(model, "lm") && !inherits(model, "glm")) {
-    return(list(type = "response", joint_test = "f"))
+    return(list(type = "response", joint_test = "f", predict_args = list()))
   }
-  if (inherits(model, c("lmerMod", "lme"))) {
-    return(list(type = "response", joint_test = "chisq"))
+  if (inherits(model, "lmerMod")) {
+    return(list(type = "response", joint_test = "chisq",
+                predict_args = list(re.form = NA)))
+  }
+  if (inherits(model, "lme")) {
+    return(list(type = "response", joint_test = "chisq",
+                predict_args = list(level = 0)))
   }
 
   model_family <- tryCatch(
@@ -483,7 +488,13 @@
       )
     }
 
-    return(list(type = "link", joint_test = "chisq"))
+    predict_args <- if (inherits(model, c("merMod", "glmmTMB"))) {
+      list(re.form = NA)
+    } else {
+      list()
+    }
+    return(list(type = "link", joint_test = "chisq",
+                predict_args = predict_args))
   }
 
   stop(
@@ -650,22 +661,20 @@
   effect_dispatch <- .subgroup_effect_dispatch(model)
 
   result <- tryCatch({
+    args <- c(
+      list(
+        model,
+        variables = interaction$focal$variable_name,
+        by = interaction$subgroup$variable_name,
+        type = effect_dispatch$type,
+        conf_level = conf.level
+      ),
+      effect_dispatch$predict_args
+    )
     if (interaction$focal$kind == "continuous") {
-      marginaleffects::avg_slopes(
-        model,
-        variables = interaction$focal$variable_name,
-        by = interaction$subgroup$variable_name,
-        type = effect_dispatch$type,
-        conf_level = conf.level
-      )
+      do.call(marginaleffects::avg_slopes, args)
     } else {
-      marginaleffects::avg_comparisons(
-        model,
-        variables = interaction$focal$variable_name,
-        by = interaction$subgroup$variable_name,
-        type = effect_dispatch$type,
-        conf_level = conf.level
-      )
+      do.call(marginaleffects::avg_comparisons, args)
     }
   }, error = function(error) {
     stop(

@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- Mixed-model subgroup effects are now population-level, excluding cluster-specific random slopes.
+
 - Subgroup contrast labels no longer depend on the installed `marginaleffects` version's label format.
 
 - Numeric source columns shown in tables are now rounded to `estimate_digits` by default.

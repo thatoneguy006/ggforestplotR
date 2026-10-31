@@ -662,3 +662,60 @@ test_that("contrast labels are normalised across marginaleffects versions", {
   expect_equal(f(c("mean(6) - mean(4)", "8 - 4"), c("4", "6", "8")),
                c("6 - 4", "8 - 4"))
 })
+
+test_that("lmer subgroup slopes equal the fixed-effect slopes", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("broom.mixed")
+  skip_if_not_installed("marginaleffects")
+  data("sleepstudy", package = "lme4")
+  sleepstudy$grp <- factor(ifelse(as.integer(sleepstudy$Subject) %% 2L == 0L, "A", "B"))
+  fit <- lme4::lmer(Reaction ~ Days * grp + (Days | Subject), data = sleepstudy)
+  fd <- suppressWarnings(tidy_forest_model(
+    fit, subgroup = "grp", focal = "Days"
+  ))
+  fe <- lme4::fixef(fit)
+  rows <- fd[!is.na(fd$subgroup_level), ]
+  expect_equal(rows$estimate[rows$subgroup_level == "A"], unname(fe["Days"]),
+               tolerance = 1e-6)
+  expect_equal(rows$estimate[rows$subgroup_level == "B"],
+               unname(fe["Days"] + fe["Days:grpB"]), tolerance = 1e-6)
+})
+
+test_that("unbalanced random-slope subgroup effects exclude cluster predictions", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("broom.mixed")
+  skip_if_not_installed("marginaleffects")
+  dat <- lme4::sleepstudy
+  dat$grp <- factor(ifelse(as.integer(dat$Subject) %% 2L == 0L, "A", "B"))
+  dat <- dat[dat$Days <= (as.integer(dat$Subject) %% 7L + 3L), ]
+  fit <- lme4::lmer(Reaction ~ Days * grp + (Days | Subject), data = dat)
+  fd <- suppressWarnings(tidy_forest_model(
+    fit, subgroup = "grp", focal = "Days"
+  ))
+  fe <- lme4::fixef(fit)
+  rows <- fd[!is.na(fd$subgroup_level), ]
+  expect_equal(rows$estimate[rows$subgroup_level == "A"],
+               unname(fe["Days"]), tolerance = 1e-6)
+  expect_equal(rows$estimate[rows$subgroup_level == "B"],
+               unname(fe["Days"] + fe["Days:grpB"]), tolerance = 1e-6)
+})
+
+test_that("nlme subgroup slopes forward population-level predictions", {
+  skip_if_not_installed("nlme")
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("broom.mixed")
+  skip_if_not_installed("marginaleffects")
+  dat <- lme4::sleepstudy
+  dat$grp <- factor(ifelse(as.integer(dat$Subject) %% 2L == 0L, "A", "B"))
+  dat <- dat[dat$Days <= (as.integer(dat$Subject) %% 7L + 3L), ]
+  fit <- nlme::lme(Reaction ~ Days * grp, random = ~ Days | Subject, data = dat)
+  fd <- suppressWarnings(tidy_forest_model(
+    fit, subgroup = "grp", focal = "Days"
+  ))
+  fe <- nlme::fixef(fit)
+  rows <- fd[!is.na(fd$subgroup_level), ]
+  expect_equal(rows$estimate[rows$subgroup_level == "A"],
+               unname(fe["Days"]), tolerance = 1e-6)
+  expect_equal(rows$estimate[rows$subgroup_level == "B"],
+               unname(fe["Days"] + fe["Days:grpB"]), tolerance = 1e-6)
+})
