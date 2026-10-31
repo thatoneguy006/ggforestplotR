@@ -28,6 +28,11 @@
 
 ## Breaking changes
 
+- Renamed `ref_color` to `ref_colour` and `separator_line_size` to
+  `separator_linewidth` in `ggforestplot()`, `grid_line_size` to `grid_linewidth`
+  in `add_forest_table()`, and the data-frame `grouping` argument to `facet`.
+  The former names remain as deprecated aliases; supplying both names errors.
+
 - Forest-plot rows now always read top-to-bottom in data order. Previously, plots without structured rows or subgroups were drawn bottom-to-top, so adding a single header or subgroup inverted the plot, and `sort_terms = "descending"` placed the largest estimate at the bottom.
 
 ## Changes

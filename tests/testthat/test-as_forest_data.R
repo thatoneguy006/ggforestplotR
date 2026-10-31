@@ -18,7 +18,7 @@ test_that("as_forest_data standardizes coefficient columns", {
     conf.low = "lower",
     conf.high = "upper",
     group = "cohort",
-    grouping = "section",
+    facet = "section",
     separate_groups = "block",
     n = "sample_size",
     events = "event_count"
@@ -109,7 +109,7 @@ test_that("as_forest_data sorts terms within grouping sections", {
     "estimate",
     "conf.low",
     "conf.high",
-    grouping = "section",
+    facet = "section",
     sort_terms = "descending"
   )
   ascending <- as_forest_data(
@@ -118,7 +118,7 @@ test_that("as_forest_data sorts terms within grouping sections", {
     "estimate",
     "conf.low",
     "conf.high",
-    grouping = "section",
+    facet = "section",
     sort_terms = "ascending"
   )
 

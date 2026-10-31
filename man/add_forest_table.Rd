@@ -32,10 +32,11 @@ add_forest_table(
   stripe_alpha = NULL,
   grid_lines = FALSE,
   grid_line_colour = "black",
-  grid_line_size = 0.3,
+  grid_linewidth = 0.3,
   grid_line_linetype = 1,
   table_width = NULL,
-  plot_width = NULL
+  plot_width = NULL,
+  grid_line_size = NULL
 )
 }
 \arguments{
@@ -134,7 +135,7 @@ alpha used in \code{\link[=ggforestplot]{ggforestplot()}}.}
 
 \item{grid_line_colour}{Colour used for the table grid lines.}
 
-\item{grid_line_size}{Line width used for the table grid lines.}
+\item{grid_linewidth}{Line width used for the table grid lines.}
 
 \item{grid_line_linetype}{Line type used for the table grid lines.}
 
@@ -143,6 +144,8 @@ By default this is calculated from the displayed table content.}
 
 \item{plot_width}{Optional relative width allocated to the forest-plot
 panel. Defaults to \code{2.4}.}
+
+\item{grid_line_size}{Deprecated. Use \code{grid_linewidth} instead.}
 }
 \value{
 A patchwork-composed plot containing the forest plot and side

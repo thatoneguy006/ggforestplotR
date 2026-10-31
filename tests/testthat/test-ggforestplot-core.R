@@ -362,7 +362,7 @@ test_that("ggforestplot supports reference line naming and values", {
     ref_line = 0.25,
     ref_label = "Null",
     ref_linetype = 3,
-    ref_color = "red"
+    ref_colour = "red"
   )
   built <- ggplot2::ggplot_build(p)
   vline_layers <- Filter(function(x) "xintercept" %in% names(x), built$data)

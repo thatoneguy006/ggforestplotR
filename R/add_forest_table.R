@@ -280,7 +280,8 @@
 #'   alpha used in [ggforestplot()].
 #' @param grid_lines Whether to draw black horizontal grid lines in the table.
 #' @param grid_line_colour Colour used for the table grid lines.
-#' @param grid_line_size Line width used for the table grid lines.
+#' @param grid_linewidth Line width used for the table grid lines.
+#' @param grid_line_size Deprecated. Use `grid_linewidth` instead.
 #' @param grid_line_linetype Line type used for the table grid lines.
 #' @param table_width Optional relative width allocated to the table panel.
 #'   By default this is calculated from the displayed table content.
@@ -342,10 +343,21 @@ add_forest_table <- function(plot = NULL,
                              stripe_alpha = NULL,
                              grid_lines = FALSE,
                              grid_line_colour = "black",
-                             grid_line_size = 0.3,
+                             grid_linewidth = 0.3,
                              grid_line_linetype = 1,
                              table_width = NULL,
-                             plot_width = NULL) {
+                             plot_width = NULL,
+                             grid_line_size = NULL) {
+  if (!missing(grid_line_size)) {
+    if (!missing(grid_linewidth)) {
+      stop(
+        "Use only one of `grid_linewidth` or deprecated `grid_line_size`.",
+        call. = FALSE
+      )
+    }
+    warn_deprecated_argument("grid_line_size", "`grid_linewidth`")
+    grid_linewidth <- grid_line_size
+  }
   warn_deprecated_table_headers(c(
     term_header = !missing(term_header),
     n_header = !missing(n_header),
@@ -388,7 +400,7 @@ add_forest_table <- function(plot = NULL,
         stripe_alpha = stripe_alpha,
         grid_lines = grid_lines,
         grid_line_colour = grid_line_colour,
-        grid_line_size = grid_line_size,
+        grid_line_size = grid_linewidth,
         grid_line_linetype = grid_line_linetype,
         table_width = table_width,
         plot_width = plot_width
@@ -425,7 +437,7 @@ add_forest_table <- function(plot = NULL,
     stripe_alpha = stripe_alpha,
     grid_lines = grid_lines,
     grid_line_colour = grid_line_colour,
-    grid_line_size = grid_line_size,
+    grid_line_size = grid_linewidth,
     grid_line_linetype = grid_line_linetype,
     table_width = table_width,
     plot_width = plot_width

@@ -35,7 +35,7 @@ ggforestplot(
   separate_lines = FALSE,
   separator_line_linetype = 2,
   separator_line_colour = "black",
-  separator_line_size = 0.4,
+  separator_linewidth = 0.4,
   striped_rows = FALSE,
   stripe_fill = "grey95",
   stripe_colour = NA,
@@ -43,10 +43,12 @@ ggforestplot(
   ref_line = NULL,
   ref_label = NULL,
   ref_linetype = 2,
-  ref_color = "grey60",
+  ref_colour = "grey60",
   subgroup = NULL,
   p_method = c("overall", "level"),
-  row_type = NULL
+  row_type = NULL,
+  ref_color = NULL,
+  separator_line_size = NULL
 )
 }
 \arguments{
@@ -138,7 +140,7 @@ around each labeled block identified by \code{separate_groups}.}
 
 \item{separator_line_colour}{Colour used for separator lines.}
 
-\item{separator_line_size}{Line width used for separator lines.}
+\item{separator_linewidth}{Line width used for separator lines.}
 
 \item{striped_rows}{Logical; if \code{TRUE}, shade alternating rows.}
 
@@ -157,7 +159,7 @@ ratios.}
 
 \item{ref_linetype}{Line type for the reference line.}
 
-\item{ref_color}{Color for the reference line.}
+\item{ref_colour}{Colour for the reference line.}
 
 \item{subgroup}{Optional column name defining hierarchical subgroup blocks.
 Missing or empty values identify ordinary standalone estimates. Each
@@ -182,6 +184,10 @@ data inherit this choice from \code{\link[=tidy_forest_model]{tidy_forest_model(
 without geometry. Existing \code{forest_data} objects define this internally.
 Summary rows are currently drawn with the same point and interval geometry
 as estimate rows; the row type is recorded for tables and downstream styling.}
+
+\item{ref_color}{Deprecated. Use \code{ref_colour} instead.}
+
+\item{separator_line_size}{Deprecated. Use \code{separator_linewidth} instead.}
 }
 \value{
 A \code{ggplot} object. Use standard \code{ggplot2} functions such as

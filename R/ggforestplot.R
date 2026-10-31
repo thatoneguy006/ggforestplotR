@@ -82,7 +82,8 @@
 #'   around each labeled block identified by `separate_groups`.
 #' @param separator_line_linetype Line type used for separator lines.
 #' @param separator_line_colour Colour used for separator lines.
-#' @param separator_line_size Line width used for separator lines.
+#' @param separator_linewidth Line width used for separator lines.
+#' @param separator_line_size Deprecated. Use `separator_linewidth` instead.
 #' @param striped_rows Logical; if `TRUE`, shade alternating rows.
 #' @param stripe_fill Fill color used for shaded rows.
 #' @param stripe_colour Border color for shaded rows.
@@ -93,7 +94,8 @@
 #'   ratios.
 #' @param ref_label Optional label drawn alongside the reference line.
 #' @param ref_linetype Line type for the reference line.
-#' @param ref_color Color for the reference line.
+#' @param ref_colour Colour for the reference line.
+#' @param ref_color Deprecated. Use `ref_colour` instead.
 #'
 #' @return A `ggplot` object. Use standard `ggplot2` functions such as
 #'   [ggplot2::labs()] for plot labels, and add composition helpers after
@@ -141,7 +143,7 @@ ggforestplot <- function(data,
                          separate_lines = FALSE,
                          separator_line_linetype = 2,
                          separator_line_colour = "black",
-                         separator_line_size = 0.4,
+                         separator_linewidth = 0.4,
                          striped_rows = FALSE,
                          stripe_fill = "grey95",
                          stripe_colour = NA,
@@ -149,10 +151,32 @@ ggforestplot <- function(data,
                          ref_line = NULL,
                          ref_label = NULL,
                          ref_linetype = 2,
-                         ref_color = "grey60",
+                         ref_colour = "grey60",
                          subgroup = NULL,
                          p_method = c("overall", "level"),
-                         row_type = NULL) {
+                         row_type = NULL,
+                         ref_color = NULL,
+                         separator_line_size = NULL) {
+  if (!missing(ref_color)) {
+    if (!missing(ref_colour)) {
+      stop(
+        "Use only one of `ref_colour` or deprecated `ref_color`.",
+        call. = FALSE
+      )
+    }
+    warn_deprecated_argument("ref_color", "`ref_colour`")
+    ref_colour <- ref_color
+  }
+  if (!missing(separator_line_size)) {
+    if (!missing(separator_linewidth)) {
+      stop(
+        "Use only one of `separator_linewidth` or deprecated `separator_line_size`.",
+        call. = FALSE
+      )
+    }
+    warn_deprecated_argument("separator_line_size", "`separator_linewidth`")
+    separator_linewidth <- separator_line_size
+  }
   ref_line_missing <- missing(ref_line)
   conf_level_missing <- missing(conf.level)
   p_method_missing <- missing(p_method)
@@ -206,7 +230,7 @@ ggforestplot <- function(data,
       group = group,
       subgroup = subgroup,
       row_type = row_type,
-      grouping = facet,
+      facet = facet,
       separate_groups = separate_groups,
       n = n,
       events = events,
@@ -367,7 +391,7 @@ ggforestplot <- function(data,
       mapping = ggplot2::aes(yintercept = .data$yintercept),
       linetype = separator_line_linetype,
       colour = separator_line_colour,
-      linewidth = separator_line_size
+      linewidth = separator_linewidth
     )
     separator_layer_index <- length(p$layers)
   }
@@ -567,7 +591,7 @@ ggforestplot <- function(data,
     p <- p + ggplot2::geom_vline(
       xintercept = ref_line,
       linetype = ref_linetype,
-      colour = ref_color
+      colour = ref_colour
     )
 
     if (!is.null(ref_label)) {
@@ -579,7 +603,7 @@ ggforestplot <- function(data,
         angle = 90,
         hjust = 1.1,
         vjust = -0.4,
-        colour = ref_color
+        colour = ref_colour
       )
     }
   }

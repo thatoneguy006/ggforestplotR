@@ -41,8 +41,9 @@
 #'   effect is estimated within each subgroup level. It may be continuous or a
 #'   factor. Factor effects compare each non-reference level with the first
 #'   level. Ignored for data-frame methods.
-#' @param grouping Optional column name used to split rows into grouped plot
+#' @param facet Optional column name used to split rows into grouped plot
 #'   sections.
+#' @param grouping Deprecated. Use `facet` instead.
 #' @param separate_groups Optional column name used to identify labeled
 #'   variable blocks that can be outlined with separator lines.
 #' @param n Optional column name holding sample sizes or other N labels for
@@ -185,7 +186,7 @@ as_forest_data.data.frame <- function(data,
                                       label = term,
                                       term_labels = NULL,
                                       group = NULL,
-                                      grouping = NULL,
+                                      facet = NULL,
                                       separate_groups = NULL,
                                       n = NULL,
                                       events = NULL,
@@ -202,7 +203,16 @@ as_forest_data.data.frame <- function(data,
                                       subgroup = NULL,
                                       p_method = c("overall", "level"),
                                       row_type = NULL,
-                                      ...) {
+                                      ...,
+                                      grouping = NULL) {
+  if (!missing(grouping)) {
+    if (!missing(facet)) {
+      stop("Use only one of `facet` or deprecated `grouping`.", call. = FALSE)
+    }
+    warn_deprecated_argument("grouping", "`facet`")
+    facet <- grouping
+  }
+
   if (!inherits(data, "data.frame")) {
     stop(
       "`data` must be a data frame or data-frame subclass, such as a tibble or `data.table`.",
@@ -256,7 +266,7 @@ as_forest_data.data.frame <- function(data,
     row_type = resolve_column(data, row_type, "row_type", required = FALSE),
     group = resolve_column(data, group, "group", required = FALSE),
     subgroup = resolve_column(data, subgroup, "subgroup", required = FALSE),
-    grouping = resolve_column(data, grouping, "grouping", required = FALSE),
+    grouping = resolve_column(data, facet, "facet", required = FALSE),
     separate_groups = resolve_column(data, separate_groups, "separate_groups", required = FALSE),
     n = resolve_column(data, n, "n", required = FALSE),
     events = resolve_column(data, events, "events", required = FALSE),
