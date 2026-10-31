@@ -2197,9 +2197,8 @@ build_ci_plot_data <- function(data, ci_limits = NULL, exponentiate = FALSE) {
 
 #' Build a ggplot2 table panel for one side of a split forest plot.
 #'
-#' Uses symmetric expansion and uniform margins.  The "equal spacing"
-#' guarantee comes from `combine_split_forest_plot()` giving both table
-#' panels the same patchwork width — not from per-side padding hacks here.
+#' Uses symmetric expansion and uniform margins. Each table panel receives its
+#' own measured content width; the forest plot receives `plot_width`.
 #' @keywords internal
 #' @noRd
 build_forest_table_plot <- function(table_spec,
@@ -2436,9 +2435,8 @@ wrap_forest_composition <- function(panels, widths, plot) {
 
 #' Combine a forest plot with one table on either side.
 #'
-#' The key idea: both table panels are given the same patchwork width (the max
-#' of the two measured content widths).  This guarantees the forest plot is
-#' centred and both sides have equal spacing, with no per-side padding logic.
+#' Each table panel receives its own measured content width; the forest plot
+#' receives `plot_width`.
 #'
 #' @param plot The forest plot (ggplot2 object).
 #' @param left_table Left-side table plot, or NULL if none.
