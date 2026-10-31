@@ -895,15 +895,9 @@ assign_hierarchical_row_keys <- function(data, has_groupings) {
     all_levels <- c(all_levels, keys)
   }
 
-  factor_levels <- if (
-    "row_type" %in% names(data) &&
-      any(data$row_type != "estimate")
-  ) {
-    rev(all_levels)
-  } else {
-    all_levels
-  }
-  data$row_key <- factor(data$row_key, levels = factor_levels)
+  # Discrete y scales draw the first level at the bottom; reverse so rows read
+  # top-to-bottom in data order, matching the side tables.
+  data$row_key <- factor(data$row_key, levels = rev(all_levels))
   data
 }
 

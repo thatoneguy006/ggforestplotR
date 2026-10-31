@@ -1,5 +1,11 @@
 # ggforestplotR (development version)
 
+## Breaking changes
+
+- Forest-plot rows now always read top-to-bottom in data order. Previously, plots without structured rows or subgroups were drawn bottom-to-top, so adding a single header or subgroup inverted the plot, and `sort_terms = "descending"` placed the largest estimate at the bottom.
+
+## Changes
+
 - Adding scales or tables to a forest plot no longer modifies the original plot object's stripe and separator layers.
 
 - `point_size` now accepts a numeric source column name, such as `"N"`, to

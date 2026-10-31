@@ -58,9 +58,9 @@
 <rect x='386.85' y='22.78' width='327.67' height='547.74' style='stroke-width: 0.00; stroke: none;' />
 </g>
 <g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
-<text x='20.61' y='416.88' style='font-size: 9.10px; font-family: sans;' textLength='29.35px' lengthAdjust='spacingAndGlyphs'>Clinical</text>
+<text x='20.61' y='416.88' style='font-size: 9.10px; font-family: sans;' textLength='41.50px' lengthAdjust='spacingAndGlyphs'>Treatment</text>
 <text x='20.61' y='272.41' style='font-size: 9.10px; font-family: sans;' textLength='29.35px' lengthAdjust='spacingAndGlyphs'>Clinical</text>
-<text x='20.61' y='127.93' style='font-size: 9.10px; font-family: sans;' textLength='41.50px' lengthAdjust='spacingAndGlyphs'>Treatment</text>
+<text x='20.61' y='127.93' style='font-size: 9.10px; font-family: sans;' textLength='29.35px' lengthAdjust='spacingAndGlyphs'>Clinical</text>
 <text x='20.61' y='36.97' style='font-size: 11.00px; font-weight: bold; font-family: sans;' textLength='34.86px' lengthAdjust='spacingAndGlyphs'>section</text>
 </g>
 <defs>
@@ -70,18 +70,18 @@
 </defs>
 <g clip-path='url(#cpMTE4LjM2fDM4Ni44NXwzOC4xMnw1MDAuNDQ=)'>
 <rect x='118.36' y='38.12' width='268.49' height='462.32' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
-<polyline points='350.24,428.20 350.24,399.30 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<polyline points='350.24,413.75 252.60,413.75 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<polyline points='252.60,428.20 252.60,399.30 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
+<polyline points='350.24,139.25 350.24,110.35 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
+<polyline points='350.24,124.80 252.60,124.80 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
+<polyline points='252.60,139.25 252.60,110.35 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
 <polyline points='228.19,283.72 228.19,254.83 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
 <polyline points='228.19,269.28 130.56,269.28 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
 <polyline points='130.56,283.72 130.56,254.83 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<polyline points='374.65,139.25 374.65,110.35 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<polyline points='374.65,124.80 277.01,124.80 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<polyline points='277.01,139.25 277.01,110.35 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<circle cx='301.42' cy='413.75' r='2.49' style='stroke-width: 0.71; fill: #000000;' />
+<polyline points='374.65,428.20 374.65,399.30 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
+<polyline points='374.65,413.75 277.01,413.75 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
+<polyline points='277.01,428.20 277.01,399.30 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
+<circle cx='301.42' cy='124.80' r='2.49' style='stroke-width: 0.71; fill: #000000;' />
 <circle cx='179.38' cy='269.28' r='4.77' style='stroke-width: 0.71; fill: #000000;' />
-<circle cx='325.83' cy='124.80' r='6.76' style='stroke-width: 0.71; fill: #000000;' />
+<circle cx='325.83' cy='413.75' r='6.76' style='stroke-width: 0.71; fill: #000000;' />
 <line x1='228.19' y1='500.44' x2='228.19' y2='38.12' style='stroke-width: 1.07; stroke: #999999; stroke-dasharray: 5.69,5.69; stroke-linecap: butt;' />
 </g>
 <g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
@@ -99,12 +99,12 @@
 <text x='325.83' y='511.42' text-anchor='middle' style='font-size: 8.80px; fill: #4D4D4D; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>0.4</text>
 <text x='374.65' y='511.42' text-anchor='middle' style='font-size: 8.80px; fill: #4D4D4D; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>0.6</text>
 <text x='252.60' y='523.56' text-anchor='middle' style='font-size: 11.00px; font-family: sans;' textLength='89.26px' lengthAdjust='spacingAndGlyphs'>Estimate (95% CI)</text>
-<text x='481.64' y='416.88' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='16.20px' lengthAdjust='spacingAndGlyphs'>Age</text>
+<text x='481.64' y='416.88' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='41.50px' lengthAdjust='spacingAndGlyphs'>Treatment</text>
 <text x='481.64' y='272.41' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='16.19px' lengthAdjust='spacingAndGlyphs'>BMI</text>
-<text x='481.64' y='127.93' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='41.50px' lengthAdjust='spacingAndGlyphs'>Treatment</text>
-<text x='690.28' y='416.88' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='66.82px' lengthAdjust='spacingAndGlyphs'>0.30 (0.10, 0.50)</text>
+<text x='481.64' y='127.93' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='16.20px' lengthAdjust='spacingAndGlyphs'>Age</text>
+<text x='690.28' y='416.88' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='66.82px' lengthAdjust='spacingAndGlyphs'>0.40 (0.20, 0.60)</text>
 <text x='690.28' y='272.41' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='72.88px' lengthAdjust='spacingAndGlyphs'>-0.20 (-0.40, 0.00)</text>
-<text x='690.28' y='127.93' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='66.82px' lengthAdjust='spacingAndGlyphs'>0.40 (0.20, 0.60)</text>
+<text x='690.28' y='127.93' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='66.82px' lengthAdjust='spacingAndGlyphs'>0.30 (0.10, 0.50)</text>
 <text x='481.64' y='36.97' text-anchor='end' style='font-size: 11.00px; font-weight: bold; font-family: sans;' textLength='25.67px' lengthAdjust='spacingAndGlyphs'>Term</text>
 <text x='690.28' y='36.97' text-anchor='end' style='font-size: 11.00px; font-weight: bold; font-family: sans;' textLength='89.26px' lengthAdjust='spacingAndGlyphs'>Estimate (95% CI)</text>
 <rect x='245.69' y='536.80' width='228.62' height='28.24' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
