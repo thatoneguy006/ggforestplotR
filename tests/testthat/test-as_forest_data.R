@@ -18,7 +18,7 @@ test_that("as_forest_data standardizes coefficient columns", {
     conf.low = "lower",
     conf.high = "upper",
     group = "cohort",
-    grouping = "section",
+    facet = "section",
     separate_groups = "block",
     n = "sample_size",
     events = "event_count"
@@ -109,7 +109,7 @@ test_that("as_forest_data sorts terms within grouping sections", {
     "estimate",
     "conf.low",
     "conf.high",
-    grouping = "section",
+    facet = "section",
     sort_terms = "descending"
   )
   ascending <- as_forest_data(
@@ -118,7 +118,7 @@ test_that("as_forest_data sorts terms within grouping sections", {
     "estimate",
     "conf.low",
     "conf.high",
-    grouping = "section",
+    facet = "section",
     sort_terms = "ascending"
   )
 
@@ -230,4 +230,23 @@ test_that("forest_data preserves metadata during row operations", {
 
   incomplete <- out[, c("term", "estimate"), drop = FALSE]
   expect_false(inherits(incomplete, "forest_data"))
+})
+
+test_that("data-frame method defaults to broom column names", {
+  coefs <- data.frame(term = c("a", "b"), estimate = c(1, 2),
+                      conf.low = c(0, 1), conf.high = c(2, 3))
+  fd <- as_forest_data(coefs)
+  expect_s3_class(fd, "forest_data")
+  expect_equal(fd$term, c("a", "b"))
+})
+
+test_that("column subsetting prunes source-column metadata", {
+  fd <- as_forest_data(
+    data.frame(variable = c("a", "b"), beta = 1:2, lo = 0:1, hi = 2:3),
+    term = "variable", estimate = "beta", conf.low = "lo", conf.high = "hi"
+  )
+  sub <- fd[, c("term", "estimate", "conf.low", "conf.high")]
+  expect_s3_class(sub, "forest_data")
+  expect_true(all(unname(forest_metadata(sub)$source_columns) %in% names(sub)))
+  expect_s3_class(ggforestplot(sub), "ggplot")
 })

@@ -340,6 +340,8 @@
 #'   (or `p.value`), `n`, `events`, `group`, and preserved source columns.
 #'   Functions take precedence over digit settings; `estimate_fmt` and
 #'   `ci_fmt` compose the resulting strings.
+#'   Numeric source columns without a formatter are rounded to `estimate_digits`;
+#'   whole numbers are shown without decimals.
 #' @param reference_text Text shown in estimate cells for reference rows.
 #' @param text_size Text size for table contents. Defaults to `3.2`.
 #' @param header_text_size Header text size for table column labels. Defaults

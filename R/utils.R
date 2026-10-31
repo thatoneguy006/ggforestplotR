@@ -1,4 +1,4 @@
-# ─── Column resolution ────────────────────────────────────────────────────────
+# --- Column resolution --------------------------------------------------------
 
 resolve_column <- function(data, column, arg, required = TRUE) {
   if (is.null(column)) {
@@ -37,7 +37,7 @@ forest_p_method <- function(data) {
   if (is.null(method)) "overall" else method
 }
 
-# ─── Data validation ──────────────────────────────────────────────────────────
+# --- Data validation ----------------------------------------------------------
 
 validate_forest_data <- function(data, exponentiate = FALSE) {
   required <- c("term", "estimate", "conf.low", "conf.high")
@@ -71,7 +71,12 @@ validate_forest_data <- function(data, exponentiate = FALSE) {
     }
     if (isTRUE(exponentiate) && any(data[[col]][geometry] <= 0)) {
       stop(
-        "Ratio estimates and logarithmic axes require strictly positive `estimate`, `conf.low`, and `conf.high` values.",
+        paste0(
+          "Ratio estimates and logarithmic axes require strictly positive ",
+          "`estimate`, `conf.low`, and `conf.high` values. For data frames, ",
+          "`exponentiate = TRUE` declares values that are already ratios; ",
+          "exponentiate log-scale estimates before plotting."
+        ),
         call. = FALSE
       )
     }
@@ -92,7 +97,7 @@ validate_forest_data <- function(data, exponentiate = FALSE) {
   invisible(data)
 }
 
-# ─── Column normalisation ────────────────────────────────────────────────────
+# --- Column normalisation ----------------------------------------------------
 
 normalize_table_columns <- function(columns, data = NULL) {
   if (is.null(columns)) {
@@ -512,13 +517,14 @@ infer_model_estimate_info <- function(model,
     family <- model_family$family
     link <- model_family$link
 
-    if (identical(family, "binomial") && identical(link, "logit")) {
+    is_binomial <- family %in% c("binomial", "quasibinomial")
+    if (isTRUE(is_binomial) && identical(link, "logit")) {
       auto_exponentiate <- TRUE
       canonical_label <- "OR"
-    } else if (identical(family, "binomial") && identical(link, "log")) {
+    } else if (isTRUE(is_binomial) && identical(link, "log")) {
       auto_exponentiate <- TRUE
       canonical_label <- "RR"
-    } else if (identical(family, "binomial") && identical(link, "identity")) {
+    } else if (isTRUE(is_binomial) && identical(link, "identity")) {
       estimate_scale <- "risk_difference"
       canonical_label <- "RD"
     } else if (identical(link, "log")) {
@@ -550,7 +556,7 @@ infer_model_estimate_info <- function(model,
   )
 }
 
-# ─── Formatting helpers ──────────────────────────────────────────────────────
+# --- Formatting helpers ------------------------------------------------------
 
 #' Shared logic for collapsing formatted values with optional group labels.
 #'
@@ -729,8 +735,9 @@ format_forest_table_values <- function(values,
                                        force_group_labels = FALSE,
                                        align_groups = FALSE,
                                        formatter = NULL,
-                                       key = "value") {
-  formatted <- apply_table_formatter(values, formatter, as.character, key)
+                                       key = "value",
+                                       fallback = as.character) {
+  formatted <- apply_table_formatter(values, formatter, fallback, key)
   collapse_grouped_values(
     formatted,
     group,
@@ -739,7 +746,7 @@ format_forest_table_values <- function(values,
   )
 }
 
-# ─── Plot data construction (decomposed into single-purpose passes) ──────────
+# --- Plot data construction (decomposed into single-purpose passes) ----------
 
 observed_grouping_panels <- function(data, has_groupings) {
   if (!isTRUE(has_groupings)) {
@@ -845,31 +852,6 @@ make_panel_row_keys <- function(panel, labels, panel_key_labels) {
 #' panels and needs a unique internal key.
 #' @keywords internal
 #' @noRd
-assign_row_keys <- function(data, has_groupings) {
-  if (".display_identity" %in% names(data)) {
-    return(assign_hierarchical_row_keys(data, has_groupings))
-  }
-
-  panel_values <- observed_grouping_panels(data, has_groupings)
-  panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
-  data$row_key <- NA_character_
-  all_levels <- character()
-
-  for (pv in panel_values) {
-    idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
-    panel_labels <- unique(data$label[idx])
-
-    keys <- make_panel_row_keys(pv, panel_labels, panel_key_labels)
-    row_map <- stats::setNames(keys, panel_labels)
-
-    data$row_key[idx] <- unname(row_map[data$label[idx]])
-    all_levels <- c(all_levels, keys)
-  }
-
-  data$row_key <- factor(data$row_key, levels = all_levels)
-  data
-}
-
 assign_hierarchical_row_keys <- function(data, has_groupings) {
   panel_values <- observed_grouping_panels(data, has_groupings)
   panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
@@ -895,15 +877,9 @@ assign_hierarchical_row_keys <- function(data, has_groupings) {
     all_levels <- c(all_levels, keys)
   }
 
-  factor_levels <- if (
-    "row_type" %in% names(data) &&
-      any(data$row_type != "estimate")
-  ) {
-    rev(all_levels)
-  } else {
-    all_levels
-  }
-  data$row_key <- factor(data$row_key, levels = factor_levels)
+  # Discrete y scales draw the first level at the bottom; reverse so rows read
+  # top-to-bottom in data order, matching the side tables.
+  data$row_key <- factor(data$row_key, levels = rev(all_levels))
   data
 }
 
@@ -911,24 +887,10 @@ assign_hierarchical_row_keys <- function(data, has_groupings) {
 #' @keywords internal
 #' @noRd
 build_axis_labels <- function(data, has_groupings) {
-  if ("display_label" %in% names(data)) {
-    row_levels <- levels(data$row_key)
-    first_rows <- match(row_levels, as.character(data$row_key))
-    return(stats::setNames(data$display_label[first_rows], row_levels))
-  }
-
-  panel_values <- observed_grouping_panels(data, has_groupings)
-  panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
-  labels <- character()
-
-  for (pv in panel_values) {
-    idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
-    panel_labels <- unique(data$label[idx])
-    keys <- make_panel_row_keys(pv, panel_labels, panel_key_labels)
-    labels <- c(labels, stats::setNames(panel_labels, keys))
-  }
-
-  labels
+  stopifnot("display_label" %in% names(data))
+  row_levels <- levels(data$row_key)
+  first_rows <- match(row_levels, as.character(data$row_key))
+  stats::setNames(data$display_label[first_rows], row_levels)
 }
 
 encode_display_identity <- function(row_type, subgroup, label) {
@@ -1274,7 +1236,7 @@ build_forest_plot_data <- function(data) {
     plot_data$.display_identity[unique_source_rows],
     "|source:", plot_data$.forest_source_row[unique_source_rows]
   )
-  plot_data <- assign_row_keys(plot_data, has_groupings)
+  plot_data <- assign_hierarchical_row_keys(plot_data, has_groupings)
 
   original_rows <- !is.na(plot_data$.forest_source_row)
   source_rows <- plot_data$.forest_source_row[original_rows]
@@ -1300,7 +1262,7 @@ build_forest_plot_data <- function(data) {
   )
 }
 
-# ─── Table data construction ─────────────────────────────────────────────────
+# --- Table data construction -------------------------------------------------
 
 extract_trained_y_limits <- function(plot) {
   built <- tryCatch(
@@ -1403,6 +1365,17 @@ align_forest_state_to_row_levels <- function(state, requested_levels) {
   aligned_state
 }
 
+# Layers are ggproto environments shared between plots by `+`; clone before
+# replacing data so only the returned plot sees the new data.
+replace_layer_data <- function(plot, index, data) {
+  old <- plot$layers[[index]]
+  new <- rlang::env_clone(old)
+  class(new) <- class(old)
+  new$data <- data
+  plot$layers[[index]] <- new
+  plot
+}
+
 align_forest_row_layers_to_state <- function(plot, state) {
   stripe_index <- state$stripe_layer_index
   if (!is.null(stripe_index) && stripe_index <= length(plot$layers)) {
@@ -1417,13 +1390,13 @@ align_forest_row_layers_to_state <- function(plot, state) {
       new_stripes$xmin <- old_stripes$xmin[[1L]]
       new_stripes$xmax <- old_stripes$xmax[[1L]]
     }
-    plot$layers[[stripe_index]]$data <- new_stripes
+    plot <- replace_layer_data(plot, stripe_index, new_stripes)
   }
 
   separator_index <- state$separator_layer_index
   if (!is.null(separator_index) && separator_index <= length(plot$layers) &&
       !is.null(state$separator_data)) {
-    plot$layers[[separator_index]]$data <- state$separator_data
+    plot <- replace_layer_data(plot, separator_index, state$separator_data)
   }
 
   plot$ggforestplotR_state <- state
@@ -1656,7 +1629,8 @@ build_forest_table_data <- function(data,
           label_values,
           rd$group,
           align_groups = FALSE,
-          formatter = formatters[[extra]], key = extra
+          formatter = formatters[[extra]], key = extra,
+        fallback = default_table_value_formatter(digits$estimate_digits)
         )
         if (is_child) {
           label_text <- paste0(
@@ -1682,7 +1656,8 @@ build_forest_table_data <- function(data,
         values,
         rd$group,
         align_groups = align_groups,
-        formatter = formatters[[extra]], key = extra
+        formatter = formatters[[extra]], key = extra,
+        fallback = default_table_value_formatter(digits$estimate_digits)
       )
     }
   }
@@ -1809,7 +1784,7 @@ expand_grouped_table_text <- function(table_data, group_levels = NULL) {
   out
 }
 
-# ─── Grid line data ──────────────────────────────────────────────────────────
+# --- Grid line data ----------------------------------------------------------
 
 build_table_line_data <- function(stripe_data, has_groupings = FALSE) {
   if (isTRUE(has_groupings)) {
@@ -1841,7 +1816,16 @@ build_table_line_data <- function(stripe_data, has_groupings = FALSE) {
   }
 }
 
-# ─── Text measurement ────────────────────────────────────────────────────────
+# --- Text measurement --------------------------------------------------------
+
+with_measurement_device <- function(code) {
+  if (grDevices::dev.cur() == 1L) {
+    grDevices::pdf(NULL)
+    device <- grDevices::dev.cur()
+    on.exit(grDevices::dev.off(device), add = TRUE)
+  }
+  force(code)
+}
 
 #' Ground-truth width measurement via grid graphics.  Handles multi-line
 #' strings by splitting on newlines and returning the widest line.
@@ -1891,24 +1875,26 @@ measure_table_text_widths <- function(table_spec,
                                       header_text_size = 11,
                                       header_fontface = "bold",
                                       header_family = "") {
-  text_size_pt <- text_size * (72.27 / 25.4)
+  with_measurement_device({
+    text_size_pt <- text_size * (72.27 / 25.4)
 
-  stats::setNames(vapply(seq_along(table_spec$column_keys), function(i) {
-    key <- table_spec$column_keys[[i]]
-    values <- table_spec$table_data$text[table_spec$table_data$column_key == key]
-    max(
-      measure_max_grob_width(
-        table_spec$headers[[i]],
-        fontsize_pt = header_text_size,
-        fontface = header_fontface,
-        fontfamily = header_family
-      ),
-      measure_max_grob_width(values, fontsize_pt = text_size_pt, fontface = "plain")
-    )
-  }, numeric(1)), table_spec$column_keys)
+    stats::setNames(vapply(seq_along(table_spec$column_keys), function(i) {
+      key <- table_spec$column_keys[[i]]
+      values <- table_spec$table_data$text[table_spec$table_data$column_key == key]
+      max(
+        measure_max_grob_width(
+          table_spec$headers[[i]],
+          fontsize_pt = header_text_size,
+          fontface = header_fontface,
+          fontfamily = header_family
+        ),
+        measure_max_grob_width(values, fontsize_pt = text_size_pt, fontface = "plain")
+      )
+    }, numeric(1)), table_spec$column_keys)
+  })
 }
 
-# ─── Column width estimation ─────────────────────────────────────────────────
+# --- Column width estimation -------------------------------------------------
 
 #' Default per-column base padding.  Uses a known lookup for the four standard
 #' keys and a sensible fallback for anything else.
@@ -1945,7 +1931,7 @@ estimate_split_column_widths <- function(table_spec,
   }, numeric(1)), table_spec$column_keys)
 }
 
-# ─── Layout engines ──────────────────────────────────────────────────────────
+# --- Layout engines ----------------------------------------------------------
 
 #' Lay out a table spec for a split forest plot.
 #'
@@ -2121,7 +2107,7 @@ validate_composition_width <- function(value, arg) {
   invisible(value)
 }
 
-# ─── Plot limits ─────────────────────────────────────────────────────────────
+# --- Plot limits -------------------------------------------------------------
 
 default_plot_background_limits <- function(forest_data,
                                            exponentiate = FALSE,
@@ -2150,7 +2136,7 @@ default_plot_background_limits <- function(forest_data,
   }
 }
 
-# ─── ggplot2 table panel ─────────────────────────────────────────────────────
+# --- ggplot2 table panel -----------------------------------------------------
 
 validate_ci_limits <- function(ci_limits = NULL, exponentiate = FALSE) {
   if (is.null(ci_limits)) {
@@ -2211,9 +2197,8 @@ build_ci_plot_data <- function(data, ci_limits = NULL, exponentiate = FALSE) {
 
 #' Build a ggplot2 table panel for one side of a split forest plot.
 #'
-#' Uses symmetric expansion and uniform margins.  The "equal spacing"
-#' guarantee comes from `combine_split_forest_plot()` giving both table
-#' panels the same patchwork width — not from per-side padding hacks here.
+#' Uses symmetric expansion and uniform margins. Each table panel receives its
+#' own measured content width; the forest plot receives `plot_width`.
 #' @keywords internal
 #' @noRd
 build_forest_table_plot <- function(table_spec,
@@ -2273,7 +2258,6 @@ build_forest_table_plot <- function(table_spec,
       p <- p + ggplot2::geom_hline(
         data = line_data,
         mapping = ggplot2::aes(yintercept = .data$yintercept),
-        inherit.aes = FALSE,
         colour = grid_line_colour,
         linewidth = grid_line_size,
         linetype = grid_line_linetype
@@ -2288,6 +2272,15 @@ build_forest_table_plot <- function(table_spec,
   centered_text <- text_data[!text_data$dodge_text, , drop = FALSE]
   grouped_text <- text_data[text_data$dodge_text, , drop = FALSE]
   text_layers <- list()
+
+  if (nrow(grouped_text) > 0L) {
+    # Train every row before separate text layers can reorder the y scale.
+    p <- p + ggplot2::geom_blank(
+      data = table_spec$table_data,
+      mapping = ggplot2::aes(y = .data$row_key),
+      inherit.aes = FALSE
+    )
+  }
 
   if (nrow(centered_text) > 0L) {
     text_layers[[length(text_layers) + 1L]] <- if (
@@ -2383,7 +2376,7 @@ build_forest_table_plot <- function(table_spec,
   p
 }
 
-# ─── Final assembly ──────────────────────────────────────────────────────────
+# --- Final assembly ----------------------------------------------------------
 
 resolved_plot_legend_position <- function(plot) {
   position <- plot$theme$legend.position
@@ -2442,9 +2435,8 @@ wrap_forest_composition <- function(panels, widths, plot) {
 
 #' Combine a forest plot with one table on either side.
 #'
-#' The key idea: both table panels are given the same patchwork width (the max
-#' of the two measured content widths).  This guarantees the forest plot is
-#' centred and both sides have equal spacing, with no per-side padding logic.
+#' Each table panel receives its own measured content width; the forest plot
+#' receives `plot_width`.
 #'
 #' @param plot The forest plot (ggplot2 object).
 #' @param left_table Left-side table plot, or NULL if none.

@@ -35,7 +35,7 @@ ggforestplot(
   separate_lines = FALSE,
   separator_line_linetype = 2,
   separator_line_colour = "black",
-  separator_line_size = 0.4,
+  separator_linewidth = 0.4,
   striped_rows = FALSE,
   stripe_fill = "grey95",
   stripe_colour = NA,
@@ -43,10 +43,12 @@ ggforestplot(
   ref_line = NULL,
   ref_label = NULL,
   ref_linetype = 2,
-  ref_color = "grey60",
+  ref_colour = "grey60",
   subgroup = NULL,
   p_method = c("overall", "level"),
-  row_type = NULL
+  row_type = NULL,
+  ref_color = NULL,
+  separator_line_size = NULL
 )
 }
 \arguments{
@@ -87,10 +89,12 @@ table helpers.}
 
 \item{p.value}{Optional column name holding p-values.}
 
-\item{exponentiate}{Logical; if \code{TRUE}, transform the estimates and draw the
-axis on the log scale with the reference line at 1. For model objects,
-\code{NULL} uses the canonical scale when it can be inferred, such as hazard
-ratios for Cox models.}
+\item{exponentiate}{For fitted models, \code{TRUE} exponentiates the coefficients
+(e.g. log-odds to odds ratios) and \code{NULL} uses the model's conventional scale,
+such as hazard ratios for Cox models. For data frames, \code{exponentiate} does
+\strong{not} transform anything: \code{TRUE} declares that the estimate and interval
+columns are already ratios, which draws a log10 axis with the reference line
+at 1. Exponentiate log-scale columns yourself before plotting them as ratios.}
 
 \item{conf.level}{Confidence level represented by model or data-frame
 interval columns. Defaults to \code{0.95}.}
@@ -99,7 +103,11 @@ interval columns. Defaults to \code{0.95}.}
 \code{"ascending"}. Subgroup hierarchies require \code{"none"} so their source order
 is preserved.}
 
-\item{point_size}{Point size for coefficient markers.}
+\item{point_size}{A finite non-negative number for a constant marker size,
+or a single column name for sizes mapped from numeric data. Mapped values
+must be finite and non-negative on estimate and summary rows. Column-based
+sizes use the standard ggplot2 size scale; customize them with
+\code{\link[ggplot2:scale_size_continuous]{ggplot2::scale_size_continuous()}} or \code{\link[ggplot2:scale_size_area]{ggplot2::scale_size_area()}}.}
 
 \item{point_shape}{Shape used for coefficient markers.}
 
@@ -132,7 +140,7 @@ around each labeled block identified by \code{separate_groups}.}
 
 \item{separator_line_colour}{Colour used for separator lines.}
 
-\item{separator_line_size}{Line width used for separator lines.}
+\item{separator_linewidth}{Line width used for separator lines.}
 
 \item{striped_rows}{Logical; if \code{TRUE}, shade alternating rows.}
 
@@ -151,7 +159,7 @@ ratios.}
 
 \item{ref_linetype}{Line type for the reference line.}
 
-\item{ref_color}{Color for the reference line.}
+\item{ref_colour}{Colour for the reference line.}
 
 \item{subgroup}{Optional column name defining hierarchical subgroup blocks.
 Missing or empty values identify ordinary standalone estimates. Each
@@ -173,7 +181,13 @@ data inherit this choice from \code{\link[=tidy_forest_model]{tidy_forest_model(
 \item{row_type}{Optional data-frame column mapping for semantic row types.
 \code{"estimate"} and \code{"summary"} rows draw points and intervals;
 \code{"reference"}, \code{"header"}, and \code{"spacer"} rows occupy display space
-without geometry. Existing \code{forest_data} objects define this internally.}
+without geometry. Existing \code{forest_data} objects define this internally.
+Summary rows are currently drawn with the same point and interval geometry
+as estimate rows; the row type is recorded for tables and downstream styling.}
+
+\item{ref_color}{Deprecated. Use \code{ref_colour} instead.}
+
+\item{separator_line_size}{Deprecated. Use \code{separator_linewidth} instead.}
 }
 \value{
 A \code{ggplot} object. Use standard \code{ggplot2} functions such as

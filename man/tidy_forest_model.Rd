@@ -77,7 +77,8 @@ Continuous focal predictors use
 predictors use \code{\link[marginaleffects:avg_comparisons]{marginaleffects::avg_comparisons()}} and compare each
 non-reference level with the first factor level. Both functions use the
 original fitted model and its variance-covariance matrix; no subgroup models
-are refitted.
+are refitted. For mixed models, subgroup effects are population-level
+(random effects set to zero).
 
 Automatic selection is deliberately conservative. It accepts one
 unambiguous continuous-by-factor interaction. Factor-by-factor interactions

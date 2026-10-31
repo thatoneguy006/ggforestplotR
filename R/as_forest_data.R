@@ -18,6 +18,8 @@
 #'   summary rows require finite estimate and CI values; other rows require
 #'   missing geometry. Structured rows retain source order, so use
 #'   `sort_terms = "none"`. If omitted, all rows are estimates.
+#'   Summary rows are currently drawn with the same point and interval geometry
+#'   as estimate rows; the row type is recorded for tables and downstream styling.
 #' @param group Optional column name used for color-grouping multiple
 #'   estimates per row. If this column is a factor, its levels control the
 #'   group legend and vertical dodge order.
@@ -39,8 +41,9 @@
 #'   effect is estimated within each subgroup level. It may be continuous or a
 #'   factor. Factor effects compare each non-reference level with the first
 #'   level. Ignored for data-frame methods.
-#' @param grouping Optional column name used to split rows into grouped plot
+#' @param facet Optional column name used to split rows into grouped plot
 #'   sections.
+#' @param grouping Deprecated. Use `facet` instead.
 #' @param separate_groups Optional column name used to identify labeled
 #'   variable blocks that can be outlined with separator lines.
 #' @param n Optional column name holding sample sizes or other N labels for
@@ -53,9 +56,11 @@
 #'   p-values on the individual subgroup estimate rows. For fitted-model
 #'   methods, this also selects whether `p.value` contains the omnibus
 #'   interaction test or the post-estimation test for each derived effect.
-#' @param exponentiate Compatibility argument. `TRUE` is equivalent to
-#'   `estimate_scale = "ratio"`; `FALSE` is equivalent to
-#'   `estimate_scale = "identity"` when `estimate_scale` is not supplied.
+#' @param exponentiate Declares the scale of the supplied columns; values are never
+#'   transformed for data frames. `TRUE` is equivalent to
+#'   `estimate_scale = "ratio"` (columns already contain ratios); `FALSE` is
+#'   equivalent to `estimate_scale = "identity"` when `estimate_scale` is not
+#'   supplied.
 #' @param estimate_scale Semantic scale of the stored estimates. One of
 #'   `"identity"`, `"log"`, `"ratio"`, `"probability"`, or
 #'   `"risk_difference"`.
@@ -77,7 +82,8 @@
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
 #'   `"ascending"`. Subgroup hierarchies require `"none"` so their source order
 #'   is preserved.
-#' @param ... Arguments passed to an `as_forest_data()` method.
+#' @param ... Not used by the model methods; must be empty. Unknown or misspelled
+#'   arguments raise an error.
 #'
 #' @return A `forest_data` data-frame subclass ready for [ggforestplot()] and
 #'   the table composition helpers. Original data-frame columns are retained
@@ -173,14 +179,14 @@ as_forest_data.forest_data <- function(data,
 #' @rdname as_forest_data
 #' @export
 as_forest_data.data.frame <- function(data,
-                                      term,
-                                      estimate,
-                                      conf.low,
-                                      conf.high,
+                                      term = "term",
+                                      estimate = "estimate",
+                                      conf.low = "conf.low",
+                                      conf.high = "conf.high",
                                       label = term,
                                       term_labels = NULL,
                                       group = NULL,
-                                      grouping = NULL,
+                                      facet = NULL,
                                       separate_groups = NULL,
                                       n = NULL,
                                       events = NULL,
@@ -197,7 +203,16 @@ as_forest_data.data.frame <- function(data,
                                       subgroup = NULL,
                                       p_method = c("overall", "level"),
                                       row_type = NULL,
-                                      ...) {
+                                      ...,
+                                      grouping = NULL) {
+  if (!missing(grouping)) {
+    if (!missing(facet)) {
+      stop("Use only one of `facet` or deprecated `grouping`.", call. = FALSE)
+    }
+    warn_deprecated_argument("grouping", "`facet`")
+    facet <- grouping
+  }
+
   if (!inherits(data, "data.frame")) {
     stop(
       "`data` must be a data frame or data-frame subclass, such as a tibble or `data.table`.",
@@ -251,7 +266,7 @@ as_forest_data.data.frame <- function(data,
     row_type = resolve_column(data, row_type, "row_type", required = FALSE),
     group = resolve_column(data, group, "group", required = FALSE),
     subgroup = resolve_column(data, subgroup, "subgroup", required = FALSE),
-    grouping = resolve_column(data, grouping, "grouping", required = FALSE),
+    grouping = resolve_column(data, facet, "facet", required = FALSE),
     separate_groups = resolve_column(data, separate_groups, "separate_groups", required = FALSE),
     n = resolve_column(data, n, "n", required = FALSE),
     events = resolve_column(data, events, "events", required = FALSE),
@@ -349,7 +364,9 @@ as_forest_data.data.frame <- function(data,
     canonical_uses_source <- source_name %in% names(column_mapping) &&
       identical(unname(column_mapping[[source_name]]), source_name)
 
-    if (!canonical_uses_source) {
+    # Preserve numeric source values even when canonical labels become text.
+    if (!canonical_uses_source ||
+        !identical(out[[source_name]], data[[source_name]])) {
       stored_name <- paste0("..source..", source_name)
       while (stored_name %in% names(out)) {
         stored_name <- paste0(stored_name, ".")
@@ -362,7 +379,6 @@ as_forest_data.data.frame <- function(data,
   attr(out, "grouping_levels") <- grouping_levels
 
   validate_forest_data(out, exponentiate = identical(estimate_scale, "ratio"))
-  validate_subgroup_blocks(out)
 
   out <- sort_forest_data(out, sort_terms = sort_terms)
   validate_subgroup_blocks(out)

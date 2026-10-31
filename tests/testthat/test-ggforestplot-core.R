@@ -36,8 +36,8 @@ test_that("ggforestplot can facet grouped rows and add stripes", {
   expect_true(all(built$data[[1]]$alpha == 0.35))
   expect_equal(p$ggforestplotR_state$defaults$stripe_alpha, 0.35)
   expect_equal(length(panel_rows), 2L)
-  expect_equal(unname(panel_rows[[1]]), c(1, 2, 3))
-  expect_equal(unname(panel_rows[[2]]), c(1, 2, 3))
+  expect_equal(unname(panel_rows[[1]]), c(3, 2, 1))
+  expect_equal(unname(panel_rows[[2]]), c(3, 2, 1))
 })
 
 test_that("ggforestplot can draw striped rows on exponentiated plots", {
@@ -362,7 +362,7 @@ test_that("ggforestplot supports reference line naming and values", {
     ref_line = 0.25,
     ref_label = "Null",
     ref_linetype = 3,
-    ref_color = "red"
+    ref_colour = "red"
   )
   built <- ggplot2::ggplot_build(p)
   vline_layers <- Filter(function(x) "xintercept" %in% names(x), built$data)
@@ -413,7 +413,7 @@ test_that("ggforestplot can draw separator lines for each labeled variable block
   line_layers <- Filter(function(x) "yintercept" %in% names(x), built$data)
 
   expect_length(line_layers, 1L)
-  expect_equal(line_layers[[1]]$yintercept, c(0.5, 3.5, 4.5))
+  expect_equal(line_layers[[1]]$yintercept, c(0.5, 1.5, 4.5))
   expect_true(all(line_layers[[1]]$linetype == 2))
   expect_true(all(line_layers[[1]]$colour == "black"))
 })
@@ -435,3 +435,38 @@ test_that("ggforestplot prefixes labels for multi-level separator groups", {
   )
 })
 
+test_that("rows read top-to-bottom in data order with or without structured rows", {
+  d <- data.frame(term = c("Age", "BMI", "Male", "Female"),
+                  estimate = c(.1, .2, .3, .4), conf.low = c(0, .1, .2, .3),
+                  conf.high = c(.2, .3, .4, .5), sex = c(NA, NA, "Sex", "Sex"))
+  plain <- ggplot2::layer_scales(ggforestplot(d))$y$get_limits()
+  grouped <- ggplot2::layer_scales(ggforestplot(d, subgroup = "sex"))$y$get_limits()
+  # the first limit is drawn at the bottom of the panel
+  expect_equal(rev(plain), c("Age", "BMI", "Male", "Female"))
+  expect_equal(rev(grouped)[1:2], c("Age", "BMI"))
+})
+
+test_that("sort_terms = 'descending' puts the largest estimate at the top", {
+  coefs <- data.frame(term = c("Age", "BMI", "Treatment"),
+                      estimate = c(1.1, 0.9, 1.4), conf.low = c(1.02, 0.8, 1.1),
+                      conf.high = c(1.2, 1.01, 1.8))
+  limits <- ggplot2::layer_scales(
+    ggforestplot(coefs, exponentiate = TRUE, sort_terms = "descending")
+  )$y$get_limits()
+  expect_equal(rev(limits), c("Treatment", "Age", "BMI"))
+})
+
+test_that("legend title uses the mapped group column name", {
+  d <- data.frame(term = c("a", "a"), estimate = c(1, 2), conf.low = c(0, 1),
+                  conf.high = c(2, 3), cohort = c("A", "B"))
+  expect_equal(ggforestplot(d, group = "cohort")$labels$colour, "cohort")
+})
+
+test_that("unsupported objects fail with a clear input error", {
+  for (data in list(1:3, NULL, "text", function() NULL)) {
+    expect_error(
+      ggforestplot(data),
+      "must be a data frame or a fitted model"
+    )
+  }
+})

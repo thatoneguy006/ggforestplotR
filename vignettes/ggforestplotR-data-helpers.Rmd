@@ -86,7 +86,7 @@ forest_ready <- as_forest_data(
   conf.low = "lower",
   conf.high = "upper",
   label = "display",
-  grouping = "section",
+  facet = "section",
   n = "sample_size",
   p.value = "p_value",
   estimate_scale = "identity",

@@ -201,3 +201,54 @@ test_that("add_forest_table works for exponentiated logistic regression output",
 
   expect_s3_class(out, "patchwork")
 })
+
+test_that("keep_fixed_effects keeps only the conditional component", {
+  tidied <- data.frame(
+    effect = c("fixed", "fixed", "fixed", "ran_pars"),
+    component = c("cond", "cond", "zi", "cond"),
+    term = c("x", "z", "z", "sd__(Intercept)"),
+    estimate = 1:4
+  )
+  out <- ggforestplotR:::keep_fixed_effects(tidied)
+  expect_equal(out$term, c("x", "z"))
+  expect_true(all(out$component == "cond"))
+})
+
+test_that("keep_fixed_effects leaves frames without a cond component alone", {
+  tidied <- data.frame(effect = "fixed", component = "other", term = "x", estimate = 1)
+  expect_equal(nrow(ggforestplotR:::keep_fixed_effects(tidied)), 1L)
+})
+
+test_that("glmmTMB zero-inflation terms are not plotted", {
+  skip_if_not_installed("broom")
+  skip_if_not_installed("broom.mixed")
+  skip_if_not_installed("glmmTMB")
+  set.seed(1)
+  d <- data.frame(x = rnorm(300), z = rnorm(300),
+                  g = factor(sample(1:20, 300, TRUE)))
+  d$y <- rpois(300, exp(0.3 + 0.4 * d$x)) *
+    rbinom(300, 1, stats::plogis(0.5 - 0.8 * d$z))
+  m <- glmmTMB::glmmTMB(y ~ x + z + (1 | g), ziformula = ~ z,
+                        family = stats::poisson, data = d)
+  fd <- as_forest_data(m)
+  expect_equal(fd$term, c("x", "z"))
+  expect_false(anyDuplicated(fd$term) > 0)
+})
+
+test_that("misspelled arguments to model methods are rejected", {
+  skip_if_not_installed("broom")
+  fit <- glm(am ~ wt, family = binomial, data = mtcars)
+  expect_error(as_forest_data(fit, exponentate = FALSE), "exponentate")
+  expect_error(
+    bind_forest_models(list(a = fit), exponentate = FALSE),
+    "exponentate"
+  )
+})
+
+test_that("quasibinomial logit models use odds ratios like binomial models", {
+  skip_if_not_installed("broom")
+  fit <- suppressWarnings(glm(vs ~ wt, family = quasibinomial, data = mtcars))
+  meta <- forest_metadata(as_forest_data(fit))
+  expect_equal(meta$estimate_scale, "ratio")
+  expect_equal(meta$effect_label, "OR")
+})

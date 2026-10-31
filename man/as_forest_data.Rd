@@ -26,14 +26,14 @@ as_forest_data(data, ...)
 
 \method{as_forest_data}{data.frame}(
   data,
-  term,
-  estimate,
-  conf.low,
-  conf.high,
+  term = "term",
+  estimate = "estimate",
+  conf.low = "conf.low",
+  conf.high = "conf.high",
   label = term,
   term_labels = NULL,
   group = NULL,
-  grouping = NULL,
+  facet = NULL,
   separate_groups = NULL,
   n = NULL,
   events = NULL,
@@ -50,7 +50,8 @@ as_forest_data(data, ...)
   subgroup = NULL,
   p_method = c("overall", "level"),
   row_type = NULL,
-  ...
+  ...,
+  grouping = NULL
 )
 
 \method{as_forest_data}{lm}(
@@ -155,7 +156,8 @@ as_forest_data(data, ...)
 \item{data}{A data frame or data-frame subclass containing coefficient
 estimates and intervals. Tibbles and \code{data.table} objects are supported.}
 
-\item{...}{Arguments passed to an \code{as_forest_data()} method.}
+\item{...}{Not used by the model methods; must be empty. Unknown or misspelled
+arguments raise an error.}
 
 \item{term_labels}{Optional named vector used to relabel displayed terms.
 Names should match values in the term column and values are the labels to
@@ -165,9 +167,11 @@ display.}
 \code{"ascending"}. Subgroup hierarchies require \code{"none"} so their source order
 is preserved.}
 
-\item{exponentiate}{Compatibility argument. \code{TRUE} is equivalent to
-\code{estimate_scale = "ratio"}; \code{FALSE} is equivalent to
-\code{estimate_scale = "identity"} when \code{estimate_scale} is not supplied.}
+\item{exponentiate}{Declares the scale of the supplied columns; values are never
+transformed for data frames. \code{TRUE} is equivalent to
+\code{estimate_scale = "ratio"} (columns already contain ratios); \code{FALSE} is
+equivalent to \code{estimate_scale = "identity"} when \code{estimate_scale} is not
+supplied.}
 
 \item{p_method}{Subgroup p-value placement. \code{"overall"} displays one
 omnibus or block-level p-value on the subgroup header; \code{"level"} keeps
@@ -189,7 +193,7 @@ interaction test or the post-estimation test for each derived effect.}
 estimates per row. If this column is a factor, its levels control the
 group legend and vertical dodge order.}
 
-\item{grouping}{Optional column name used to split rows into grouped plot
+\item{facet}{Optional column name used to split rows into grouped plot
 sections.}
 
 \item{separate_groups}{Optional column name used to identify labeled
@@ -243,7 +247,11 @@ column with ordinary coefficient p-values.}
 \code{"reference"}, \code{"header"}, \code{"summary"}, or \code{"spacer"}. Estimate and
 summary rows require finite estimate and CI values; other rows require
 missing geometry. Structured rows retain source order, so use
-\code{sort_terms = "none"}. If omitted, all rows are estimates.}
+\code{sort_terms = "none"}. If omitted, all rows are estimates.
+Summary rows are currently drawn with the same point and interval geometry
+as estimate rows; the row type is recorded for tables and downstream styling.}
+
+\item{grouping}{Deprecated. Use \code{facet} instead.}
 
 \item{conf.int}{Logical; model methods require \code{TRUE} because forest data
 include confidence-interval columns.}

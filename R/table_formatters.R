@@ -60,3 +60,19 @@ apply_table_formatter <- function(values, formatter = NULL, fallback = as.charac
   result[is.na(result)] <- ""
   result
 }
+
+default_table_value_formatter <- function(digits) {
+  function(values) {
+    if (!is.numeric(values)) {
+      return(as.character(values))
+    }
+    out <- rep(NA_character_, length(values))
+    present <- !is.na(values)
+    whole <- present & is.finite(values) &
+      abs(values - round(values)) < sqrt(.Machine$double.eps)
+    out[whole] <- formatC(round(values[whole]), format = "f", digits = 0)
+    other <- present & !whole
+    out[other] <- formatC(values[other], format = "f", digits = digits)
+    out
+  }
+}

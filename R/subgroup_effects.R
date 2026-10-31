@@ -457,13 +457,18 @@
 
 .subgroup_effect_dispatch <- function(model) {
   if (inherits(model, "coxph")) {
-    return(list(type = "lp", joint_test = "chisq"))
+    return(list(type = "lp", joint_test = "chisq", predict_args = list()))
   }
   if (inherits(model, "lm") && !inherits(model, "glm")) {
-    return(list(type = "response", joint_test = "f"))
+    return(list(type = "response", joint_test = "f", predict_args = list()))
   }
-  if (inherits(model, c("lmerMod", "lme"))) {
-    return(list(type = "response", joint_test = "chisq"))
+  if (inherits(model, "lmerMod")) {
+    return(list(type = "response", joint_test = "chisq",
+                predict_args = list(re.form = NA)))
+  }
+  if (inherits(model, "lme")) {
+    return(list(type = "response", joint_test = "chisq",
+                predict_args = list(level = 0)))
   }
 
   model_family <- tryCatch(
@@ -483,7 +488,13 @@
       )
     }
 
-    return(list(type = "link", joint_test = "chisq"))
+    predict_args <- if (inherits(model, c("merMod", "glmmTMB"))) {
+      list(re.form = NA)
+    } else {
+      list()
+    }
+    return(list(type = "link", joint_test = "chisq",
+                predict_args = predict_args))
   }
 
   stop(
@@ -588,6 +599,39 @@
   invisible(result)
 }
 
+.subgroup_focal_levels <- function(model, focal) {
+  frame <- .subgroup_model_frame(model)
+  if (is.null(frame)) {
+    return(NULL)
+  }
+  values <- if (focal$expression %in% names(frame)) {
+    frame[[focal$expression]]
+  } else if (focal$variable_name %in% names(frame)) {
+    frame[[focal$variable_name]]
+  } else {
+    return(NULL)
+  }
+  if (is.factor(values)) levels(values) else levels(factor(values))
+}
+
+.subgroup_contrast_labels <- function(contrast, focal_levels) {
+  if (is.null(focal_levels) || length(focal_levels) < 2L) {
+    return(contrast)
+  }
+  reference <- focal_levels[[1L]]
+  candidates <- focal_levels[-1L]
+  vapply(contrast, function(value) {
+    hits <- candidates[
+      value == sprintf("%s - %s", candidates, reference) |
+        value == sprintf("mean(%s) - mean(%s)", candidates, reference)
+    ]
+    if (length(hits) != 1L) {
+      return(value)
+    }
+    sprintf("%s - %s", hits, reference)
+  }, character(1), USE.NAMES = FALSE)
+}
+
 .estimate_subgroup_effects <- function(model,
                                        subgroup,
                                        focal,
@@ -617,22 +661,20 @@
   effect_dispatch <- .subgroup_effect_dispatch(model)
 
   result <- tryCatch({
+    args <- c(
+      list(
+        model,
+        variables = interaction$focal$variable_name,
+        by = interaction$subgroup$variable_name,
+        type = effect_dispatch$type,
+        conf_level = conf.level
+      ),
+      effect_dispatch$predict_args
+    )
     if (interaction$focal$kind == "continuous") {
-      marginaleffects::avg_slopes(
-        model,
-        variables = interaction$focal$variable_name,
-        by = interaction$subgroup$variable_name,
-        type = effect_dispatch$type,
-        conf_level = conf.level
-      )
+      do.call(marginaleffects::avg_slopes, args)
     } else {
-      marginaleffects::avg_comparisons(
-        model,
-        variables = interaction$focal$variable_name,
-        by = interaction$subgroup$variable_name,
-        type = effect_dispatch$type,
-        conf_level = conf.level
-      )
+      do.call(marginaleffects::avg_comparisons, args)
     }
   }, error = function(error) {
     stop(
@@ -675,7 +717,10 @@
 
   terms <- as.character(result[[subgroup_column]])
   contrast <- if ("contrast" %in% names(result)) {
-    as.character(result$contrast)
+    .subgroup_contrast_labels(
+      as.character(result$contrast),
+      .subgroup_focal_levels(model, interaction$focal)
+    )
   } else {
     rep(paste0(interaction$focal$name, " slope"), nrow(result))
   }

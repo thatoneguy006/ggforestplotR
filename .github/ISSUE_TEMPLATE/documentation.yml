@@ -1,0 +1,84 @@
+
+name: Documentation Improvement
+description: Report an issue or suggest an improvement to ggforestplotR documentation
+title: "[Docs]: "
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve ggforestplotR's documentation!
+        Please describe the documentation issue or suggested
+        improvement as clearly as possible.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Documentation category
+      description: What type of documentation needs improvement?
+      options:
+        - Function reference
+        - Vignette or tutorial
+        - README
+        - Getting started guide
+        - Code examples
+        - Website or navigation
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Documentation location
+      description: |
+        Provide a URL, function name, or section where
+        the issue occurs.
+      placeholder: "e.g., ?ggforestplot or a pkgdown URL"
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the issue
+      description: |
+        What is incorrect, unclear, outdated, or missing
+        from the current documentation?
+      placeholder: |
+        The documentation currently states...
+        However, it is unclear whether...
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-improvement
+    attributes:
+      label: Suggested improvement
+      description: |
+        Describe how the documentation could be improved.
+        You may suggest revised wording, additional examples,
+        or topics that should be covered.
+    validations:
+      required: false
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example code
+      description: |
+        If applicable, provide R code that illustrates
+        the documentation issue or proposed improvement.
+      render: r
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: |
+        Include any relevant references, screenshots,
+        links, or methodological considerations.
+    validations:
+      required: false

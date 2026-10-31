@@ -44,16 +44,25 @@ tidy_model_coefficients <- function(model,
 }
 
 keep_fixed_effects <- function(out) {
-  if (!"effect" %in% names(out)) {
-    return(out)
+  if ("effect" %in% names(out)) {
+    fixed <- !is.na(out$effect) & as.character(out$effect) == "fixed"
+    if (!any(fixed)) {
+      stop("`tidy()` returned no fixed-effect rows to plot.", call. = FALSE)
+    }
+    out <- out[fixed, , drop = FALSE]
   }
 
-  fixed <- !is.na(out$effect) & as.character(out$effect) == "fixed"
-  if (!any(fixed)) {
-    stop("`tidy()` returned no fixed-effect rows to plot.", call. = FALSE)
+  # glmmTMB (and similar) return several model components. Only the conditional
+  # component shares the link and effect label inferred for the model.
+  if ("component" %in% names(out)) {
+    component <- as.character(out$component)
+    conditional <- !is.na(component) & component == "cond"
+    if (any(conditional)) {
+      out <- out[conditional, , drop = FALSE]
+    }
   }
 
-  out[fixed, , drop = FALSE]
+  out
 }
 
 #' Tidy a model object for forest plotting
@@ -78,7 +87,8 @@ keep_fixed_effects <- function(out) {
 #' predictors use [marginaleffects::avg_comparisons()] and compare each
 #' non-reference level with the first factor level. Both functions use the
 #' original fitted model and its variance-covariance matrix; no subgroup models
-#' are refitted.
+#' are refitted. For mixed models, subgroup effects are population-level
+#' (random effects set to zero).
 #'
 #' Automatic selection is deliberately conservative. It accepts one
 #' unambiguous continuous-by-factor interaction. Factor-by-factor interactions
@@ -311,6 +321,7 @@ model_as_forest_data <- function(data,
                                  focal = NULL,
                                  p_method = c("overall", "level"),
                                  ...) {
+  rlang::check_dots_empty(call = rlang::caller_env())
   tidy_forest_model_impl(
     model = data,
     conf.int = conf.int,
@@ -478,6 +489,16 @@ as_forest_data.default <- function(data, ..., conf.int = TRUE, conf.level = 0.95
                                    sort_terms = c("none", "descending", "ascending"),
                                    subgroup = NULL, focal = NULL,
                                    p_method = c("overall", "level")) {
+  if (is.null(data) || is.atomic(data) || is.function(data)) {
+    stop(
+      sprintf(
+        "`data` must be a data frame or a fitted model object, not %s.",
+        paste0("<", class(data)[[1L]], ">")
+      ),
+      call. = FALSE
+    )
+  }
+
   model_as_forest_data(
     data,
     conf.int = conf.int,

@@ -20,6 +20,8 @@
 #'   `"estimate"` and `"summary"` rows draw points and intervals;
 #'   `"reference"`, `"header"`, and `"spacer"` rows occupy display space
 #'   without geometry. Existing `forest_data` objects define this internally.
+#'   Summary rows are currently drawn with the same point and interval geometry
+#'   as estimate rows; the row type is recorded for tables and downstream styling.
 #' @param subgroup Optional column name defining hierarchical subgroup blocks.
 #'   Missing or empty values identify ordinary standalone estimates. Each
 #'   non-empty subgroup must form one contiguous block within a facet. This is
@@ -45,16 +47,22 @@
 #'   `"overall"` displays one p-value on each subgroup header; `"level"`
 #'   displays p-values on the subgroup estimate rows. Fitted-model subgroup
 #'   data inherit this choice from [tidy_forest_model()].
-#' @param exponentiate Logical; if `TRUE`, transform the estimates and draw the
-#'   axis on the log scale with the reference line at 1. For model objects,
-#'   `NULL` uses the canonical scale when it can be inferred, such as hazard
-#'   ratios for Cox models.
+#' @param exponentiate For fitted models, `TRUE` exponentiates the coefficients
+#'   (e.g. log-odds to odds ratios) and `NULL` uses the model's conventional scale,
+#'   such as hazard ratios for Cox models. For data frames, `exponentiate` does
+#'   **not** transform anything: `TRUE` declares that the estimate and interval
+#'   columns are already ratios, which draws a log10 axis with the reference line
+#'   at 1. Exponentiate log-scale columns yourself before plotting them as ratios.
 #' @param conf.level Confidence level represented by model or data-frame
 #'   interval columns. Defaults to `0.95`.
 #' @param sort_terms How to sort rows: `"none"`, `"descending"`, or
 #'   `"ascending"`. Subgroup hierarchies require `"none"` so their source order
 #'   is preserved.
-#' @param point_size Point size for coefficient markers.
+#' @param point_size A finite non-negative number for a constant marker size,
+#'   or a single column name for sizes mapped from numeric data. Mapped values
+#'   must be finite and non-negative on estimate and summary rows. Column-based
+#'   sizes use the standard ggplot2 size scale; customize them with
+#'   [ggplot2::scale_size_continuous()] or [ggplot2::scale_size_area()].
 #' @param point_shape Shape used for coefficient markers.
 #' @param linewidth Line width for confidence intervals.
 #' @param line_size Deprecated. Use `linewidth` instead.
@@ -74,7 +82,8 @@
 #'   around each labeled block identified by `separate_groups`.
 #' @param separator_line_linetype Line type used for separator lines.
 #' @param separator_line_colour Colour used for separator lines.
-#' @param separator_line_size Line width used for separator lines.
+#' @param separator_linewidth Line width used for separator lines.
+#' @param separator_line_size Deprecated. Use `separator_linewidth` instead.
 #' @param striped_rows Logical; if `TRUE`, shade alternating rows.
 #' @param stripe_fill Fill color used for shaded rows.
 #' @param stripe_colour Border color for shaded rows.
@@ -85,7 +94,8 @@
 #'   ratios.
 #' @param ref_label Optional label drawn alongside the reference line.
 #' @param ref_linetype Line type for the reference line.
-#' @param ref_color Color for the reference line.
+#' @param ref_colour Colour for the reference line.
+#' @param ref_color Deprecated. Use `ref_colour` instead.
 #'
 #' @return A `ggplot` object. Use standard `ggplot2` functions such as
 #'   [ggplot2::labs()] for plot labels, and add composition helpers after
@@ -133,7 +143,7 @@ ggforestplot <- function(data,
                          separate_lines = FALSE,
                          separator_line_linetype = 2,
                          separator_line_colour = "black",
-                         separator_line_size = 0.4,
+                         separator_linewidth = 0.4,
                          striped_rows = FALSE,
                          stripe_fill = "grey95",
                          stripe_colour = NA,
@@ -141,10 +151,32 @@ ggforestplot <- function(data,
                          ref_line = NULL,
                          ref_label = NULL,
                          ref_linetype = 2,
-                         ref_color = "grey60",
+                         ref_colour = "grey60",
                          subgroup = NULL,
                          p_method = c("overall", "level"),
-                         row_type = NULL) {
+                         row_type = NULL,
+                         ref_color = NULL,
+                         separator_line_size = NULL) {
+  if (!missing(ref_color)) {
+    if (!missing(ref_colour)) {
+      stop(
+        "Use only one of `ref_colour` or deprecated `ref_color`.",
+        call. = FALSE
+      )
+    }
+    warn_deprecated_argument("ref_color", "`ref_colour`")
+    ref_colour <- ref_color
+  }
+  if (!missing(separator_line_size)) {
+    if (!missing(separator_linewidth)) {
+      stop(
+        "Use only one of `separator_linewidth` or deprecated `separator_line_size`.",
+        call. = FALSE
+      )
+    }
+    warn_deprecated_argument("separator_line_size", "`separator_linewidth`")
+    separator_linewidth <- separator_line_size
+  }
   ref_line_missing <- missing(ref_line)
   conf_level_missing <- missing(conf.level)
   p_method_missing <- missing(p_method)
@@ -198,7 +230,7 @@ ggforestplot <- function(data,
       group = group,
       subgroup = subgroup,
       row_type = row_type,
-      grouping = facet,
+      facet = facet,
       separate_groups = separate_groups,
       n = n,
       events = events,
@@ -232,6 +264,8 @@ ggforestplot <- function(data,
   estimate_label <- metadata$effect_label
   axis_label <- forest_axis_label(metadata)
   column_mapping <- metadata$column_mapping
+  group_title <- default_group_table_header(forest_data)
+  point_size_column <- resolve_point_size_column(forest_data, point_size)
 
   default_ref_line <- metadata$reference_value
 
@@ -355,10 +389,9 @@ ggforestplot <- function(data,
     p <- p + ggplot2::geom_hline(
       data = separator_data,
       mapping = ggplot2::aes(yintercept = .data$yintercept),
-      inherit.aes = FALSE,
       linetype = separator_line_linetype,
       colour = separator_line_colour,
-      linewidth = separator_line_size
+      linewidth = separator_linewidth
     )
     separator_layer_index <- length(p$layers)
   }
@@ -526,11 +559,22 @@ ggforestplot <- function(data,
     )
   }
 
-  p <- p + ggplot2::geom_point(
-    size = point_size,
+  point_args <- list(
     shape = point_shape,
     position = dodge
   )
+  if (is.null(point_size_column)) {
+    point_args$size <- point_size
+  } else {
+    # Use source values before CI clipping adds its own derived columns.
+    point_args$data <- geometry_data
+    point_args$mapping <- ggplot2::aes(size = .data[[point_size_column]])
+  }
+  p <- p + do.call(ggplot2::geom_point, point_args)
+
+  if (!is.null(point_size_column)) {
+    p <- p + ggplot2::labs(size = point_size)
+  }
 
   p <- p +
     ggplot2::scale_y_discrete(
@@ -547,7 +591,7 @@ ggforestplot <- function(data,
     p <- p + ggplot2::geom_vline(
       xintercept = ref_line,
       linetype = ref_linetype,
-      colour = ref_color
+      colour = ref_colour
     )
 
     if (!is.null(ref_label)) {
@@ -559,7 +603,7 @@ ggforestplot <- function(data,
         angle = 90,
         hjust = 1.1,
         vjust = -0.4,
-        colour = ref_color
+        colour = ref_colour
       )
     }
   }
@@ -596,7 +640,7 @@ ggforestplot <- function(data,
   p <- p + ggplot2::labs(
     x = axis_label,
     y = NULL,
-    colour = if (has_groups) "Group" else NULL
+    colour = if (has_groups) group_title else NULL
   )
 
   p$ggforestplotR_state <- list(

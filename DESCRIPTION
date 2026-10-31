@@ -1,6 +1,6 @@
 Package: ggforestplotR
 Title: Publication-Ready Forest Plots with 'ggplot2'
-Version: 0.5.0.9000
+Version: 0.6.0
 Authors@R:
     person(given = "Carson",
            family = "Richardson",
@@ -15,21 +15,23 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Imports:
-    ggplot2,
-    patchwork,
-    rlang
+    ggplot2 (>= 3.4.0),
+    patchwork (>= 1.2.0),
+    rlang (>= 1.1.0)
 Suggests:
     broom,
     broom.mixed,
     dplyr,
+    glmmTMB,
     knitr,
     lme4,
-    marginaleffects,
+    marginaleffects (>= 0.29.0),
     nlme,
     rmarkdown,
     survival,
     testthat (>= 3.0.0),
-    tibble
+    tibble,
+    vdiffr
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/Needs/website: pkgdown

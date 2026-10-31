@@ -104,3 +104,14 @@ test_that("generated subgroup p-values use the custom formatter", {
   expect_equal(table_cell(spec, "p", "reference"), "")
   expect_equal(table_cell(spec, "p", "estimate"), "")
 })
+
+test_that("numeric extra columns are rounded by default", {
+  d <- data.frame(term = c("a", "b", "c"), estimate = c(0.1, 0.2, 0.3),
+                  conf.low = c(0, 0.1, 0.2), conf.high = c(0.2, 0.3, 0.4),
+                  weight = c(1/3, 2/3, 1/7), count = c(120, 115, 98))
+  p <- ggforestplot(d) + add_forest_table(columns = c("term", "weight", "count"))
+  built <- ggplot2::ggplot_build(p[[1]])
+  labels <- unlist(lapply(built$data, function(layer) layer$label))
+  expect_true(all(c("0.33", "0.67", "0.14", "120", "115", "98") %in% labels))
+  expect_false(any(grepl("0.3333", labels, fixed = TRUE)))
+})

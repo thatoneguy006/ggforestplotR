@@ -440,7 +440,7 @@ test_that("subgroup NULL retains ordinary forest-plot row behavior", {
   )
   expect_true(all(null_display$row_type == "estimate"))
   expect_equal(null_display$display_label, raw$term)
-  expect_equal(levels(null_display$row_key), raw$term)
+  expect_equal(levels(null_display$row_key), rev(raw$term))
   expect_equal(
     explicit_null$ggforestplotR_state$forest_data$term,
     raw$term
@@ -733,7 +733,7 @@ test_that("plural subgroup source columns remain selectable when unmapped", {
   table_data <- subgroup_table_plots(out)[[1L]]$data
 
   expect_equal(table_data$column_key, rep("subgroups", nrow(raw)))
-  expect_equal(table_data$text, raw$subgroups)
+  expect_equal(table_data$text, rev(raw$subgroups))
 })
 
 test_that("adding subgroup preserves existing positional argument slots", {
@@ -794,7 +794,7 @@ test_that("legacy forest_data subgroup columns are not inferred", {
 
   out <- add_forest_table(p, columns = "subgroup")
   table_data <- subgroup_table_plots(out)[[1L]]$data
-  expect_equal(table_data$text, ifelse(is.na(raw$subgroup), "", raw$subgroup))
+  expect_equal(table_data$text, rev(ifelse(is.na(raw$subgroup), "", raw$subgroup)))
 })
 
 test_that("mapped row labels are not repeated across grouped estimates", {
