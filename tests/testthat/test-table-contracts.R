@@ -191,3 +191,11 @@ test_that("outer legends span the full table and plot composition", {
     expect_equal(guide$r, max(panels$r))
   }
 })
+
+test_that("building a table composition does not leave a device open", {
+  skip_if(grDevices::dev.cur() != 1L, "a graphics device is already open")
+  d <- data.frame(term = c("a", "b"), estimate = 1:2, conf.low = 0:1, conf.high = 2:3)
+  invisible(ggforestplot(d) + add_forest_table())
+  invisible(ggforestplot(d) + add_split_table())
+  expect_equal(unname(grDevices::dev.cur()), 1L)
+})

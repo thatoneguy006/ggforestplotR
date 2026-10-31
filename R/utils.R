@@ -1857,6 +1857,15 @@ build_table_line_data <- function(stripe_data, has_groupings = FALSE) {
 
 # ─── Text measurement ────────────────────────────────────────────────────────
 
+with_measurement_device <- function(code) {
+  if (grDevices::dev.cur() == 1L) {
+    grDevices::pdf(NULL)
+    device <- grDevices::dev.cur()
+    on.exit(grDevices::dev.off(device), add = TRUE)
+  }
+  force(code)
+}
+
 #' Ground-truth width measurement via grid graphics.  Handles multi-line
 #' strings by splitting on newlines and returning the widest line.
 #' @keywords internal
@@ -1905,21 +1914,23 @@ measure_table_text_widths <- function(table_spec,
                                       header_text_size = 11,
                                       header_fontface = "bold",
                                       header_family = "") {
-  text_size_pt <- text_size * (72.27 / 25.4)
+  with_measurement_device({
+    text_size_pt <- text_size * (72.27 / 25.4)
 
-  stats::setNames(vapply(seq_along(table_spec$column_keys), function(i) {
-    key <- table_spec$column_keys[[i]]
-    values <- table_spec$table_data$text[table_spec$table_data$column_key == key]
-    max(
-      measure_max_grob_width(
-        table_spec$headers[[i]],
-        fontsize_pt = header_text_size,
-        fontface = header_fontface,
-        fontfamily = header_family
-      ),
-      measure_max_grob_width(values, fontsize_pt = text_size_pt, fontface = "plain")
-    )
-  }, numeric(1)), table_spec$column_keys)
+    stats::setNames(vapply(seq_along(table_spec$column_keys), function(i) {
+      key <- table_spec$column_keys[[i]]
+      values <- table_spec$table_data$text[table_spec$table_data$column_key == key]
+      max(
+        measure_max_grob_width(
+          table_spec$headers[[i]],
+          fontsize_pt = header_text_size,
+          fontface = header_fontface,
+          fontfamily = header_family
+        ),
+        measure_max_grob_width(values, fontsize_pt = text_size_pt, fontface = "plain")
+      )
+    }, numeric(1)), table_spec$column_keys)
+  })
 }
 
 # ─── Column width estimation ─────────────────────────────────────────────────

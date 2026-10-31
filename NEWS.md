@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- Building table compositions no longer opens a graphics device (e.g. creating `Rplots.pdf` in scripts).
+
 - Mixed-model subgroup effects are now population-level, excluding cluster-specific random slopes.
 
 - Subgroup contrast labels no longer depend on the installed `marginaleffects` version's label format.
