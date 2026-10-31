@@ -26,10 +26,10 @@ as_forest_data(data, ...)
 
 \method{as_forest_data}{data.frame}(
   data,
-  term,
-  estimate,
-  conf.low,
-  conf.high,
+  term = "term",
+  estimate = "estimate",
+  conf.low = "conf.low",
+  conf.high = "conf.high",
   label = term,
   term_labels = NULL,
   group = NULL,

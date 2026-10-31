@@ -231,3 +231,11 @@ test_that("forest_data preserves metadata during row operations", {
   incomplete <- out[, c("term", "estimate"), drop = FALSE]
   expect_false(inherits(incomplete, "forest_data"))
 })
+
+test_that("data-frame method defaults to broom column names", {
+  coefs <- data.frame(term = c("a", "b"), estimate = c(1, 2),
+                      conf.low = c(0, 1), conf.high = c(2, 3))
+  fd <- as_forest_data(coefs)
+  expect_s3_class(fd, "forest_data")
+  expect_equal(fd$term, c("a", "b"))
+})

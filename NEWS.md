@@ -1,5 +1,7 @@
 # ggforestplotR (development version)
 
+- `as_forest_data()` for data frames now defaults to `term`, `estimate`, `conf.low`, and `conf.high` column names, matching `ggforestplot()`.
+
 - Clarified that `exponentiate` transforms fitted-model coefficients but only declares the scale of data-frame columns.
 
 - Quasibinomial models now default to odds ratios (logit link) or risk ratios (log link), matching binomial models.
