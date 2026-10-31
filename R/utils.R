@@ -852,31 +852,6 @@ make_panel_row_keys <- function(panel, labels, panel_key_labels) {
 #' panels and needs a unique internal key.
 #' @keywords internal
 #' @noRd
-assign_row_keys <- function(data, has_groupings) {
-  if (".display_identity" %in% names(data)) {
-    return(assign_hierarchical_row_keys(data, has_groupings))
-  }
-
-  panel_values <- observed_grouping_panels(data, has_groupings)
-  panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
-  data$row_key <- NA_character_
-  all_levels <- character()
-
-  for (pv in panel_values) {
-    idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
-    panel_labels <- unique(data$label[idx])
-
-    keys <- make_panel_row_keys(pv, panel_labels, panel_key_labels)
-    row_map <- stats::setNames(keys, panel_labels)
-
-    data$row_key[idx] <- unname(row_map[data$label[idx]])
-    all_levels <- c(all_levels, keys)
-  }
-
-  data$row_key <- factor(data$row_key, levels = all_levels)
-  data
-}
-
 assign_hierarchical_row_keys <- function(data, has_groupings) {
   panel_values <- observed_grouping_panels(data, has_groupings)
   panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
@@ -912,24 +887,10 @@ assign_hierarchical_row_keys <- function(data, has_groupings) {
 #' @keywords internal
 #' @noRd
 build_axis_labels <- function(data, has_groupings) {
-  if ("display_label" %in% names(data)) {
-    row_levels <- levels(data$row_key)
-    first_rows <- match(row_levels, as.character(data$row_key))
-    return(stats::setNames(data$display_label[first_rows], row_levels))
-  }
-
-  panel_values <- observed_grouping_panels(data, has_groupings)
-  panel_key_labels <- labels_requiring_panel_keys(data, has_groupings)
-  labels <- character()
-
-  for (pv in panel_values) {
-    idx <- if (has_groupings) which(data$grouping_panel == pv) else seq_len(nrow(data))
-    panel_labels <- unique(data$label[idx])
-    keys <- make_panel_row_keys(pv, panel_labels, panel_key_labels)
-    labels <- c(labels, stats::setNames(panel_labels, keys))
-  }
-
-  labels
+  stopifnot("display_label" %in% names(data))
+  row_levels <- levels(data$row_key)
+  first_rows <- match(row_levels, as.character(data$row_key))
+  stats::setNames(data$display_label[first_rows], row_levels)
 }
 
 encode_display_identity <- function(row_type, subgroup, label) {
@@ -1275,7 +1236,7 @@ build_forest_plot_data <- function(data) {
     plot_data$.display_identity[unique_source_rows],
     "|source:", plot_data$.forest_source_row[unique_source_rows]
   )
-  plot_data <- assign_row_keys(plot_data, has_groupings)
+  plot_data <- assign_hierarchical_row_keys(plot_data, has_groupings)
 
   original_rows <- !is.na(plot_data$.forest_source_row)
   source_rows <- plot_data$.forest_source_row[original_rows]
