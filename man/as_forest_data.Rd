@@ -246,7 +246,9 @@ column with ordinary coefficient p-values.}
 \code{"reference"}, \code{"header"}, \code{"summary"}, or \code{"spacer"}. Estimate and
 summary rows require finite estimate and CI values; other rows require
 missing geometry. Structured rows retain source order, so use
-\code{sort_terms = "none"}. If omitted, all rows are estimates.}
+\code{sort_terms = "none"}. If omitted, all rows are estimates.
+Summary rows are currently drawn with the same point and interval geometry
+as estimate rows; the row type is recorded for tables and downstream styling.}
 
 \item{conf.int}{Logical; model methods require \code{TRUE} because forest data
 include confidence-interval columns.}

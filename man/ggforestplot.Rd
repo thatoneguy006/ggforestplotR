@@ -179,7 +179,9 @@ data inherit this choice from \code{\link[=tidy_forest_model]{tidy_forest_model(
 \item{row_type}{Optional data-frame column mapping for semantic row types.
 \code{"estimate"} and \code{"summary"} rows draw points and intervals;
 \code{"reference"}, \code{"header"}, and \code{"spacer"} rows occupy display space
-without geometry. Existing \code{forest_data} objects define this internally.}
+without geometry. Existing \code{forest_data} objects define this internally.
+Summary rows are currently drawn with the same point and interval geometry
+as estimate rows; the row type is recorded for tables and downstream styling.}
 }
 \value{
 A \code{ggplot} object. Use standard \code{ggplot2} functions such as

@@ -18,6 +18,8 @@
 #'   summary rows require finite estimate and CI values; other rows require
 #'   missing geometry. Structured rows retain source order, so use
 #'   `sort_terms = "none"`. If omitted, all rows are estimates.
+#'   Summary rows are currently drawn with the same point and interval geometry
+#'   as estimate rows; the row type is recorded for tables and downstream styling.
 #' @param group Optional column name used for color-grouping multiple
 #'   estimates per row. If this column is a factor, its levels control the
 #'   group legend and vertical dodge order.

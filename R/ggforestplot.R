@@ -20,6 +20,8 @@
 #'   `"estimate"` and `"summary"` rows draw points and intervals;
 #'   `"reference"`, `"header"`, and `"spacer"` rows occupy display space
 #'   without geometry. Existing `forest_data` objects define this internally.
+#'   Summary rows are currently drawn with the same point and interval geometry
+#'   as estimate rows; the row type is recorded for tables and downstream styling.
 #' @param subgroup Optional column name defining hierarchical subgroup blocks.
 #'   Missing or empty values identify ordinary standalone estimates. Each
 #'   non-empty subgroup must form one contiguous block within a facet. This is
