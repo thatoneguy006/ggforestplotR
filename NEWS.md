@@ -2,6 +2,8 @@
 
 ## Major Changes
 
+- Fixed plot and table alignment for structured data containing blank spacer
+  rows, including the data helpers vignette example.
 - Mixed-model subgroup effects are now population-level, excluding 
   cluster-specific random slopes.
 - Quasibinomial models now default to odds ratios (logit link) or risk ratios 

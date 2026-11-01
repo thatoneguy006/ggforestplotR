@@ -1285,7 +1285,8 @@ extract_trained_y_limits <- function(plot) {
   }), use.names = FALSE)
 
   limits <- as.character(limits)
-  limits <- limits[!is.na(limits) & nzchar(limits)]
+  # Empty keys are valid spacer rows and must also occupy a table row.
+  limits <- limits[!is.na(limits)]
 
   if (length(limits) == 0L) {
     return(NULL)
