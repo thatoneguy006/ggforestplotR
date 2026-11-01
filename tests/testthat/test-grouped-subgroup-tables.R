@@ -124,7 +124,9 @@ test_that("split tables render aligned grouped subgroup rows", {
     right_columns = c("estimate", "p")
   )
 
-  vdiffr::expect_doppelganger("split table grouped subgroups", out)
+  vdiffr::expect_doppelganger(
+    "split table grouped subgroups", out, variant = forest_snapshot_variant()
+  )
 })
 
 test_that("split tables render aligned grouped subgroup facets", {
@@ -142,5 +144,8 @@ test_that("split tables render aligned grouped subgroup facets", {
     right_columns = c("estimate", "ci", "p")
   )
 
-  vdiffr::expect_doppelganger("split table grouped subgroup facets", out)
+  vdiffr::expect_doppelganger(
+    "split table grouped subgroup facets", out,
+    variant = forest_snapshot_variant()
+  )
 })

@@ -143,5 +143,8 @@ test_that("split tables render points sized by a source column", {
     right_width = 3
   )
 
-  vdiffr::expect_doppelganger("split table with mapped point sizes", out)
+  vdiffr::expect_doppelganger(
+    "split table with mapped point sizes", out,
+    variant = forest_snapshot_variant()
+  )
 })

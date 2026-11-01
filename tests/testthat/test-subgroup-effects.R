@@ -605,7 +605,10 @@ test_that("mixed models delegate subgroup inference to marginaleffects", {
   glmer_fit <- lme4::glmer(
     cbind(incidence, size - incidence) ~ size * period + (1 | herd),
     data = lme4::cbpp,
-    family = stats::binomial()
+    family = stats::binomial(),
+    control = lme4::glmerControl(
+      optimizer = "bobyqa", optCtrl = list(maxfun = 200000)
+    )
   )
   glmer_out <- suppressWarnings(tidy_forest_model(
     glmer_fit,
