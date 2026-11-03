@@ -142,6 +142,34 @@ test_that("the footer panel aligns with only the central forest column", {
   expect_equal(footer_panel$r, forest_panel$r)
 })
 
+test_that("favors footers preserve continuous stripes across table borders", {
+  forest <- ggforestplot(make_favors_data(), striped_rows = TRUE)
+  compositions <- list(
+    forest + add_split_table(
+      left_columns = "term", right_columns = "estimate"
+    ),
+    forest + add_forest_table(position = "left"),
+    forest + add_forest_table(position = "right")
+  )
+
+  panel_gaps <- function(plot) {
+    grob <- patchwork::patchworkGrob(plot)
+    panels <- grob$layout[grepl("^panel-[0-9]+$", grob$layout$name), ]
+    panels <- panels[panels$t == min(panels$t), ]
+    panels <- panels[order(panels$l), ]
+    vapply(seq_len(nrow(panels) - 1L), function(i) {
+      gap_columns <- seq.int(panels$r[[i]] + 1L, panels$l[[i + 1L]] - 1L)
+      sum(as.numeric(grob$widths[gap_columns]))
+    }, numeric(1))
+  }
+
+  for (composition in compositions) {
+    out <- composition + add_favors(left = "Left", right = "Right")
+    # Older patchwork versions allocate different baseline panel spacing.
+    expect_equal(panel_gaps(out), panel_gaps(composition))
+  }
+})
+
 test_that("add_favors rejects references outside the visible range", {
   forest <- ggforestplot(make_favors_data()) +
     ggplot2::scale_x_continuous(

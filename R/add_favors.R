@@ -295,7 +295,8 @@ compose_favors_footer <- function(composition,
     if (index == composition$forest_index) {
       footer
     } else {
-      patchwork::plot_spacer()
+      patchwork::plot_spacer() +
+        ggplot2::theme(plot.margin = ggplot2::margin(0, 0, 0, 0))
     }
   })
   panels <- c(composition$panels, footer_panels)
