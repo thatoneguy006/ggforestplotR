@@ -75,6 +75,8 @@
 <li>Fitted-model <code><a href="../reference/as_forest_data.html">as_forest_data()</a></code> methods now error on unknown arguments instead of silently ignoring them.</li>
 <li>Removed redundant <code>inherit.aes</code> arguments from horizontal separators to avoid warnings on older ggplot2 releases.</li>
 <li>Adding scales or tables to a forest plot no longer modifies the original plot object’s stripe and separator layers.</li>
+<li>Fixed breaks in row stripes at table borders when adding a favors footer to a split-table composition (<a href="https://github.com/thatoneguy006/ggforestplotR/issues/43" class="external-link">#43</a>).</li>
+<li>CI truncation arrows and interval caps now keep the same vertical dodge positions as their points, including grouped subgroup plots (<a href="https://github.com/thatoneguy006/ggforestplotR/issues/45" class="external-link">#45</a>).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="breaking-changes-0-6-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-6-0"></a></h3>
