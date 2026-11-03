@@ -329,7 +329,7 @@ ggforestplot <- function(data,
     exponentiate = plot_exponentiate
   )
   has_groups <- has_table_values(geometry_data, "group")
-  dodge <- ggplot2::position_dodge(width = dodge_width)
+  dodge <- position_forest_dodge(width = dodge_width)
   point_mapping <- if (has_groups) {
     ggplot2::aes(
       x = .data$estimate,
@@ -419,22 +419,28 @@ ggforestplot <- function(data,
 
     if (nrow(complete_ci_data) > 0L) {
       p <- p + ggplot2::geom_errorbar(
-        data = complete_ci_data,
+        data = ci_plot_data,
         mapping = ci_mapping,
         width = staple_width,
         linewidth = linewidth,
-        position = dodge,
+        position = position_forest_dodge(
+          dodge_width,
+          !ci_plot_data$ci_truncated_left & !ci_plot_data$ci_truncated_right
+        ),
         orientation = "y"
       )
     }
 
     if (nrow(truncated_ci_data) > 0L) {
       p <- p + ggplot2::geom_errorbar(
-        data = truncated_ci_data,
+        data = ci_plot_data,
         mapping = ci_mapping,
         width = 0,
         linewidth = linewidth,
-        position = dodge,
+        position = position_forest_dodge(
+          dodge_width,
+          ci_plot_data$ci_truncated_left | ci_plot_data$ci_truncated_right
+        ),
         orientation = "y"
       )
     }
@@ -476,22 +482,28 @@ ggforestplot <- function(data,
 
     if (nrow(low_staple_data) > 0L) {
       p <- p + ggplot2::geom_errorbar(
-        data = low_staple_data,
+        data = ci_plot_data,
         mapping = low_staple_mapping,
         width = staple_width,
         linewidth = linewidth,
-        position = dodge,
+        position = position_forest_dodge(
+          dodge_width,
+          !ci_plot_data$ci_truncated_left & ci_plot_data$ci_truncated_right
+        ),
         orientation = "y"
       )
     }
 
     if (nrow(high_staple_data) > 0L) {
       p <- p + ggplot2::geom_errorbar(
-        data = high_staple_data,
+        data = ci_plot_data,
         mapping = high_staple_mapping,
         width = staple_width,
         linewidth = linewidth,
-        position = dodge,
+        position = position_forest_dodge(
+          dodge_width,
+          ci_plot_data$ci_truncated_left & !ci_plot_data$ci_truncated_right
+        ),
         orientation = "y"
       )
     }
@@ -523,12 +535,14 @@ ggforestplot <- function(data,
       )
     }
     p <- p + ggplot2::geom_segment(
-      data = left_arrow_data,
+      data = ci_plot_data,
       mapping = left_arrow_mapping,
       inherit.aes = FALSE,
       linewidth = linewidth,
       arrow = arrow_spec,
-      position = dodge
+      position = position_forest_dodge(
+        dodge_width, ci_plot_data$ci_truncated_left
+      )
     )
   }
 
@@ -550,12 +564,14 @@ ggforestplot <- function(data,
       )
     }
     p <- p + ggplot2::geom_segment(
-      data = right_arrow_data,
+      data = ci_plot_data,
       mapping = right_arrow_mapping,
       inherit.aes = FALSE,
       linewidth = linewidth,
       arrow = arrow_spec,
-      position = dodge
+      position = position_forest_dodge(
+        dodge_width, ci_plot_data$ci_truncated_right
+      )
     )
   }
 

@@ -48,6 +48,10 @@
   warnings on older ggplot2 releases.
 - Adding scales or tables to a forest plot no longer modifies the original plot
   object's stripe and separator layers.
+- Fixed breaks in row stripes at table borders when adding a favors footer
+  to a split-table composition (#43).
+- CI truncation arrows and interval caps now keep the same vertical dodge
+  positions as their points, including grouped subgroup plots (#45).
 
 ## Breaking changes
 
