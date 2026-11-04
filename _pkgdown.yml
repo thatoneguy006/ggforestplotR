@@ -26,7 +26,28 @@ home:
     data, with flexible confidence intervals, summary tables, grouped
     estimates, and publication-ready customization.
   sidebar:
-    html: pkgdown/home-sidebar.html
+    structure: [docs, project, citation, authors, badges]
+    components:
+      docs:
+        title: Docs
+        text: |
+          - [Get started](articles/ggforestplotR-get-started.html)
+          - [Plot customization](articles/ggforestplotR-plot-customization.html)
+          - [Data helpers](articles/ggforestplotR-data-helpers.html)
+          - [Function reference](reference/index.html)
+      project:
+        title: Project
+        text: |
+          - [Browse source code](https://github.com/thatoneguy006/ggforestplotR)
+          - [Report a bug](https://github.com/thatoneguy006/ggforestplotR/issues)
+      badges:
+        title: Badges
+        text: |
+          [![R-CMD-check](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml)
+
+          [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+
+          [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 navbar:
   structure:
