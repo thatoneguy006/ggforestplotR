@@ -13,6 +13,8 @@ repo:
 template:
   bootstrap: 5
   light-switch: true
+  theme: github-light
+  theme-dark: github-dark
   bslib:
     font-size: 0.9rem
     border-radius: 0.5rem
