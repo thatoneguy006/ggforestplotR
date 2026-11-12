@@ -1,3 +1,7 @@
+# ggforestplotR (development version)
+
+- Begin development toward version 1.0.0.
+
 # ggforestplotR 0.6.0
 
 ## Major Changes
