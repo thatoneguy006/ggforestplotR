@@ -1,0 +1,9 @@
+bibentry(
+  bibtype = "Manual",
+  title = "{ggforestplotR}: Publication-Ready Forest Plots with {ggplot2}",
+  author = person("Carson", "Richardson"),
+  year = "2026",
+  note = paste("R package version", meta$Version),
+  doi = "10.32614/CRAN.package.ggforestplotR",
+  url = "https://CRAN.R-project.org/package=ggforestplotR"
+)
