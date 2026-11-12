@@ -1,17 +1,16 @@
 cff-version: 1.2.0
-message: "If you use ggforestplotR, please cite the CRAN package using these metadata."
+message: "If you use ggforestplotR, please cite it as below."
 type: software
 title: "ggforestplotR: Publication-Ready Forest Plots with 'ggplot2'"
 authors:
   - given-names: Carson
     family-names: Richardson
-    email: carson.richardson@outlook.com
-version: "0.3.1"
-date-released: "2026-08-04"
+    orcid: https://orcid.org/0009-0004-8710-1097
+version: 0.6.0
+date-released: 2026-11-04
 identifiers:
   - type: doi
     value: "10.32614/CRAN.package.ggforestplotR"
-    description: "Canonical DOI for the ggforestplotR package on CRAN"
 url: "https://CRAN.R-project.org/package=ggforestplotR"
 repository-code: "https://github.com/thatoneguy006/ggforestplotR"
 license: MIT
