@@ -797,6 +797,23 @@ test_that("legacy forest_data subgroup columns are not inferred", {
   expect_equal(table_data$text, rev(ifelse(is.na(raw$subgroup), "", raw$subgroup)))
 })
 
+test_that("subgroup expansion preserves matrix and list source columns", {
+  raw <- make_grouped_subgroup_data()
+  raw$source_matrix <- I(matrix(seq_len(2 * nrow(raw)), ncol = 2))
+  raw$source_list <- I(lapply(seq_len(nrow(raw)), function(i) list(index = i)))
+  plot <- ggforestplot(raw, group = "model", subgroup = "subgroup_name")
+  display <- plot$ggforestplotR_state$display_data
+  header <- display$.forest_generated_subgroup_header
+
+  expect_true(is.matrix(display$source_matrix))
+  expect_equal(
+    unname(display$source_matrix[!header, , drop = FALSE]),
+    unclass(raw$source_matrix)
+  )
+  expect_true(all(is.na(display$source_matrix[header, , drop = FALSE])))
+  expect_equal(display$source_list[!header], raw$source_list)
+})
+
 test_that("mapped row labels are not repeated across grouped estimates", {
   raw <- data.frame(
     code = c("Age", "Age", "White", "White"),

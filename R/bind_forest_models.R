@@ -1,4 +1,6 @@
 bind_model_frames <- function(parts) {
+  # Source columns from different models may have different types. Keep
+  # base row binding's existing coercion rules for those columns.
   all_names <- unique(unlist(lapply(parts, names), use.names = FALSE))
 
   aligned <- lapply(parts, function(part) {
@@ -35,17 +37,26 @@ resolve_model_labels <- function(models, model_labels = NULL) {
   }
 
   if (!is.atomic(model_labels) || length(model_labels) != n_models) {
-    stop("`model_labels` must have one label per model.", call. = FALSE)
+    abort_forest(
+      "`model_labels` must have one label per model.",
+      class = "ggforestplotR_invalid_models"
+    )
   }
 
   model_labels <- as.character(model_labels)
 
   if (anyNA(model_labels) || any(!nzchar(model_labels))) {
-    stop("`model_labels` cannot contain missing or empty values.", call. = FALSE)
+    abort_forest(
+      "`model_labels` cannot contain missing or empty values.",
+      class = "ggforestplotR_invalid_models"
+    )
   }
 
   if (anyDuplicated(model_labels)) {
-    stop("`model_labels` must be unique.", call. = FALSE)
+    abort_forest(
+      "`model_labels` must be unique.",
+      class = "ggforestplotR_invalid_models"
+    )
   }
 
   model_labels
@@ -57,8 +68,11 @@ resolve_model_exponentiate <- function(exponentiate = NULL, n_models) {
   }
 
   if (!is.logical(exponentiate) || !length(exponentiate) %in% c(1L, n_models) ||
-      anyNA(exponentiate)) {
-    stop("`exponentiate` must be `NULL`, a single logical value, or one logical value per model.", call. = FALSE)
+    anyNA(exponentiate)) {
+    abort_forest(
+      "`exponentiate` must be `NULL`, a single logical value, or one logical value per model.",
+      class = "ggforestplotR_invalid_models"
+    )
   }
 
   as.list(rep(exponentiate, length.out = n_models))
@@ -102,42 +116,44 @@ bind_forest_models <- function(models,
                                exponentiate = NULL,
                                ...) {
   if (!is.list(models) || length(models) == 0L || !is.null(attr(models, "class"))) {
-    stop("`models` must be a non-empty list of fitted model objects.", call. = FALSE)
+    abort_forest(
+      "`models` must be a non-empty list of fitted model objects.",
+      class = "ggforestplotR_invalid_models"
+    )
   }
 
   model_labels <- resolve_model_labels(models, model_labels = model_labels)
   exponentiate <- resolve_model_exponentiate(exponentiate, length(models))
 
-  parts <- vector("list", length(models))
+  parts <- purrr::pmap(
+    list(unname(models), exponentiate, unname(model_labels)),
+    function(model, exponentiate, label) {
+      part <- as_forest_data(model, exponentiate = exponentiate, ...)
+      part$group <- factor(rep(label, nrow(part)), levels = model_labels)
+      part
+    }
+  )
 
-  for (i in seq_along(models)) {
-    part <- as_forest_data(
-      models[[i]],
-      exponentiate = exponentiate[[i]],
-      ...
-    )
-    part$group <- factor(rep(model_labels[[i]], nrow(part)), levels = model_labels)
-
-    parts[[i]] <- part
-  }
-
-  metadata <- lapply(parts, forest_metadata)
-  scales <- vapply(metadata, `[[`, character(1), "estimate_scale")
+  metadata <- purrr::map(parts, forest_metadata)
+  scales <- purrr::map_chr(metadata, "estimate_scale")
 
   if (length(unique(scales)) > 1L) {
-    stop(
+    abort_forest(
       "All bound models must use the same estimate scale. ",
       "Set `exponentiate` to a single logical value to force a common scale.",
-      call. = FALSE
+      class = "ggforestplotR_invalid_models"
     )
   }
 
-  axis_transforms <- vapply(metadata, `[[`, character(1), "axis_transform")
+  axis_transforms <- purrr::map_chr(metadata, "axis_transform")
   if (length(unique(axis_transforms)) > 1L) {
-    stop("All bound models must use the same axis transformation.", call. = FALSE)
+    abort_forest(
+      "All bound models must use the same axis transformation.",
+      class = "ggforestplotR_invalid_models"
+    )
   }
 
-  reference_values <- lapply(metadata, `[[`, "reference_value")
+  reference_values <- purrr::map(metadata, "reference_value")
   compatible_references <- vapply(
     reference_values[-1L],
     identical,
@@ -145,20 +161,29 @@ bind_forest_models <- function(models,
     reference_values[[1L]]
   )
   if (length(compatible_references) > 0L && !all(compatible_references)) {
-    stop("All bound models must use the same reference value.", call. = FALSE)
+    abort_forest(
+      "All bound models must use the same reference value.",
+      class = "ggforestplotR_invalid_models"
+    )
   }
 
-  conf_levels <- vapply(metadata, `[[`, numeric(1), "conf_level")
+  conf_levels <- purrr::map_dbl(metadata, "conf_level")
   if (length(unique(conf_levels)) > 1L) {
-    stop("All bound models must use the same confidence level.", call. = FALSE)
+    abort_forest(
+      "All bound models must use the same confidence level.",
+      class = "ggforestplotR_invalid_models"
+    )
   }
 
-  estimate_labels <- vapply(metadata, `[[`, character(1), "effect_label")
+  estimate_labels <- purrr::map_chr(metadata, "effect_label")
   p_methods <- vapply(metadata, function(item) {
     if (is.null(item$p_method)) "overall" else item$p_method
   }, character(1))
   if (length(unique(p_methods)) > 1L) {
-    stop("All bound models must use the same `p_method`.", call. = FALSE)
+    abort_forest(
+      "All bound models must use the same `p_method`.",
+      class = "ggforestplotR_invalid_models"
+    )
   }
 
   out <- bind_model_frames(parts)
@@ -170,7 +195,7 @@ bind_forest_models <- function(models,
     "Estimate"
   }
 
-  column_mappings <- lapply(metadata, `[[`, "column_mapping")
+  column_mappings <- purrr::map(metadata, "column_mapping")
   same_mapping <- length(column_mappings) == 1L || all(vapply(
     column_mappings[-1L],
     identical,
@@ -181,7 +206,7 @@ bind_forest_models <- function(models,
     stats::setNames(column_mappings, model_labels)
   }
 
-  source_mappings <- lapply(metadata, `[[`, "source_columns")
+  source_mappings <- purrr::map(metadata, "source_columns")
   source_storage <- unlist(source_mappings, use.names = TRUE)
   source_storage <- source_storage[!duplicated(names(source_storage))]
   source_storage[["group"]] <- "group"
@@ -192,8 +217,8 @@ bind_forest_models <- function(models,
     effect_label = effect_label,
     conf_level = conf_levels[[1L]],
     reference_value = reference_values[[1L]],
-    source_model = stats::setNames(lapply(metadata, `[[`, "source_model"), model_labels),
-    source_package = stats::setNames(lapply(metadata, `[[`, "source_package"), model_labels),
+    source_model = stats::setNames(purrr::map(metadata, "source_model"), model_labels),
+    source_package = stats::setNames(purrr::map(metadata, "source_package"), model_labels),
     source_columns = source_storage,
     column_mapping = column_mapping,
     p_method = p_methods[[1L]]

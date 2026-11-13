@@ -51,7 +51,7 @@
   function_name <- as.character(parsed[[1L]])
   argument <- parsed[[2L]]
   if (function_name %in% c("factor", "as.factor") &&
-      is.symbol(argument)) {
+    is.symbol(argument)) {
     return(as.character(argument))
   }
 
@@ -90,10 +90,10 @@
   }
 
   kind <- if (length(data_class) == 1L &&
-      data_class %in% c("factor", "ordered")) {
+    data_class %in% c("factor", "ordered")) {
     "factor"
   } else if (length(data_class) == 1L &&
-      data_class %in% c("numeric", "integer")) {
+    data_class %in% c("numeric", "integer")) {
     "continuous"
   } else {
     "unsupported"
@@ -111,25 +111,25 @@
 
 .subgroup_interaction_metadata <- function(model) {
   if (inherits(model, "mlm")) {
-    stop(
+    abort_forest(
       "Subgroup effects currently require a univariate fitted model.",
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
   if (inherits(model, "coxphms")) {
-    stop(
+    abort_forest(
       "Multi-state Cox models are not yet supported for subgroup effects.",
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
   if (inherits(model, c("nlmerMod", "glmmTMB")) ||
-      !inherits(model, c("lm", "glm", "coxph", "merMod", "lme"))) {
-    stop(
+    !inherits(model, c("lm", "glm", "coxph", "merMod", "lme"))) {
+    abort_forest(
       paste0(
         "Automatic subgroup effects currently support `lm`, `glm`, ",
         "`coxph`, `lmerMod`, `glmerMod`, and `lme` models."
       ),
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -188,7 +188,7 @@
 
 .subgroup_candidate <- function(record) {
   if (record$order != 2L || length(record$components) != 2L ||
-      !all(vapply(record$components, `[[`, logical(1), "supported"))) {
+    !all(vapply(record$components, `[[`, logical(1), "supported"))) {
     return(NULL)
   }
 
@@ -220,13 +220,13 @@
   }
 
   if (length(interaction_records) != 1L || length(candidates) != 1L) {
-    stop(
+    abort_forest(
       paste0(
         "`subgroup = \"auto\"` requires exactly one unambiguous ",
         "continuous-by-factor interaction. Supply explicit `focal` and ",
         "`subgroup` names for other interaction structures."
       ),
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -265,7 +265,7 @@
   }, metadata$records)
 
   if (length(candidates) != 1L) {
-    stop(
+    abort_forest(
       paste0(
         "The fitted model must contain one direct two-way interaction ",
         "between `",
@@ -274,7 +274,7 @@
         subgroup,
         "`."
       ),
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -302,13 +302,13 @@
     }, logical(1)))
   }, metadata$records)
   if (length(other_interactions) > 0L) {
-    stop(
+    abort_forest(
       paste0(
         "The selected predictors participate in additional interaction ",
         "terms. Three-way and multiple-interaction estimands are not yet ",
         "supported."
       ),
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -326,13 +326,16 @@
   }
 
   if (!scalar_name(subgroup)) {
-    stop(
+    abort_forest(
       "`subgroup` must be `NULL`, \"auto\", or one predictor name.",
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
   if (!is.null(focal) && !scalar_name(focal)) {
-    stop("`focal` must be `NULL` or one predictor name.", call. = FALSE)
+    abort_forest(
+      "`focal` must be `NULL` or one predictor name.",
+      class = "ggforestplotR_subgroup_error"
+    )
   }
 
   metadata <- .subgroup_interaction_metadata(model)
@@ -340,13 +343,16 @@
     .resolve_auto_subgroup_interaction(metadata, focal)
   } else {
     if (is.null(focal)) {
-      stop(
+      abort_forest(
         "Explicit `subgroup` selection also requires `focal`.",
-        call. = FALSE
+        class = "ggforestplotR_subgroup_error"
       )
     }
     if (identical(focal, subgroup)) {
-      stop("`focal` and `subgroup` must be different predictors.", call. = FALSE)
+      abort_forest(
+        "`focal` and `subgroup` must be different predictors.",
+        class = "ggforestplotR_subgroup_error"
+      )
     }
     .resolve_explicit_subgroup_interaction(
       metadata,
@@ -356,18 +362,18 @@
   }
 
   if (resolved$subgroup$kind != "factor") {
-    stop(
+    abort_forest(
       paste0(
         "The selected `subgroup` must be a factor. Continuous-by-continuous ",
         "subgroup effects are not yet supported."
       ),
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
   if (!resolved$focal$kind %in% c("continuous", "factor")) {
-    stop(
+    abort_forest(
       "The selected `focal` predictor must be continuous or a factor.",
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -381,12 +387,12 @@
     }, logical(1)))
   }, metadata$records)
   if (length(nonlinear_focal_terms) > 0L) {
-    stop(
+    abort_forest(
       paste0(
         "The selected `focal` predictor also appears in transformed or ",
         "nonlinear terms. These subgroup effects are not yet supported."
       ),
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -405,9 +411,9 @@
     integer(1)
   )
   if (anyNA(main_indices)) {
-    stop(
+    abort_forest(
       "The interaction model must include both corresponding main effects.",
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -420,9 +426,9 @@
 .subgroup_fixed_model_matrix <- function(model, terms) {
   matrix <- if (inherits(model, "lme")) {
     if (!requireNamespace("nlme", quietly = TRUE)) {
-      stop(
+      abort_forest(
         "The `nlme` package is required for subgroup effects from `lme` models.",
-        call. = FALSE
+        class = "ggforestplotR_subgroup_error"
       )
     }
     model_data <- nlme::getData(model)
@@ -440,15 +446,15 @@
   }
 
   if (is.null(matrix) || is.null(attr(matrix, "assign", exact = TRUE))) {
-    stop(
+    abort_forest(
       "Could not recover the fixed-effect model matrix for subgroup effects.",
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
   if (length(attr(matrix, "col.dropped", exact = TRUE)) > 0L) {
-    stop(
+    abort_forest(
       "Subgroup effects require a full-rank fixed-effect model matrix.",
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -464,11 +470,11 @@
   }
   if (inherits(model, "lmerMod")) {
     return(list(type = "response", joint_test = "chisq",
-                predict_args = list(re.form = NA)))
+      predict_args = list(re.form = NA)))
   }
   if (inherits(model, "lme")) {
     return(list(type = "response", joint_test = "chisq",
-                predict_args = list(level = 0)))
+      predict_args = list(level = 0)))
   }
 
   model_family <- tryCatch(
@@ -478,13 +484,13 @@
   if (!is.null(model_family)) {
     supported_links <- c("identity", "logit", "log")
     if (!model_family$link %in% supported_links) {
-      stop(
+      abort_forest(
         paste0(
           "Subgroup effects do not yet support the `",
           model_family$link,
           "` link. Supported links are identity, logit, and log."
         ),
-        call. = FALSE
+        class = "ggforestplotR_subgroup_error"
       )
     }
 
@@ -494,15 +500,15 @@
       list()
     }
     return(list(type = "link", joint_test = "chisq",
-                predict_args = predict_args))
+      predict_args = predict_args))
   }
 
-  stop(
+  abort_forest(
     paste0(
       "Could not determine a conventional model scale for subgroup effects ",
       "from this fitted model."
     ),
-    call. = FALSE
+    class = "ggforestplotR_subgroup_error"
   )
 }
 
@@ -521,42 +527,41 @@
   coefficient_indices <- match(interaction_terms, names(coefficients))
 
   if (length(interaction_terms) == 0L ||
-      length(coefficients) == 0L ||
-      anyNA(coefficient_indices)) {
-    stop(
+    length(coefficients) == 0L ||
+    anyNA(coefficient_indices)) {
+    abort_forest(
       paste0(
         "Could not map the selected interaction to model coefficients for ",
         "its joint p-value."
       ),
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
+  error_call <- rlang::current_env()
   test <- tryCatch(
     marginaleffects::hypotheses(
       model,
       joint = coefficient_indices,
       joint_test = joint_test
     ),
-    error = function(error) {
-      stop(
-        paste0(
-          "Could not estimate the joint interaction p-value with ",
-          "`marginaleffects`: ",
-          conditionMessage(error)
-        ),
-        call. = FALSE
+    error = function(cnd) {
+      abort_forest(
+        "Could not estimate the joint interaction p-value with `marginaleffects`.",
+        class = "ggforestplotR_subgroup_error",
+        call = error_call,
+        parent = cnd
       )
     }
   )
   test <- as.data.frame(test)
 
   if (!"p.value" %in% names(test) || nrow(test) != 1L ||
-      !is.finite(test$p.value[[1L]]) ||
-      test$p.value[[1L]] < 0 || test$p.value[[1L]] > 1) {
-    stop(
+    !is.finite(test$p.value[[1L]]) ||
+    test$p.value[[1L]] < 0 || test$p.value[[1L]] > 1) {
+    abort_forest(
       "`marginaleffects` did not return one valid joint interaction p-value.",
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -570,13 +575,13 @@
   )
   missing <- setdiff(required, names(result))
   if (length(missing) > 0L) {
-    stop(
+    abort_forest(
       paste0(
         "`marginaleffects` did not return required column(s): ",
         paste(missing, collapse = ", "),
         "."
       ),
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -587,12 +592,12 @@
     any(!is.finite(as.numeric(column)))
   }, logical(1))
   if (any(invalid)) {
-    stop(
+    abort_forest(
       paste0(
         "One or more subgroup effects are not estimable from the fitted ",
         "model. Check sparse cells and fixed-effect rank."
       ),
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -641,13 +646,13 @@
                                        p_method = c("overall", "level")) {
   p_method <- match.arg(p_method)
   if (!requireNamespace("marginaleffects", quietly = TRUE)) {
-    stop(
+    abort_forest(
       paste0(
         "The `marginaleffects` package is required to estimate subgroup ",
         "effects. Install it or use `subgroup = NULL` for ordinary model ",
         "coefficients."
       ),
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -660,6 +665,7 @@
   }
   effect_dispatch <- .subgroup_effect_dispatch(model)
 
+  error_call <- rlang::current_env()
   result <- tryCatch({
     args <- c(
       list(
@@ -672,17 +678,16 @@
       effect_dispatch$predict_args
     )
     if (interaction$focal$kind == "continuous") {
-      do.call(marginaleffects::avg_slopes, args)
+      rlang::exec(marginaleffects::avg_slopes, !!!args)
     } else {
-      do.call(marginaleffects::avg_comparisons, args)
+      rlang::exec(marginaleffects::avg_comparisons, !!!args)
     }
-  }, error = function(error) {
-    stop(
-      paste0(
-        "Could not estimate subgroup effects with `marginaleffects`: ",
-        conditionMessage(error)
-      ),
-      call. = FALSE
+  }, error = function(cnd) {
+    abort_forest(
+      "Could not estimate subgroup effects with `marginaleffects`.",
+      class = "ggforestplotR_subgroup_error",
+      call = error_call,
+      parent = cnd
     )
   })
 
@@ -749,16 +754,16 @@
     stringsAsFactors = FALSE
   )
   if (interaction$focal$kind == "factor" &&
-      length(unique(contrast)) > 1L) {
+    length(unique(contrast)) > 1L) {
     rows$group <- contrast
   }
 
   assignment <- attr(matrix, "assign", exact = TRUE)
   remove_terms <- colnames(matrix)[assignment %in% interaction$term_indices]
   if (length(remove_terms) == 0L) {
-    stop(
+    abort_forest(
       "Could not map the selected interaction to fixed-effect coefficients.",
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
@@ -787,13 +792,13 @@
   model_rows <- as.data.frame(model_rows)
   missing_terms <- setdiff(effects$remove_terms, model_rows$term)
   if (length(missing_terms) > 0L) {
-    stop(
+    abort_forest(
       paste0(
         "Could not align model coefficient row(s): ",
         paste(missing_terms, collapse = ", "),
         "."
       ),
-      call. = FALSE
+      class = "ggforestplotR_subgroup_error"
     )
   }
 
