@@ -1,5 +1,5 @@
 # ggforestplotR <img src="man/figures/ggforestplotR_favicon.png" align="right" height="160" alt="" />
-___
+
 <!-- badges: start -->
   [![R-CMD-check](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml)
   [![Codecov](https://codecov.io/gh/thatoneguy006/ggforestplotR/branch/dev/graph/badge.svg)](https://app.codecov.io/gh/thatoneguy006/ggforestplotR)
@@ -33,7 +33,7 @@ remotes::install_github("thatoneguy006/ggforestplotR")
 
 Both workflows are converted to a validated `forest_data` object before
 plotting. This object records the effect scale, confidence level, reference
-value, and source provenance independently of the fitted-model class.
+value, and data origin independently of the fitted-model class.
 
 ## Basic example
 
@@ -89,13 +89,16 @@ ggforestplot(
 - Package website: <https://thatoneguy006.github.io/ggforestplotR/>
 - Get started: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-get-started.html>
 - Plot & Table customization: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-plot-customization.html>
+- Working with fitted models: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-fitted-models.html>
 - Data helpers: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-data-helpers.html>
 
 ## Main functions
 
 - `ggforestplot()` builds the plotting panel from a data frame or supported model object.
+- `forest_theme()` coordinates plot typography and table text styling.
 - `add_forest_table()` attaches a summary table to the left or right side of the plot.
 - `add_split_table()` creates a more traditional forestplot layout with table columns on both sides of the plot.
+- `add_favors()` creates left/right arrows to indicate relative effects of increase/decrease.
 - `bind_forest_models()` binds output from several models for grouped plotting.
 - `as_forest_data()` is the S3 conversion interface for custom coefficient data
   and supported fitted models.

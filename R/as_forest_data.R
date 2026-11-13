@@ -119,9 +119,9 @@ as_forest_data.forest_data <- function(data,
                                        p_method = NULL,
                                        ...) {
   if (!is.null(exponentiate)) {
-    stop(
+    abort_forest(
       "`exponentiate` is already defined by the `forest_data` metadata.",
-      call. = FALSE
+      class = "ggforestplotR_invalid_data"
     )
   }
 
@@ -137,9 +137,9 @@ as_forest_data.forest_data <- function(data,
     out$row_type <- rep("estimate", nrow(out))
   }
   if (!is.null(p_method)) {
-    stop(
+    abort_forest(
       "`p_method` is already defined by the `forest_data` metadata.",
-      call. = FALSE
+      class = "ggforestplotR_invalid_data"
     )
   }
   subgroup_mapping <- metadata$column_mapping
@@ -207,20 +207,26 @@ as_forest_data.data.frame <- function(data,
                                       grouping = NULL) {
   if (!missing(grouping)) {
     if (!missing(facet)) {
-      stop("Use only one of `facet` or deprecated `grouping`.", call. = FALSE)
+      abort_forest(
+        "Use only one of `facet` or deprecated `grouping`.",
+        class = "ggforestplotR_invalid_data"
+      )
     }
     warn_deprecated_argument("grouping", "`facet`")
     facet <- grouping
   }
 
   if (!inherits(data, "data.frame")) {
-    stop(
+    abort_forest(
       "`data` must be a data frame or data-frame subclass, such as a tibble or `data.table`.",
-      call. = FALSE
+      class = "ggforestplotR_invalid_data"
     )
   }
   if (anyNA(names(data)) || any(!nzchar(names(data))) || anyDuplicated(names(data))) {
-    stop("`data` must have unique, non-empty column names.", call. = FALSE)
+    abort_forest(
+      "`data` must have unique, non-empty column names.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   source_column_names <- names(data)
@@ -229,8 +235,11 @@ as_forest_data.data.frame <- function(data,
   p_method <- match.arg(p_method)
 
   if (!is.null(exponentiate) &&
-      (!is.logical(exponentiate) || length(exponentiate) != 1L || is.na(exponentiate))) {
-    stop("`exponentiate` must be `NULL`, `TRUE`, or `FALSE`.", call. = FALSE)
+    (!is.logical(exponentiate) || length(exponentiate) != 1L || is.na(exponentiate))) {
+    abort_forest(
+      "`exponentiate` must be `NULL`, `TRUE`, or `FALSE`.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   if (is.null(estimate_scale)) {
@@ -239,10 +248,10 @@ as_forest_data.data.frame <- function(data,
     estimate_scale <- match.arg(estimate_scale, forest_estimate_scales())
 
     if (!is.null(exponentiate) &&
-        !identical(isTRUE(exponentiate), identical(estimate_scale, "ratio"))) {
-      stop(
+      !identical(isTRUE(exponentiate), identical(estimate_scale, "ratio"))) {
+      abort_forest(
         "`exponentiate` and `estimate_scale` describe incompatible scales.",
-        call. = FALSE
+        class = "ggforestplotR_invalid_data"
       )
     }
   }
@@ -310,35 +319,14 @@ as_forest_data.data.frame <- function(data,
     as.character(data[[cols$group]])
   }
 
-  out$subgroup <- if (is.null(cols$subgroup)) {
-    NA_character_
-  } else {
-    as.character(data[[cols$subgroup]])
-  }
-
-  out$grouping <- if (is.null(cols$grouping)) {
-    NA_character_
-  } else {
-    as.character(data[[cols$grouping]])
-  }
-
-  out$separate_groups <- if (is.null(cols$separate_groups)) {
-    NA_character_
-  } else {
-    as.character(data[[cols$separate_groups]])
-  }
-
-  out$n <- if (is.null(cols$n)) {
-    NA_character_
-  } else {
-    as.character(data[[cols$n]])
-  }
-
-  out$events <- if (is.null(cols$events)) {
-    NA_character_
-  } else {
-    as.character(data[[cols$events]])
-  }
+  text_columns <- c("subgroup", "grouping", "separate_groups", "n", "events")
+  out[text_columns] <- purrr::map(cols[text_columns], function(column) {
+    if (is.null(column)) {
+      rep(NA_character_, nrow(out))
+    } else {
+      as.character(data[[column]])
+    }
+  })
 
   out$p.value <- if (is.null(cols$p.value)) {
     NA_real_
@@ -366,7 +354,7 @@ as_forest_data.data.frame <- function(data,
 
     # Preserve numeric source values even when canonical labels become text.
     if (!canonical_uses_source ||
-        !identical(out[[source_name]], data[[source_name]])) {
+      !identical(out[[source_name]], data[[source_name]])) {
       stored_name <- paste0("..source..", source_name)
       while (stored_name %in% names(out)) {
         stored_name <- paste0(stored_name, ".")

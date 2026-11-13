@@ -24,7 +24,7 @@ add_split_table(
   reference_text = "Reference",
   text_size = NULL,
   header_text_size = NULL,
-  header_fontface = "bold",
+  header_fontface = NULL,
   header_family = NULL,
   striped_rows = NULL,
   stripe_fill = NULL,
@@ -32,7 +32,19 @@ add_split_table(
   stripe_alpha = NULL,
   left_width = NULL,
   plot_width = NULL,
-  right_width = NULL
+  right_width = NULL,
+  text_fontface = NULL,
+  text_family = NULL,
+  text_colour = NULL,
+  header_colour = NULL,
+  reference_text_size = NULL,
+  reference_fontface = NULL,
+  reference_family = NULL,
+  reference_colour = NULL,
+  row_header_text_size = NULL,
+  row_header_fontface = NULL,
+  row_header_family = NULL,
+  row_header_colour = NULL
 )
 }
 \arguments{
@@ -141,6 +153,17 @@ Defaults to \code{2.5}.}
 \item{right_width}{Optional width allocated to the right table block. By
 default this is derived from the number of displayed right-side columns
 relative to \code{plot_width}.}
+
+\item{text_fontface, text_family, text_colour}{Body font face, family, and colour.
+Font faces accept "plain", "bold", "italic", "bold.italic", or codes 1:4.}
+
+\item{header_colour}{Column-header text colour.}
+
+\item{reference_text_size, reference_fontface, reference_family, reference_colour}{Text styling for all cells of reference rows, including their labels.
+Size is in millimeters. NULL inherits the corresponding body setting.}
+
+\item{row_header_text_size, row_header_fontface, row_header_family, row_header_colour}{Text styling for section and generated subgroup header rows, distinct from
+column headers. Size is in millimeters. NULL inherits body styling.}
 }
 \value{
 A patchwork-composed plot containing a left table, the forest plot,
@@ -149,6 +172,13 @@ and a right table, or a ggplot add-on object when \code{plot = NULL}.
 \description{
 Compose split table blocks around a forest plot so that summary data appear
 on both sides of the plotting panel.
+}
+\details{
+Text settings inherit from \code{\link[=forest_theme]{forest_theme()}} when applied before the
+table. Explicit non-NULL table arguments take precedence. Without a forest
+theme, body text defaults to 3.2 mm, plain, default device font, and black;
+column headers default to 11 points and bold. Body and column-header size
+units differ for compatibility with earlier versions.
 }
 \examples{
 coefs <- data.frame(

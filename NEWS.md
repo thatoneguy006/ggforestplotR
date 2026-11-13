@@ -1,3 +1,13 @@
+# ggforestplotR (development version)
+
+- Begin development toward version 1.0.0.
+- Added `forest_theme()` for coordinated plot and table typography. Both table
+  helpers now accept body, column-header, reference-row, and section/subgroup
+  header text styling, with explicit table settings overriding theme defaults.
+- Reorganized the vignettes into customization, fitted-model workflows, and
+  forest-data preparation guides. Added a supported-model overview and examples
+  for marker sizes, CI truncation, panel widths, directional labels, and export.
+
 # ggforestplotR 0.6.0
 
 ## Major Changes

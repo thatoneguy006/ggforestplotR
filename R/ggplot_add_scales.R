@@ -17,9 +17,9 @@ ggplot_add.ScaleDiscretePosition <- function(object, plot, ...) {
       forest_full_row_levels(plot$ggforestplotR_state)
     }
     if (length(requested_row_levels) == 0L) {
-      stop(
+      abort_forest(
         "The discrete y-scale limits did not match any forest-plot rows.",
-        call. = FALSE
+        class = "ggforestplotR_invalid_scale"
       )
     }
     object <- align_discrete_y_scale_to_forest_facets(object, plot)
@@ -362,4 +362,146 @@ inverse_continuous_scale_limits <- function(scale, limits) {
   }
 
   limits
+}
+
+# --- Align forest state and layers to the trained row scale ------------------
+
+extract_trained_y_limits <- function(plot) {
+  built <- tryCatch(
+    ggplot2::ggplot_build(plot),
+    error = function(e) NULL
+  )
+
+  if (is.null(built) || is.null(built$layout) || is.null(built$layout$panel_params)) {
+    return(NULL)
+  }
+
+  limits <- unlist(lapply(built$layout$panel_params, function(panel) {
+    y_scale <- panel$y
+
+    if (!is.null(y_scale) && is.function(y_scale$get_limits)) {
+      return(y_scale$get_limits())
+    }
+
+    NULL
+  }), use.names = FALSE)
+
+  limits <- as.character(limits)
+  # Empty keys are valid spacer rows and must also occupy a table row.
+  limits <- limits[!is.na(limits)]
+
+  if (length(limits) == 0L) {
+    return(NULL)
+  }
+
+  unique(limits)
+}
+
+align_forest_state_to_plot_y_scale <- function(state, plot) {
+  y_limits <- extract_trained_y_limits(plot)
+  align_forest_state_to_row_levels(state, y_limits)
+}
+
+align_forest_state_to_row_levels <- function(state, requested_levels) {
+  base_display_data <- if (is.null(state$full_display_data)) {
+    if (is.null(state$display_data)) state$forest_data else state$display_data
+  } else {
+    state$full_display_data
+  }
+  base_forest_data <- if (is.null(state$full_forest_data)) {
+    state$forest_data
+  } else {
+    state$full_forest_data
+  }
+  display_data <- base_display_data
+  row_levels <- levels(display_data$row_key)
+
+  if (is.null(row_levels) || is.null(requested_levels)) {
+    return(state)
+  }
+
+  requested_levels <- as.character(requested_levels)
+  matched_limits <- unique(requested_levels[requested_levels %in% row_levels])
+
+  if (length(matched_limits) == 0L) {
+    return(state)
+  }
+
+  keep_display_rows <- as.character(display_data$row_key) %in% matched_limits
+  aligned_display_data <- display_data[keep_display_rows, , drop = FALSE]
+  aligned_display_data$row_key <- factor(
+    as.character(aligned_display_data$row_key),
+    levels = matched_limits
+  )
+
+  keep_estimate_rows <- as.character(base_forest_data$row_key) %in% matched_limits
+  aligned_forest_data <- base_forest_data[keep_estimate_rows, , drop = FALSE]
+  aligned_forest_data$row_key <- factor(
+    as.character(aligned_forest_data$row_key),
+    levels = matched_limits
+  )
+  if (isTRUE(state$has_groupings)) {
+    panel_levels <- observed_grouping_panels(base_display_data, TRUE)
+    aligned_display_data$grouping_panel <- factor(
+      as.character(aligned_display_data$grouping_panel),
+      levels = panel_levels
+    )
+    aligned_forest_data$grouping_panel <- factor(
+      as.character(aligned_forest_data$grouping_panel),
+      levels = panel_levels
+    )
+  }
+
+  aligned_state <- state
+  aligned_state$forest_data <- aligned_forest_data
+  aligned_state$display_data <- aligned_display_data
+  aligned_state$stripe_data <- build_stripe_rectangles(
+    aligned_display_data,
+    state$has_groupings
+  )
+  if (!is.null(state$separator_data)) {
+    aligned_state$separator_data <- build_separate_lines(
+      aligned_display_data,
+      state$has_groupings
+    )
+  }
+  aligned_state
+}
+
+# Layers are ggproto environments shared between plots by `+`; clone before
+# replacing data so only the returned plot sees the new data.
+replace_layer_data <- function(plot, index, data) {
+  old <- plot$layers[[index]]
+  new <- rlang::env_clone(old)
+  class(new) <- class(old)
+  new$data <- data
+  plot$layers[[index]] <- new
+  plot
+}
+
+align_forest_row_layers_to_state <- function(plot, state) {
+  stripe_index <- state$stripe_layer_index
+  if (!is.null(stripe_index) && stripe_index <= length(plot$layers)) {
+    old_stripes <- plot$layers[[stripe_index]]$data
+    new_stripes <- state$stripe_data[
+      state$stripe_data$fill_key == "stripe",
+      ,
+      drop = FALSE
+    ]
+
+    if (nrow(old_stripes) > 0L && nrow(new_stripes) > 0L) {
+      new_stripes$xmin <- old_stripes$xmin[[1L]]
+      new_stripes$xmax <- old_stripes$xmax[[1L]]
+    }
+    plot <- replace_layer_data(plot, stripe_index, new_stripes)
+  }
+
+  separator_index <- state$separator_layer_index
+  if (!is.null(separator_index) && separator_index <= length(plot$layers) &&
+    !is.null(state$separator_data)) {
+    plot <- replace_layer_data(plot, separator_index, state$separator_data)
+  }
+
+  plot$ggforestplotR_state <- state
+  plot
 }

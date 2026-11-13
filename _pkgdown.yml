@@ -13,6 +13,8 @@ repo:
 template:
   bootstrap: 5
   light-switch: true
+  theme: github-light
+  theme-dark: github-dark
   bslib:
     font-size: 0.9rem
     border-radius: 0.5rem
@@ -26,7 +28,29 @@ home:
     data, with flexible confidence intervals, summary tables, grouped
     estimates, and publication-ready customization.
   sidebar:
-    html: pkgdown/home-sidebar.html
+    structure: [docs, project, citation, authors, badges]
+    components:
+      docs:
+        title: Docs
+        text: |
+          - [Get started](articles/ggforestplotR-get-started.html)
+          - [Plot customization](articles/ggforestplotR-plot-customization.html)
+          - [Fitted models](articles/ggforestplotR-fitted-models.html)
+          - [Preparing forest data](articles/ggforestplotR-data-helpers.html)
+          - [Function reference](reference/index.html)
+      project:
+        title: Project
+        text: |
+          - [Browse source code](https://github.com/thatoneguy006/ggforestplotR)
+          - [Report a bug](https://github.com/thatoneguy006/ggforestplotR/issues)
+      badges:
+        title: Badges
+        text: |
+          [![R-CMD-check](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml)
+
+          [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+
+          [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 navbar:
   structure:
@@ -43,7 +67,9 @@ navbar:
           href: articles/ggforestplotR-get-started.html
         - text: Plot & Table Customization
           href: articles/ggforestplotR-plot-customization.html
-        - text: Data Helpers
+        - text: Working with Fitted Models
+          href: articles/ggforestplotR-fitted-models.html
+        - text: Preparing Forest Data
           href: articles/ggforestplotR-data-helpers.html
     news:
       text: Changelog
@@ -62,7 +88,11 @@ articles:
     navbar: Articles
     contents:
       - ggforestplotR-plot-customization
-  - title: Data Helpers
+  - title: Working with Fitted Models
+    navbar: Articles
+    contents:
+      - ggforestplotR-fitted-models
+  - title: Preparing Forest Data
     navbar: Articles
     contents:
       - ggforestplotR-data-helpers
@@ -72,6 +102,7 @@ reference:
     desc: Main plotting functions for forest plot creation and composition.
     contents:
       - ggforestplot
+      - forest_theme
       - add_forest_table
       - add_split_table
       - add_favors

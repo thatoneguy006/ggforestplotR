@@ -24,7 +24,7 @@ add_forest_table(
   reference_text = "Reference",
   text_size = NULL,
   header_text_size = NULL,
-  header_fontface = "bold",
+  header_fontface = NULL,
   header_family = NULL,
   striped_rows = NULL,
   stripe_fill = NULL,
@@ -36,7 +36,19 @@ add_forest_table(
   grid_line_linetype = 1,
   table_width = NULL,
   plot_width = NULL,
-  grid_line_size = NULL
+  grid_line_size = NULL,
+  text_fontface = NULL,
+  text_family = NULL,
+  text_colour = NULL,
+  header_colour = NULL,
+  reference_text_size = NULL,
+  reference_fontface = NULL,
+  reference_family = NULL,
+  reference_colour = NULL,
+  row_header_text_size = NULL,
+  row_header_fontface = NULL,
+  row_header_family = NULL,
+  row_header_colour = NULL
 )
 }
 \arguments{
@@ -146,6 +158,17 @@ By default this is calculated from the displayed table content.}
 panel. Defaults to \code{2.4}.}
 
 \item{grid_line_size}{Deprecated. Use \code{grid_linewidth} instead.}
+
+\item{text_fontface, text_family, text_colour}{Body font face, family, and colour.
+Font faces accept "plain", "bold", "italic", "bold.italic", or codes 1:4.}
+
+\item{header_colour}{Column-header text colour.}
+
+\item{reference_text_size, reference_fontface, reference_family, reference_colour}{Text styling for all cells of reference rows, including their labels.
+Size is in millimeters. NULL inherits the corresponding body setting.}
+
+\item{row_header_text_size, row_header_fontface, row_header_family, row_header_colour}{Text styling for section and generated subgroup header rows, distinct from
+column headers. Size is in millimeters. NULL inherits body styling.}
 }
 \value{
 A patchwork-composed plot containing the forest plot and side
@@ -153,6 +176,13 @@ table, or a ggplot add-on object when \code{plot = NULL}.
 }
 \description{
 Compose a summary table onto a forest plot.
+}
+\details{
+Text settings inherit from \code{\link[=forest_theme]{forest_theme()}} when applied before the
+table. Explicit non-NULL table arguments take precedence. Without a forest
+theme, body text defaults to 3.2 mm, plain, default device font, and black;
+column headers default to 11 points and bold. Body and column-header size
+units differ for compatibility with earlier versions.
 }
 \examples{
 coefs <- data.frame(

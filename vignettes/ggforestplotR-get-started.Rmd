@@ -131,8 +131,9 @@ ggforestplot(fit, sort_terms = "descending",
 
 ## Next articles
 
-For more detail, see:
-
-- `ggforestplotR-plot-customization` for enhanced customization of the plots and summary tables.
-- `ggforestplotR-data-helpers` for the `forest_data` contract,
-  `as_forest_data()`, and `forest_metadata()`.
+- [Customize Forest Plots and Tables](ggforestplotR-plot-customization.html)
+  for appearance, table formatting, layout, and export.
+- [Working with Fitted Models](ggforestplotR-fitted-models.html)
+  for supported models, effect scales, comparisons, and subgroup effects.
+- [Preparing Forest Data](ggforestplotR-data-helpers.html)
+  for custom mappings, metadata, and structured rows.

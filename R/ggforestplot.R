@@ -159,9 +159,9 @@ ggforestplot <- function(data,
                          separator_line_size = NULL) {
   if (!missing(ref_color)) {
     if (!missing(ref_colour)) {
-      stop(
+      abort_forest(
         "Use only one of `ref_colour` or deprecated `ref_color`.",
-        call. = FALSE
+        class = "ggforestplotR_invalid_plot"
       )
     }
     warn_deprecated_argument("ref_color", "`ref_colour`")
@@ -169,9 +169,9 @@ ggforestplot <- function(data,
   }
   if (!missing(separator_line_size)) {
     if (!missing(separator_linewidth)) {
-      stop(
+      abort_forest(
         "Use only one of `separator_linewidth` or deprecated `separator_line_size`.",
-        call. = FALSE
+        class = "ggforestplotR_invalid_plot"
       )
     }
     warn_deprecated_argument("separator_line_size", "`separator_linewidth`")
@@ -183,7 +183,10 @@ ggforestplot <- function(data,
 
   if (!missing(line_size)) {
     if (!missing(linewidth)) {
-      stop("Use only one of `linewidth` or deprecated `line_size`.", call. = FALSE)
+      abort_forest(
+        "Use only one of `linewidth` or deprecated `line_size`.",
+        class = "ggforestplotR_invalid_plot"
+      )
     }
 
     warn_deprecated_argument("line_size", "`linewidth`")
@@ -196,19 +199,34 @@ ggforestplot <- function(data,
   p_method <- match.arg(p_method)
 
   if (inherits(data, "ggforestplot_bound_models") && !is.null(exponentiate)) {
-    stop("`exponentiate` is set by `bind_forest_models()`; pass it there instead.", call. = FALSE)
+    abort_forest(
+      "`exponentiate` is set by `bind_forest_models()`; pass it there instead.",
+      class = "ggforestplotR_invalid_plot"
+    )
   }
   if (inherits(data, "forest_data") && !conf_level_missing) {
-    stop("`conf.level` is already defined by the `forest_data` metadata.", call. = FALSE)
+    abort_forest(
+      "`conf.level` is already defined by the `forest_data` metadata.",
+      class = "ggforestplotR_invalid_plot"
+    )
   }
   if (inherits(data, "forest_data") && !p_method_missing) {
-    stop("`p_method` is already defined by the `forest_data` metadata.", call. = FALSE)
+    abort_forest(
+      "`p_method` is already defined by the `forest_data` metadata.",
+      class = "ggforestplotR_invalid_plot"
+    )
   }
   if (!is.null(row_type) && !is.data.frame(data)) {
-    stop("`row_type` is only a mapping for data-frame input.", call. = FALSE)
+    abort_forest(
+      "`row_type` is only a mapping for data-frame input.",
+      class = "ggforestplotR_invalid_plot"
+    )
   }
   if (!is.null(row_type) && inherits(data, "forest_data")) {
-    stop("`row_type` is already defined by the `forest_data` object.", call. = FALSE)
+    abort_forest(
+      "`row_type` is already defined by the `forest_data` object.",
+      class = "ggforestplotR_invalid_plot"
+    )
   }
 
   forest_data <- if (inherits(data, "forest_data")) {
@@ -242,13 +260,13 @@ ggforestplot <- function(data,
     )
   } else {
     if (!is.null(subgroup)) {
-      stop(
+      abort_forest(
         paste0(
           "For fitted models, estimate subgroup effects with ",
           "`tidy_forest_model(model, subgroup = ..., focal = ...)` before ",
           "calling `ggforestplot()`."
         ),
-        call. = FALSE
+        class = "ggforestplotR_invalid_plot"
       )
     }
     as_forest_data(
@@ -276,22 +294,34 @@ ggforestplot <- function(data,
   draw_ref_line <- !is.null(ref_line)
 
   if (isTRUE(draw_ref_line) && (!is.numeric(ref_line) || length(ref_line) != 1L || is.na(ref_line))) {
-    stop("`ref_line` must be a single numeric value or `NULL`.", call. = FALSE)
+    abort_forest(
+      "`ref_line` must be a single numeric value or `NULL`.",
+      class = "ggforestplotR_invalid_plot"
+    )
   }
 
   if (isTRUE(plot_exponentiate) && isTRUE(draw_ref_line) && ref_line <= 0) {
-    stop("`ref_line` must be positive for exponentiated plots.", call. = FALSE)
+    abort_forest(
+      "`ref_line` must be positive for exponentiated plots.",
+      class = "ggforestplotR_invalid_plot"
+    )
   }
 
   ci_limits <- validate_ci_limits(ci_limits, exponentiate = plot_exponentiate)
 
   if (!is.logical(ci_arrows) || length(ci_arrows) != 1L || is.na(ci_arrows)) {
-    stop("`ci_arrows` must be `TRUE` or `FALSE`.", call. = FALSE)
+    abort_forest(
+      "`ci_arrows` must be `TRUE` or `FALSE`.",
+      class = "ggforestplotR_invalid_plot"
+    )
   }
 
   if (!is.numeric(ci_arrow_length) || length(ci_arrow_length) != 1L ||
-      is.na(ci_arrow_length) || ci_arrow_length <= 0) {
-    stop("`ci_arrow_length` must be a single positive number.", call. = FALSE)
+    is.na(ci_arrow_length) || ci_arrow_length <= 0) {
+    abort_forest(
+      "`ci_arrow_length` must be a single positive number.",
+      class = "ggforestplotR_invalid_plot"
+    )
   }
 
   display_data <- build_forest_plot_data(forest_data)
@@ -586,7 +616,7 @@ ggforestplot <- function(data,
     point_args$data <- geometry_data
     point_args$mapping <- ggplot2::aes(size = .data[[point_size_column]])
   }
-  p <- p + do.call(ggplot2::geom_point, point_args)
+  p <- p + rlang::exec(ggplot2::geom_point, !!!point_args)
 
   if (!is.null(point_size_column)) {
     p <- p + ggplot2::labs(size = point_size)

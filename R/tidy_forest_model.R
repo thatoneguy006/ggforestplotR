@@ -10,19 +10,19 @@ tidy_model_coefficients <- function(model,
                                     conf.level = 0.95,
                                     exponentiate = FALSE) {
   if (!requireNamespace("broom", quietly = TRUE)) {
-    stop(
+    abort_forest(
       "The `broom` package is required to tidy model objects. ",
       "Install it or pass a coefficient data frame to `ggforestplot()` instead.",
-      call. = FALSE
+      class = "ggforestplotR_invalid_model"
     )
   }
 
   if (is_mixed_model(model)) {
     if (!requireNamespace("broom.mixed", quietly = TRUE)) {
-      stop(
+      abort_forest(
         "The `broom.mixed` package is required to tidy mixed model objects. ",
         "Install it or pass a coefficient data frame to `ggforestplot()` instead.",
-        call. = FALSE
+        class = "ggforestplotR_invalid_model"
       )
     }
 
@@ -47,7 +47,10 @@ keep_fixed_effects <- function(out) {
   if ("effect" %in% names(out)) {
     fixed <- !is.na(out$effect) & as.character(out$effect) == "fixed"
     if (!any(fixed)) {
-      stop("`tidy()` returned no fixed-effect rows to plot.", call. = FALSE)
+      abort_forest(
+        "`tidy()` returned no fixed-effect rows to plot.",
+        class = "ggforestplotR_invalid_model"
+      )
     }
     out <- out[fixed, , drop = FALSE]
   }
@@ -202,21 +205,30 @@ tidy_forest_model_impl <- function(model,
                                    focal = NULL,
                                    p_method = c("overall", "level")) {
   if (!is.logical(conf.int) || length(conf.int) != 1L || is.na(conf.int)) {
-    stop("`conf.int` must be `TRUE` or `FALSE`.", call. = FALSE)
+    abort_forest(
+      "`conf.int` must be `TRUE` or `FALSE`.",
+      class = "ggforestplotR_invalid_model"
+    )
   }
   if (!isTRUE(conf.int)) {
-    stop("Forest data require confidence intervals; use `conf.int = TRUE`.", call. = FALSE)
+    abort_forest(
+      "Forest data require confidence intervals; use `conf.int = TRUE`.",
+      class = "ggforestplotR_invalid_model"
+    )
   }
 
   sort_terms <- match.arg(sort_terms)
   p_method <- match.arg(p_method)
   if (is.null(subgroup) && !is.null(focal)) {
-    stop("`focal` requires `subgroup`.", call. = FALSE)
+    abort_forest(
+      "`focal` requires `subgroup`.",
+      class = "ggforestplotR_invalid_model"
+    )
   }
   if (!is.null(subgroup) && !identical(sort_terms, "none")) {
-    stop(
+    abort_forest(
       "Subgroup-effect rows require `sort_terms = \"none\"`.",
-      call. = FALSE
+      class = "ggforestplotR_invalid_model"
     )
   }
   has_subgroup <- !is.null(subgroup)
@@ -246,17 +258,17 @@ tidy_forest_model_impl <- function(model,
   out <- keep_fixed_effects(out)
 
   if (!"term" %in% names(out) || !"estimate" %in% names(out)) {
-    stop(
+    abort_forest(
       "`broom::tidy()` returned an unsupported result. ",
       "Expected at least `term` and `estimate` columns.",
-      call. = FALSE
+      class = "ggforestplotR_invalid_model"
     )
   }
 
   if (conf.int && (!"conf.low" %in% names(out) || !"conf.high" %in% names(out))) {
-    stop(
+    abort_forest(
       "`broom::tidy()` did not return confidence interval columns.",
-      call. = FALSE
+      class = "ggforestplotR_invalid_model"
     )
   }
 
@@ -278,7 +290,7 @@ tidy_forest_model_impl <- function(model,
   }
 
   group_column <- if (has_subgroup && "group" %in% names(out) &&
-      any(!is.na(out$group) & nzchar(out$group))) {
+    any(!is.na(out$group) & nzchar(out$group))) {
     "group"
   } else {
     NULL
@@ -490,12 +502,12 @@ as_forest_data.default <- function(data, ..., conf.int = TRUE, conf.level = 0.95
                                    subgroup = NULL, focal = NULL,
                                    p_method = c("overall", "level")) {
   if (is.null(data) || is.atomic(data) || is.function(data)) {
-    stop(
+    abort_forest(
       sprintf(
         "`data` must be a data frame or a fitted model object, not %s.",
         paste0("<", class(data)[[1L]], ">")
       ),
-      call. = FALSE
+      class = "ggforestplotR_invalid_model"
     )
   }
 
@@ -512,5 +524,74 @@ as_forest_data.default <- function(data, ..., conf.int = TRUE, conf.level = 0.95
     p_method = p_method,
     source_package = NULL,
     ...
+  )
+}
+
+# Effect scales and confidence levels
+
+format_conf_level_label <- function(conf.level = 0.95) {
+  pct <- conf.level * 100
+  if (isTRUE(all.equal(pct, round(pct)))) {
+    paste0(as.integer(round(pct)), "%")
+  } else {
+    paste0(format(pct, trim = TRUE, scientific = FALSE), "%")
+  }
+}
+
+infer_model_estimate_info <- function(model,
+                                      exponentiate = NULL,
+                                      conf.level = 0.95) {
+  auto_exponentiate <- FALSE
+  canonical_label <- "Beta"
+  estimate_scale <- "identity"
+  model_family <- if (inherits(model, "glm") && !is.null(model$family)) {
+    model$family
+  } else {
+    tryCatch(stats::family(model), error = function(e) NULL)
+  }
+
+  if (inherits(model, "coxph")) {
+    auto_exponentiate <- TRUE
+    canonical_label <- "HR"
+  } else if (!is.null(model_family)) {
+    family <- model_family$family
+    link <- model_family$link
+
+    is_binomial <- family %in% c("binomial", "quasibinomial")
+    if (isTRUE(is_binomial) && identical(link, "logit")) {
+      auto_exponentiate <- TRUE
+      canonical_label <- "OR"
+    } else if (isTRUE(is_binomial) && identical(link, "log")) {
+      auto_exponentiate <- TRUE
+      canonical_label <- "RR"
+    } else if (isTRUE(is_binomial) && identical(link, "identity")) {
+      estimate_scale <- "risk_difference"
+      canonical_label <- "RD"
+    } else if (identical(link, "log")) {
+      auto_exponentiate <- TRUE
+      canonical_label <- if (family %in% c("poisson", "quasipoisson")) "IRR" else "Ratio"
+    }
+  }
+
+  resolved_exponentiate <- if (is.null(exponentiate)) auto_exponentiate else isTRUE(exponentiate)
+
+  if (isTRUE(resolved_exponentiate)) {
+    estimate_scale <- "ratio"
+    estimate_label <- if (isTRUE(auto_exponentiate)) canonical_label else "Ratio"
+  } else if (isTRUE(auto_exponentiate)) {
+    estimate_scale <- "log"
+    estimate_label <- sprintf("log(%s)", canonical_label)
+  } else {
+    estimate_label <- canonical_label
+  }
+
+  list(
+    exponentiate = resolved_exponentiate,
+    estimate_scale = estimate_scale,
+    axis_transform = default_axis_transform(estimate_scale),
+    estimate_label = estimate_label,
+    effect_label = estimate_label,
+    reference_value = default_reference_value(estimate_scale),
+    axis_label = sprintf("%s (%s CI)", estimate_label, format_conf_level_label(conf.level))
   )
 }

@@ -57,7 +57,10 @@ new_forest_metadata <- function(estimate_scale = "identity",
 
 validate_forest_metadata <- function(data, metadata) {
   if (!is.list(metadata)) {
-    stop("Forest metadata must be a named list.", call. = FALSE)
+    abort_forest(
+      "Forest metadata must be a named list.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   required <- c(
@@ -68,99 +71,123 @@ validate_forest_metadata <- function(data, metadata) {
   missing <- setdiff(required, names(metadata))
 
   if (length(missing) > 0L) {
-    stop(
+    abort_forest(
       sprintf("Missing required forest metadata: %s", paste(missing, collapse = ", ")),
-      call. = FALSE
+      class = "ggforestplotR_invalid_data"
     )
   }
 
   scale <- metadata$estimate_scale
   if (!is.character(scale) || length(scale) != 1L || is.na(scale) ||
-      !scale %in% forest_estimate_scales()) {
-    stop(
+    !scale %in% forest_estimate_scales()) {
+    abort_forest(
       sprintf(
         "`estimate_scale` must be one of: %s.",
         paste(sprintf('"%s"', forest_estimate_scales()), collapse = ", ")
       ),
-      call. = FALSE
+      class = "ggforestplotR_invalid_data"
     )
   }
 
   if (!is.character(metadata$axis_transform) ||
-      length(metadata$axis_transform) != 1L ||
-      is.na(metadata$axis_transform) ||
-      !metadata$axis_transform %in% c("identity", "log10")) {
-    stop("`axis_transform` must be either \"identity\" or \"log10\".", call. = FALSE)
+    length(metadata$axis_transform) != 1L ||
+    is.na(metadata$axis_transform) ||
+    !metadata$axis_transform %in% c("identity", "log10")) {
+    abort_forest(
+      "`axis_transform` must be either \"identity\" or \"log10\".",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   if (!is.character(metadata$effect_label) ||
-      length(metadata$effect_label) != 1L ||
-      is.na(metadata$effect_label) ||
-      !nzchar(metadata$effect_label)) {
-    stop("`effect_label` must be a single non-empty string.", call. = FALSE)
+    length(metadata$effect_label) != 1L ||
+    is.na(metadata$effect_label) ||
+    !nzchar(metadata$effect_label)) {
+    abort_forest(
+      "`effect_label` must be a single non-empty string.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   conf_level <- metadata$conf_level
   if (!is.numeric(conf_level) || length(conf_level) != 1L ||
-      (!is.na(conf_level) && (conf_level <= 0 || conf_level >= 1))) {
-    stop("`conf_level` must be `NA` or a number strictly between 0 and 1.", call. = FALSE)
+    (!is.na(conf_level) && (conf_level <= 0 || conf_level >= 1))) {
+    abort_forest(
+      "`conf_level` must be `NA` or a number strictly between 0 and 1.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   reference_value <- metadata$reference_value
   if (!is.null(reference_value) &&
-      (!is.numeric(reference_value) || length(reference_value) != 1L ||
-       is.na(reference_value) || !is.finite(reference_value))) {
-    stop("`reference_value` must be `NULL` or a single finite number.", call. = FALSE)
+    (!is.numeric(reference_value) || length(reference_value) != 1L ||
+      is.na(reference_value) || !is.finite(reference_value))) {
+    abort_forest(
+      "`reference_value` must be `NULL` or a single finite number.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   if (identical(metadata$axis_transform, "log10") &&
-      !is.null(reference_value) && reference_value <= 0) {
-    stop("`reference_value` must be positive when `axis_transform = \"log10\"`.", call. = FALSE)
+    !is.null(reference_value) && reference_value <= 0) {
+    abort_forest(
+      "`reference_value` must be positive when `axis_transform = \"log10\"`.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   if (!is.null(metadata$source_model) &&
-      !is.character(metadata$source_model) && !is.list(metadata$source_model)) {
-    stop("`source_model` must be `NULL`, a character vector, or a list.", call. = FALSE)
+    !is.character(metadata$source_model) && !is.list(metadata$source_model)) {
+    abort_forest(
+      "`source_model` must be `NULL`, a character vector, or a list.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   if (!is.null(metadata$source_package) &&
-      !is.character(metadata$source_package) && !is.list(metadata$source_package)) {
-    stop("`source_package` must be `NULL`, a character vector, or a list.", call. = FALSE)
+    !is.character(metadata$source_package) && !is.list(metadata$source_package)) {
+    abort_forest(
+      "`source_package` must be `NULL`, a character vector, or a list.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   source_columns <- metadata$source_columns
   valid_source_columns <- is.null(source_columns) ||
     (is.character(source_columns) && !is.null(names(source_columns)) &&
-       all(!is.na(source_columns)) && all(nzchar(source_columns)) &&
-       all(nzchar(names(source_columns))))
+      all(!is.na(source_columns)) && all(nzchar(source_columns)) &&
+      all(nzchar(names(source_columns))))
   if (!valid_source_columns) {
-    stop(
+    abort_forest(
       "`source_columns` must be `NULL` or a named character vector mapping source names to stored columns.",
-      call. = FALSE
+      class = "ggforestplotR_invalid_data"
     )
   }
   if (!is.null(source_columns) && any(!unname(source_columns) %in% names(data))) {
-    stop("Every `source_columns` value must identify a stored forest-data column.", call. = FALSE)
+    abort_forest(
+      "Every `source_columns` value must identify a stored forest-data column.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   p_method <- metadata$p_method
   if (!is.null(p_method) &&
-      (!is.character(p_method) || length(p_method) != 1L ||
-       is.na(p_method) || !p_method %in% c("overall", "level"))) {
-    stop(
+    (!is.character(p_method) || length(p_method) != 1L ||
+      is.na(p_method) || !p_method %in% c("overall", "level"))) {
+    abort_forest(
       "`p_method` metadata must be either \"overall\" or \"level\".",
-      call. = FALSE
+      class = "ggforestplotR_invalid_data"
     )
   }
 
   column_mapping <- metadata$column_mapping
   valid_column_mapping <- is.null(column_mapping) || is.list(column_mapping) ||
     (is.character(column_mapping) && !is.null(names(column_mapping)) &&
-       all(nzchar(names(column_mapping))))
+      all(nzchar(names(column_mapping))))
   if (!valid_column_mapping) {
-    stop(
+    abort_forest(
       "`column_mapping` must be `NULL`, a named character vector, or a list.",
-      call. = FALSE
+      class = "ggforestplotR_invalid_data"
     )
   }
 
@@ -178,17 +205,23 @@ validate_forest_metadata <- function(data, metadata) {
 
   bounded_columns <- c("estimate", "conf.low", "conf.high")
   if (identical(scale, "probability") &&
-      any(vapply(bounded_columns, function(column) {
-        any(data[[column]][geometry] < 0 | data[[column]][geometry] > 1)
-      }, logical(1)))) {
-    stop("Probability estimates and intervals must be between 0 and 1.", call. = FALSE)
+    any(vapply(bounded_columns, function(column) {
+      any(data[[column]][geometry] < 0 | data[[column]][geometry] > 1)
+    }, logical(1)))) {
+    abort_forest(
+      "Probability estimates and intervals must be between 0 and 1.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   if (identical(scale, "risk_difference") &&
-      any(vapply(bounded_columns, function(column) {
-        any(data[[column]][geometry] < -1 | data[[column]][geometry] > 1)
-      }, logical(1)))) {
-    stop("Risk-difference estimates and intervals must be between -1 and 1.", call. = FALSE)
+    any(vapply(bounded_columns, function(column) {
+      any(data[[column]][geometry] < -1 | data[[column]][geometry] > 1)
+    }, logical(1)))) {
+    abort_forest(
+      "Risk-difference estimates and intervals must be between -1 and 1.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   invisible(data)
@@ -227,7 +260,10 @@ set_forest_metadata <- function(data, metadata, validate = TRUE) {
 
 new_forest_data <- function(data, metadata) {
   if (!is.data.frame(data)) {
-    stop("`data` must be a data frame.", call. = FALSE)
+    abort_forest(
+      "`data` must be a data frame.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   class(data) <- unique(c("forest_data", class(data)))
@@ -247,12 +283,18 @@ new_forest_data <- function(data, metadata) {
 #' @export
 forest_metadata <- function(x) {
   if (!inherits(x, "forest_data")) {
-    stop("`x` must be a `forest_data` object.", call. = FALSE)
+    abort_forest(
+      "`x` must be a `forest_data` object.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   metadata <- attr(x, "forest_meta", exact = TRUE)
   if (is.null(metadata)) {
-    stop("The `forest_data` object has no metadata contract.", call. = FALSE)
+    abort_forest(
+      "The `forest_data` object has no metadata contract.",
+      class = "ggforestplotR_invalid_data"
+    )
   }
 
   metadata

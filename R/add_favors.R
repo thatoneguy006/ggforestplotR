@@ -1,8 +1,8 @@
 validate_favors_text <- function(value, argument) {
   if (!is.character(value) || length(value) != 1L || is.na(value)) {
-    stop(
+    abort_forest(
       sprintf("`%s` must be a single character string.", argument),
-      call. = FALSE
+      class = "ggforestplotR_invalid_favors"
     )
   }
 
@@ -23,9 +23,9 @@ validate_favors_number <- function(value,
 
   if (!valid) {
     qualifier <- if (isTRUE(allow_zero)) "non-negative" else "positive"
-    stop(
+    abort_forest(
       sprintf("`%s` must be a single %s number.", argument, qualifier),
-      call. = FALSE
+      class = "ggforestplotR_invalid_favors"
     )
   }
 
@@ -40,12 +40,12 @@ as_forest_composition_spec <- function(plot) {
   }
 
   if (!inherits(plot, "ggplot") || is.null(plot$ggforestplotR_state)) {
-    stop(
+    abort_forest(
       paste0(
         "`plot` must be created by `ggforestplot()` or a supported ",
         "forest-table composition."
       ),
-      call. = FALSE
+      class = "ggforestplotR_invalid_favors"
     )
   }
 
@@ -105,24 +105,24 @@ transform_favors_reference <- function(panel, reference) {
 }
 
 trained_favors_reference_position <- function(plot, reference) {
+  error_call <- rlang::current_env()
   built <- tryCatch(
     ggplot2::ggplot_build(plot),
-    error = function(error) {
-      stop(
-        paste0(
-          "`add_favors()` could not train the forest plot: ",
-          conditionMessage(error)
-        ),
-        call. = FALSE
+    error = function(cnd) {
+      abort_forest(
+        "`add_favors()` could not train the forest plot.",
+        class = "ggforestplotR_invalid_favors",
+        call = error_call,
+        parent = cnd
       )
     }
   )
   panels <- built$layout$panel_params
 
   if (length(panels) == 0L) {
-    stop(
+    abort_forest(
       "`add_favors()` could not find a trained forest-plot panel.",
-      call. = FALSE
+      class = "ggforestplotR_invalid_favors"
     )
   }
 
@@ -131,9 +131,9 @@ trained_favors_reference_position <- function(plot, reference) {
       isTRUE(panel$x$scale_is_discrete)
 
     if (is_discrete) {
-      stop(
+      abort_forest(
         "`add_favors()` requires a continuous forest-plot x scale.",
-        call. = FALSE
+        class = "ggforestplotR_invalid_favors"
       )
     }
 
@@ -146,15 +146,15 @@ trained_favors_reference_position <- function(plot, reference) {
     transformed_reference <- transform_favors_reference(panel, reference)
 
     if (length(x_range) != 2L || anyNA(x_range) ||
-        any(!is.finite(x_range)) || diff(x_range) <= 0 ||
-        length(transformed_reference) != 1L ||
-        is.na(transformed_reference) || !is.finite(transformed_reference)) {
-      stop(
+      any(!is.finite(x_range)) || diff(x_range) <= 0 ||
+      length(transformed_reference) != 1L ||
+      is.na(transformed_reference) || !is.finite(transformed_reference)) {
+      abort_forest(
         paste0(
           "`add_favors()` could not resolve the reference on the trained ",
           "forest-plot x scale."
         ),
-        call. = FALSE
+        class = "ggforestplotR_invalid_favors"
       )
     }
 
@@ -178,21 +178,21 @@ trained_favors_reference_position <- function(plot, reference) {
   )
 
   if (!all(compatible_ranges)) {
-    stop(
+    abort_forest(
       paste0(
         "`add_favors()` requires facets to share one trained x scale; ",
         "free or incompatible facet x scales cannot share one annotation."
       ),
-      call. = FALSE
+      class = "ggforestplotR_invalid_favors"
     )
   }
 
   positions <- vapply(panel_info, `[[`, numeric(1), "position")
 
   if (any(positions <= 0 | positions >= 1)) {
-    stop(
+    abort_forest(
       "The resolved `reference` must be inside the visible x range.",
-      call. = FALSE
+      class = "ggforestplotR_invalid_favors"
     )
   }
 
@@ -201,12 +201,12 @@ trained_favors_reference_position <- function(plot, reference) {
     rep(positions[[1L]], length(positions)),
     tolerance = sqrt(.Machine$double.eps)
   ))) {
-    stop(
+    abort_forest(
       paste0(
         "`add_favors()` requires facets to share one reference position; ",
         "free or incompatible facet x scales cannot share one annotation."
       ),
-      call. = FALSE
+      class = "ggforestplotR_invalid_favors"
     )
   }
 
@@ -222,12 +222,12 @@ build_favors_footer <- function(left,
                                 arrow_length,
                                 arrow_type) {
   if (gap >= min(reference_position, 1 - reference_position)) {
-    stop(
+    abort_forest(
       paste0(
         "`gap` is too large for the resolved reference position. ",
         "Reduce `gap` so both arrow segments remain visible."
       ),
-      call. = FALSE
+      class = "ggforestplotR_invalid_favors"
     )
   }
 
@@ -342,9 +342,12 @@ compose_favors_footer <- function(composition,
   arrow_type <- match.arg(arrow_type)
 
   if (!is.null(reference) &&
-      (!is.numeric(reference) || length(reference) != 1L ||
-       is.na(reference) || !is.finite(reference))) {
-    stop("`reference` must be `NULL` or a single finite number.", call. = FALSE)
+    (!is.numeric(reference) || length(reference) != 1L ||
+      is.na(reference) || !is.finite(reference))) {
+    abort_forest(
+      "`reference` must be `NULL` or a single finite number.",
+      class = "ggforestplotR_invalid_favors"
+    )
   }
 
   composition <- as_forest_composition_spec(plot)
@@ -352,13 +355,13 @@ compose_favors_footer <- function(composition,
   reference <- resolve_favors_reference(forest_plot, reference)
 
   if (!is.numeric(reference) || length(reference) != 1L ||
-      is.na(reference) || !is.finite(reference)) {
-    stop(
+    is.na(reference) || !is.finite(reference)) {
+    abort_forest(
       paste0(
         "`add_favors()` could not resolve a reference value. ",
         "Supply `reference` explicitly."
       ),
-      call. = FALSE
+      class = "ggforestplotR_invalid_favors"
     )
   }
 
@@ -456,11 +459,17 @@ add_favors <- function(plot = NULL,
                        arrow_length = 0.08,
                        arrow_type = c("closed", "open")) {
   if (missing(left)) {
-    stop("`left` must be supplied.", call. = FALSE)
+    abort_forest(
+      "`left` must be supplied.",
+      class = "ggforestplotR_invalid_favors"
+    )
   }
 
   if (missing(right)) {
-    stop("`right` must be supplied.", call. = FALSE)
+    abort_forest(
+      "`right` must be supplied.",
+      class = "ggforestplotR_invalid_favors"
+    )
   }
 
   arrow_type <- match.arg(arrow_type)
@@ -499,8 +508,5 @@ add_favors <- function(plot = NULL,
 #' @export
 #' @keywords internal
 ggplot_add.ggforestplot_favors_adder <- function(object, plot, ...) {
-  do.call(
-    .compose_favors,
-    c(list(plot = plot), object)
-  )
+  rlang::exec(.compose_favors, plot = plot, !!!object)
 }

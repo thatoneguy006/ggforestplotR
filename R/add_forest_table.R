@@ -15,10 +15,6 @@
                                   ci_fmt = NULL,
                                   formatters = NULL,
                                   reference_text = "Reference",
-                                  text_size = NULL,
-                                  header_text_size = NULL,
-                                  header_fontface = "bold",
-                                  header_family = NULL,
                                   striped_rows = NULL,
                                   stripe_fill = NULL,
                                   stripe_colour = NULL,
@@ -28,17 +24,24 @@
                                   grid_line_size = 0.3,
                                   grid_line_linetype = 1,
                                   table_width = NULL,
-                                  plot_width = NULL) {
+                                  plot_width = NULL,
+                                  text_style = NULL) {
   position <- match.arg(position)
 
   if (!inherits(plot, "ggplot")) {
-    stop("`plot` must be a ggplot object created by `ggforestplot()`.", call. = FALSE)
+    abort_forest(
+      "`plot` must be a ggplot object created by `ggforestplot()`.",
+      class = "ggforestplotR_invalid_table"
+    )
   }
 
   state <- plot$ggforestplotR_state
 
   if (is.null(state)) {
-    stop("`plot` must be created by `ggforestplot()` before calling `add_forest_table()`.", call. = FALSE)
+    abort_forest(
+      "`plot` must be created by `ggforestplot()` before calling `add_forest_table()`.",
+      class = "ggforestplotR_invalid_table"
+    )
   }
 
   source_forest_data <- if (is.null(state$full_forest_data)) {
@@ -73,13 +76,13 @@
     estimate_label <- "Estimate"
   }
 
-  if (is.null(text_size)) {
-    text_size <- 3.2
-  }
-
-  if (is.null(header_text_size)) {
-    header_text_size <- 11
-  }
+  text_style <- resolve_forest_text_style(
+    inherited = state$table_text_style, overrides = text_style
+  )
+  text_size <- text_style$text_size
+  header_text_size <- text_style$header_text_size
+  header_fontface <- text_style$header_fontface
+  header_family <- text_style$header_family
 
   if (is.null(striped_rows)) {
     striped_rows <- isTRUE(state$defaults$striped_rows)
@@ -104,15 +107,24 @@
   }
 
   if ("n" %in% table_columns && all(is.na(source_forest_data$n) | !nzchar(source_forest_data$n))) {
-    stop("`columns = \"n\"` requires an `n` column in the underlying forest data.", call. = FALSE)
+    abort_forest(
+      "`columns = \"n\"` requires an `n` column in the underlying forest data.",
+      class = "ggforestplotR_invalid_table"
+    )
   }
 
   if ("events" %in% table_columns && all(is.na(source_forest_data$events) | !nzchar(source_forest_data$events))) {
-    stop("`columns = \"events\"` requires an `events` column in the underlying forest data.", call. = FALSE)
+    abort_forest(
+      "`columns = \"events\"` requires an `events` column in the underlying forest data.",
+      class = "ggforestplotR_invalid_table"
+    )
   }
 
   if ("p" %in% table_columns && all(is.na(source_forest_data$p.value))) {
-    stop("`columns = \"p\"` requires a `p.value` column in the underlying forest data.", call. = FALSE)
+    abort_forest(
+      "`columns = \"p\"` requires a `p.value` column in the underlying forest data.",
+      class = "ggforestplotR_invalid_table"
+    )
   }
 
   plot_out <- plot
@@ -147,6 +159,7 @@
     columns = table_columns,
     display_data = display_data
   )
+  table_spec$text_style <- text_style
   table_spec <- layout_center_table_spec(
     table_spec,
     text_size = text_size,
@@ -288,6 +301,20 @@
 #' @param plot_width Optional relative width allocated to the forest-plot
 #'   panel. Defaults to `2.4`.
 #'
+#' @param text_fontface,text_family,text_colour Body font face, family, and colour.
+#'   Font faces accept "plain", "bold", "italic", "bold.italic", or codes 1:4.
+#' @param header_colour Column-header text colour.
+#' @param reference_text_size,reference_fontface,reference_family,reference_colour
+#'   Text styling for all cells of reference rows, including their labels.
+#'   Size is in millimeters. NULL inherits the corresponding body setting.
+#' @param row_header_text_size,row_header_fontface,row_header_family,row_header_colour
+#'   Text styling for section and generated subgroup header rows, distinct from
+#'   column headers. Size is in millimeters. NULL inherits body styling.
+#' @details Text settings inherit from [forest_theme()] when applied before the
+#'   table. Explicit non-NULL table arguments take precedence. Without a forest
+#'   theme, body text defaults to 3.2 mm, plain, default device font, and black;
+#'   column headers default to 11 points and bold. Body and column-header size
+#'   units differ for compatibility with earlier versions.
 #' @return A patchwork-composed plot containing the forest plot and side
 #'   table, or a ggplot add-on object when `plot = NULL`.
 #' @export
@@ -335,7 +362,7 @@ add_forest_table <- function(plot = NULL,
                              reference_text = "Reference",
                              text_size = NULL,
                              header_text_size = NULL,
-                             header_fontface = "bold",
+                             header_fontface = NULL,
                              header_family = NULL,
                              striped_rows = NULL,
                              stripe_fill = NULL,
@@ -347,12 +374,42 @@ add_forest_table <- function(plot = NULL,
                              grid_line_linetype = 1,
                              table_width = NULL,
                              plot_width = NULL,
-                             grid_line_size = NULL) {
+                             grid_line_size = NULL,
+                             text_fontface = NULL,
+                             text_family = NULL,
+                             text_colour = NULL,
+                             header_colour = NULL,
+                             reference_text_size = NULL,
+                             reference_fontface = NULL,
+                             reference_family = NULL,
+                             reference_colour = NULL,
+                             row_header_text_size = NULL,
+                             row_header_fontface = NULL,
+                             row_header_family = NULL,
+                             row_header_colour = NULL) {
+  text_style <- forest_text_settings(
+    text_size = text_size,
+    header_text_size = header_text_size,
+    header_fontface = header_fontface,
+    header_family = header_family,
+    text_fontface = text_fontface,
+    text_family = text_family,
+    text_colour = text_colour,
+    header_colour = header_colour,
+    reference_text_size = reference_text_size,
+    reference_fontface = reference_fontface,
+    reference_family = reference_family,
+    reference_colour = reference_colour,
+    row_header_text_size = row_header_text_size,
+    row_header_fontface = row_header_fontface,
+    row_header_family = row_header_family,
+    row_header_colour = row_header_colour
+  )
   if (!missing(grid_line_size)) {
     if (!missing(grid_linewidth)) {
-      stop(
+      abort_forest(
         "Use only one of `grid_linewidth` or deprecated `grid_line_size`.",
-        call. = FALSE
+        class = "ggforestplotR_invalid_table"
       )
     }
     warn_deprecated_argument("grid_line_size", "`grid_linewidth`")
@@ -371,84 +428,47 @@ add_forest_table <- function(plot = NULL,
 
   position <- match.arg(position)
 
-  if (is.null(plot)) {
-    return(structure(
-      list(
-        position = position,
-        columns = columns,
-        term_header = term_header,
-        n_header = n_header,
-        events_header = events_header,
-        estimate_label = estimate_label,
-        p_header = p_header,
-        column_labels = column_labels,
-        digits = digits,
-        estimate_digits = estimate_digits,
-        interval_digits = interval_digits,
-        p_digits = p_digits,
-        estimate_fmt = estimate_fmt,
-        ci_fmt = ci_fmt,
-        formatters = formatters,
-        reference_text = reference_text,
-        text_size = text_size,
-        header_text_size = header_text_size,
-        header_fontface = header_fontface,
-        header_family = header_family,
-        striped_rows = striped_rows,
-        stripe_fill = stripe_fill,
-        stripe_colour = stripe_colour,
-        stripe_alpha = stripe_alpha,
-        grid_lines = grid_lines,
-        grid_line_colour = grid_line_colour,
-        grid_line_size = grid_linewidth,
-        grid_line_linetype = grid_line_linetype,
-        table_width = table_width,
-        plot_width = plot_width
-      ),
-      class = "ggforestplot_table_adder"
-    ))
-  }
-
-  .compose_forest_table(
-    plot = plot,
-    position = position,
-    columns = columns,
-    term_header = term_header,
-    n_header = n_header,
-    events_header = events_header,
-    estimate_label = estimate_label,
-    p_header = p_header,
-    column_labels = column_labels,
-    digits = digits,
-    estimate_digits = estimate_digits,
-    interval_digits = interval_digits,
-    p_digits = p_digits,
-    estimate_fmt = estimate_fmt,
-    ci_fmt = ci_fmt,
-    formatters = formatters,
-    reference_text = reference_text,
-    text_size = text_size,
-    header_text_size = header_text_size,
-    header_fontface = header_fontface,
-    header_family = header_family,
-    striped_rows = striped_rows,
-    stripe_fill = stripe_fill,
-    stripe_colour = stripe_colour,
-    stripe_alpha = stripe_alpha,
-    grid_lines = grid_lines,
-    grid_line_colour = grid_line_colour,
-    grid_line_size = grid_linewidth,
-    grid_line_linetype = grid_line_linetype,
-    table_width = table_width,
-    plot_width = plot_width
+  adder <- structure(
+    list(
+      position = position,
+      columns = columns,
+      term_header = term_header,
+      n_header = n_header,
+      events_header = events_header,
+      estimate_label = estimate_label,
+      p_header = p_header,
+      column_labels = column_labels,
+      digits = digits,
+      estimate_digits = estimate_digits,
+      interval_digits = interval_digits,
+      p_digits = p_digits,
+      estimate_fmt = estimate_fmt,
+      ci_fmt = ci_fmt,
+      formatters = formatters,
+      reference_text = reference_text,
+      text_style = text_style,
+      striped_rows = striped_rows,
+      stripe_fill = stripe_fill,
+      stripe_colour = stripe_colour,
+      stripe_alpha = stripe_alpha,
+      grid_lines = grid_lines,
+      grid_line_colour = grid_line_colour,
+      grid_line_size = grid_linewidth,
+      grid_line_linetype = grid_line_linetype,
+      table_width = table_width,
+      plot_width = plot_width
+    ),
+    class = "ggforestplot_table_adder"
   )
+
+  if (is.null(plot)) {
+    return(adder)
+  }
+  ggplot_add.ggforestplot_table_adder(adder, plot)
 }
 
 #' @export
 #' @keywords internal
 ggplot_add.ggforestplot_table_adder <- function(object, plot, ...) {
-  do.call(
-    .compose_forest_table,
-    c(list(plot = plot), object)
-  )
+  rlang::exec(.compose_forest_table, plot = plot, !!!object)
 }

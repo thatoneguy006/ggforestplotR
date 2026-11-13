@@ -14,7 +14,7 @@ test_that("formatter specifications and results are validated", {
   expect_error(build(list(p = "bad")), "function")
   expect_error(build(list(unknown = identity)), "Unknown formatter")
   expect_error(build(list(estimate = function(x) stop("boom"))),
-               "Formatter for `estimate` failed: boom")
+               "Formatter for `estimate` failed", class = "ggforestplotR_formatter_error")
   expect_error(apply_table_formatter(1:2, function(x) "fixed", key = "estimate"),
                "one value per input")
   expect_error(apply_table_formatter(1:2, function(x) list("a", "b"), key = "n"),

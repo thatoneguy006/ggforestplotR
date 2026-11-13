@@ -1,6 +1,6 @@
 Package: ggforestplotR
 Title: Publication-Ready Forest Plots with 'ggplot2'
-Version: 0.6.0
+Version: 0.6.0.9000
 Authors@R:
     person(given = "Carson",
            family = "Richardson",
@@ -14,9 +14,13 @@ Description: Transform model coefficients into flexible forest
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.1.0)
 Imports:
+    cli (>= 3.0.0),
     ggplot2 (>= 3.4.0),
     patchwork (>= 1.2.0),
+    purrr (>= 1.0.0),
     rlang (>= 1.1.0)
 Suggests:
     broom,
@@ -37,4 +41,4 @@ Config/testthat/edition: 3
 Config/Needs/website: pkgdown
 URL: https://thatoneguy006.github.io/ggforestplotR/, https://github.com/thatoneguy006/ggforestplotR
 BugReports: https://github.com/thatoneguy006/ggforestplotR/issues
-Config/roxygen2/version: 8.1.0
+Config/roxygen2/version: 8.1.1
