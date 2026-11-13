@@ -112,7 +112,7 @@ either side of the plot.
 
 ``` r
 
-ggforestplot(tabled_coefs, n = "sample_size", striped_rows = T) +
+ggforestplot(tabled_coefs, n = "sample_size", striped_rows = TRUE) +
   add_split_table(
     left_columns = c("term", "n"),
     right_columns = c("estimate"),
@@ -134,7 +134,7 @@ fit <- lm(mpg ~ wt + hp + qsec, data = mtcars)
 
 ggforestplot(fit, sort_terms = "descending",
              term_labels = c("wt" = "Weight"),
-             striped_rows = T) +
+             striped_rows = TRUE) +
   scale_x_continuous(breaks = seq(-6,2,1)) +
   add_forest_table()
 ```
@@ -143,11 +143,13 @@ ggforestplot(fit, sort_terms = "descending",
 
 ## Next articles
 
-For more detail, see:
-
-- `ggforestplotR-plot-customization` for enhanced customization of the
-  plots and summary tables.
-- `ggforestplotR-data-helpers` for the `forest_data` contract,
-  [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data.md),
-  and
-  [`forest_metadata()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_metadata.md).
+- [Customize Forest Plots and
+  Tables](https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-plot-customization.md)
+  for appearance, table formatting, layout, and export.
+- [Working with Fitted
+  Models](https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-fitted-models.md)
+  for supported models, effect scales, comparisons, and subgroup
+  effects.
+- [Preparing Forest
+  Data](https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-data-helpers.md)
+  for custom mappings, metadata, and structured rows.

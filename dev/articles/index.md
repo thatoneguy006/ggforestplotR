@@ -10,7 +10,12 @@
 - [Customize Forest Plots and
   Tables](https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-plot-customization.md):
 
-### Data Helpers
+### Working with Fitted Models
 
-- [Prepare Forest Data with Helper
-  Functions](https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-data-helpers.md):
+- [Working with Fitted
+  Models](https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-fitted-models.md):
+
+### Preparing Forest Data
+
+- [Preparing Forest
+  Data](https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-data-helpers.md):

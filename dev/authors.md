@@ -9,16 +9,19 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/thatoneguy006/ggforestplotR/blob/HEAD/DESCRIPTION)
+[`inst/CITATION`](https://github.com/thatoneguy006/ggforestplotR/blob/HEAD/inst/CITATION)
 
 Richardson C (2026). *ggforestplotR: Publication-Ready Forest Plots with
-'ggplot2'*. R package version 0.5.0.9000,
-<https://thatoneguy006.github.io/ggforestplotR/>.
+ggplot2*.
+[doi:10.32614/CRAN.package.ggforestplotR](https://doi.org/10.32614/CRAN.package.ggforestplotR).
+R package version 0.6.0.9000,
+<https://CRAN.R-project.org/package=ggforestplotR>.
 
     @Manual{,
-      title = {ggforestplotR: Publication-Ready Forest Plots with 'ggplot2'},
+      title = {{ggforestplotR}: Publication-Ready Forest Plots with {ggplot2}},
       author = {Carson Richardson},
       year = {2026},
-      note = {R package version 0.5.0.9000},
-      url = {https://thatoneguy006.github.io/ggforestplotR/},
+      note = {R package version 0.6.0.9000},
+      doi = {10.32614/CRAN.package.ggforestplotR},
+      url = {https://CRAN.R-project.org/package=ggforestplotR},
     }

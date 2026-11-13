@@ -26,7 +26,7 @@ add_split_table(
   reference_text = "Reference",
   text_size = NULL,
   header_text_size = NULL,
-  header_fontface = "bold",
+  header_fontface = NULL,
   header_family = NULL,
   striped_rows = NULL,
   stripe_fill = NULL,
@@ -34,7 +34,19 @@ add_split_table(
   stripe_alpha = NULL,
   left_width = NULL,
   plot_width = NULL,
-  right_width = NULL
+  right_width = NULL,
+  text_fontface = NULL,
+  text_family = NULL,
+  text_colour = NULL,
+  header_colour = NULL,
+  reference_text_size = NULL,
+  reference_fontface = NULL,
+  reference_family = NULL,
+  reference_colour = NULL,
+  row_header_text_size = NULL,
+  row_header_fontface = NULL,
+  row_header_family = NULL,
+  row_header_colour = NULL
 )
 ```
 
@@ -138,7 +150,9 @@ add_split_table(
   include `estimate`, `ci`, `conf.low`, `conf.high`, `p` (or `p.value`),
   `n`, `events`, `group`, and preserved source columns. Functions take
   precedence over digit settings; `estimate_fmt` and `ci_fmt` compose
-  the resulting strings.
+  the resulting strings. Numeric source columns without a formatter are
+  rounded to `estimate_digits`; whole numbers are shown without
+  decimals.
 
 - reference_text:
 
@@ -198,10 +212,42 @@ add_split_table(
   derived from the number of displayed right-side columns relative to
   `plot_width`.
 
+- text_fontface, text_family, text_colour:
+
+  Body font face, family, and colour. Font faces accept "plain", "bold",
+  "italic", "bold.italic", or codes 1:4.
+
+- header_colour:
+
+  Column-header text colour.
+
+- reference_text_size, reference_fontface, reference_family,
+  reference_colour:
+
+  Text styling for all cells of reference rows, including their labels.
+  Size is in millimeters. NULL inherits the corresponding body setting.
+
+- row_header_text_size, row_header_fontface, row_header_family,
+  row_header_colour:
+
+  Text styling for section and generated subgroup header rows, distinct
+  from column headers. Size is in millimeters. NULL inherits body
+  styling.
+
 ## Value
 
 A patchwork-composed plot containing a left table, the forest plot, and
 a right table, or a ggplot add-on object when `plot = NULL`.
+
+## Details
+
+Text settings inherit from
+[`forest_theme()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_theme.md)
+when applied before the table. Explicit non-NULL table arguments take
+precedence. Without a forest theme, body text defaults to 3.2 mm, plain,
+default device font, and black; column headers default to 11 points and
+bold. Body and column-header size units differ for compatibility with
+earlier versions.
 
 ## Examples
 

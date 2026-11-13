@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="index.html">ggforestplotR</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.5.0.9000</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.6.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,8 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/ggforestplotR-get-started.html">Get Started</a></li>
     <li><a class="dropdown-item" href="articles/ggforestplotR-plot-customization.html">Plot &amp; Table Customization</a></li>
-    <li><a class="dropdown-item" href="articles/ggforestplotR-data-helpers.html">Data Helpers</a></li>
+    <li><a class="dropdown-item" href="articles/ggforestplotR-fitted-models.html">Working with Fitted Models</a></li>
+    <li><a class="dropdown-item" href="articles/ggforestplotR-data-helpers.html">Preparing Forest Data</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -70,8 +71,8 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="ggforestplotr-">ggforestplotR <img src="reference/figures/ggforestplotR_favicon.png" align="right" height="160" alt=""><a class="anchor" aria-label="anchor" href="#ggforestplotr-"></a>
 </h1></div>
-<hr>
 <!-- badges: start -->
+
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
@@ -102,7 +103,7 @@
 <li>Plot directly from a table of coefficient data.</li>
 <li>Plot using data from a fitted model object.</li>
 </ul>
-<p>Both workflows are converted to a validated <code>forest_data</code> object before plotting. This object records the effect scale, confidence level, reference value, and source provenance independently of the fitted-model class.</p>
+<p>Both workflows are converted to a validated <code>forest_data</code> object before plotting. This object records the effect scale, confidence level, reference value, and data origin independently of the fitted-model class.</p>
 </div>
 <div class="section level2">
 <h2 id="basic-example">Basic example<a class="anchor" aria-label="anchor" href="#basic-example"></a>
@@ -162,6 +163,8 @@
 </li>
 <li>Plot &amp; Table customization: <a href="https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-plot-customization.html" class="uri">https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-plot-customization.html</a>
 </li>
+<li>Working with fitted models: <a href="https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-fitted-models.html" class="uri">https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-fitted-models.html</a>
+</li>
 <li>Data helpers: <a href="https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-data-helpers.html" class="uri">https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-data-helpers.html</a>
 </li>
 </ul>
@@ -173,9 +176,13 @@
 <li>
 <code><a href="reference/ggforestplot.html">ggforestplot()</a></code> builds the plotting panel from a data frame or supported model object.</li>
 <li>
+<code><a href="reference/forest_theme.html">forest_theme()</a></code> coordinates plot typography and table text styling.</li>
+<li>
 <code><a href="reference/add_forest_table.html">add_forest_table()</a></code> attaches a summary table to the left or right side of the plot.</li>
 <li>
 <code><a href="reference/add_split_table.html">add_split_table()</a></code> creates a more traditional forestplot layout with table columns on both sides of the plot.</li>
+<li>
+<code><a href="reference/add_favors.html">add_favors()</a></code> creates left/right arrows to indicate relative effects of increase/decrease.</li>
 <li>
 <code><a href="reference/bind_forest_models.html">bind_forest_models()</a></code> binds output from several models for grouped plotting.</li>
 <li>
@@ -187,33 +194,53 @@
 </ul>
 </div>
 </div>
-  </main><aside class="col-md-3"><div class="pkgdown-sidebar-section">
-  <h2>Docs</h2>
-  <ul class="list-unstyled">
+  </main><aside class="col-md-3"><div class="docs">
+<h2 data-toc-skip>Docs</h2>
+<ul class="list-unstyled">
+<li><ul>
 <li><a href="articles/ggforestplotR-get-started.html">Get started</a></li>
-    <li><a href="articles/ggforestplotR-plot-customization.html">Plot customization</a></li>
-    <li><a href="articles/ggforestplotR-data-helpers.html">Data helpers</a></li>
-    <li><a href="reference/index.html">Function reference</a></li>
-  </ul>
+<li><a href="articles/ggforestplotR-plot-customization.html">Plot customization</a></li>
+<li><a href="articles/ggforestplotR-fitted-models.html">Fitted models</a></li>
+<li><a href="articles/ggforestplotR-data-helpers.html">Preparing forest data</a></li>
+<li><a href="reference/index.html">Function reference</a></li>
+</ul></li>
+</ul>
 </div>
-<div class="pkgdown-sidebar-section">
-  <h2>Project</h2>
-  <ul class="list-unstyled">
+
+<div class="project">
+<h2 data-toc-skip>Project</h2>
+<ul class="list-unstyled">
+<li><ul>
 <li><a href="https://github.com/thatoneguy006/ggforestplotR" class="external-link">Browse source code</a></li>
-    <li><a href="https://github.com/thatoneguy006/ggforestplotR/issues" class="external-link">Report a bug</a></li>
-  </ul>
+<li><a href="https://github.com/thatoneguy006/ggforestplotR/issues" class="external-link">Report a bug</a></li>
+</ul></li>
+</ul>
 </div>
-<div class="pkgdown-sidebar-section">
-  <h2>Badges</h2>
-  <p>
-    <a href="https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml" class="external-link"><img alt="R-CMD-check" src="https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml/badge.svg"></a>
-  </p>
-  <p>
-    <a href="https://lifecycle.r-lib.org/articles/stages.html#stable" class="external-link"><img alt="Lifecycle: stable" src="https://img.shields.io/badge/lifecycle-stable-brightgreen.svg"></a>
-  </p>
-  <p>
-    <a href="https://opensource.org/licenses/MIT" class="external-link"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
-  </p>
+
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html#citation">Citing ggforestplotR</a></li>
+</ul>
+</div>
+
+<div class="developers">
+<h2 data-toc-skip>Developers</h2>
+<ul class="list-unstyled">
+<li>
+<a href="https://github.com/thatoneguy006" class="external-link">Carson Richardson</a> <br><small class="roles"> Author, maintainer, copyright holder </small> <a href="https://orcid.org/0009-0004-8710-1097" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+</ul>
+</div>
+
+<div class="badges">
+<h2 data-toc-skip>Badges</h2>
+<ul class="list-unstyled">
+<li>
+<p><a href="https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></p>
+<p><a href="https://lifecycle.r-lib.org/articles/stages.html#stable" class="external-link"><img src="https://img.shields.io/badge/lifecycle-stable-brightgreen.svg" alt="Lifecycle: stable"></a></p>
+<p><a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a></p>
+</li>
+</ul>
 </div>
 
   </aside>

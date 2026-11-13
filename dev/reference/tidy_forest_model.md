@@ -106,7 +106,8 @@ within each observed subgroup. Factor focal predictors use
 [`marginaleffects::avg_comparisons()`](https://rdrr.io/pkg/marginaleffects/man/comparisons.html)
 and compare each non-reference level with the first factor level. Both
 functions use the original fitted model and its variance-covariance
-matrix; no subgroup models are refitted.
+matrix; no subgroup models are refitted. For mixed models, subgroup
+effects are population-level (random effects set to zero).
 
 Automatic selection is deliberately conservative. It accepts one
 unambiguous continuous-by-factor interaction. Factor-by-factor

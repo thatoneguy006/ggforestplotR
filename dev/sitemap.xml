@@ -1,7 +1,9 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/CONTRIBUTING.html</loc></url>
 <url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/LICENSE-text.html</loc></url>
 <url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/LICENSE.html</loc></url>
 <url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-data-helpers.html</loc></url>
+<url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-fitted-models.html</loc></url>
 <url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-get-started.html</loc></url>
 <url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-plot-customization.html</loc></url>
 <url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/articles/index.html</loc></url>
@@ -14,6 +16,7 @@
 <url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data.html</loc></url>
 <url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/reference/bind_forest_models.html</loc></url>
 <url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_metadata.html</loc></url>
+<url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_theme.html</loc></url>
 <url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/reference/ggforestplot.html</loc></url>
 <url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/reference/ggforestplotR-package.html</loc></url>
 <url><loc>https://thatoneguy006.github.io/ggforestplotR/dev/reference/index.html</loc></url>

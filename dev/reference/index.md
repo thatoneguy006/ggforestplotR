@@ -6,6 +6,8 @@ Main plotting functions for forest plot creation and composition.
 
 - [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/ggforestplot.md)
   : Draw a ggplot2 forest plot
+- [`forest_theme()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_theme.md)
+  : Style a forest plot and its tables
 - [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/add_forest_table.md)
   : Add a summary table to a forest plot
 - [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/add_split_table.md)

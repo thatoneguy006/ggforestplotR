@@ -25,7 +25,7 @@ add_forest_table(
   reference_text = "Reference",
   text_size = NULL,
   header_text_size = NULL,
-  header_fontface = "bold",
+  header_fontface = NULL,
   header_family = NULL,
   striped_rows = NULL,
   stripe_fill = NULL,
@@ -33,10 +33,23 @@ add_forest_table(
   stripe_alpha = NULL,
   grid_lines = FALSE,
   grid_line_colour = "black",
-  grid_line_size = 0.3,
+  grid_linewidth = 0.3,
   grid_line_linetype = 1,
   table_width = NULL,
-  plot_width = NULL
+  plot_width = NULL,
+  grid_line_size = NULL,
+  text_fontface = NULL,
+  text_family = NULL,
+  text_colour = NULL,
+  header_colour = NULL,
+  reference_text_size = NULL,
+  reference_fontface = NULL,
+  reference_family = NULL,
+  reference_colour = NULL,
+  row_header_text_size = NULL,
+  row_header_fontface = NULL,
+  row_header_family = NULL,
+  row_header_colour = NULL
 )
 ```
 
@@ -137,7 +150,9 @@ add_forest_table(
   `n`, `events`, `group`, and preserved source columns. Each function
   receives a vector and returns one value per input. Functions take
   precedence over digit settings; `estimate_fmt` and `ci_fmt` compose
-  the resulting strings.
+  the resulting strings. Numeric source columns without a formatter are
+  rounded to `estimate_digits`; whole numbers are shown without
+  decimals.
 
 - reference_text:
 
@@ -189,7 +204,7 @@ add_forest_table(
 
   Colour used for the table grid lines.
 
-- grid_line_size:
+- grid_linewidth:
 
   Line width used for the table grid lines.
 
@@ -207,10 +222,46 @@ add_forest_table(
   Optional relative width allocated to the forest-plot panel. Defaults
   to `2.4`.
 
+- grid_line_size:
+
+  Deprecated. Use `grid_linewidth` instead.
+
+- text_fontface, text_family, text_colour:
+
+  Body font face, family, and colour. Font faces accept "plain", "bold",
+  "italic", "bold.italic", or codes 1:4.
+
+- header_colour:
+
+  Column-header text colour.
+
+- reference_text_size, reference_fontface, reference_family,
+  reference_colour:
+
+  Text styling for all cells of reference rows, including their labels.
+  Size is in millimeters. NULL inherits the corresponding body setting.
+
+- row_header_text_size, row_header_fontface, row_header_family,
+  row_header_colour:
+
+  Text styling for section and generated subgroup header rows, distinct
+  from column headers. Size is in millimeters. NULL inherits body
+  styling.
+
 ## Value
 
 A patchwork-composed plot containing the forest plot and side table, or
 a ggplot add-on object when `plot = NULL`.
+
+## Details
+
+Text settings inherit from
+[`forest_theme()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_theme.md)
+when applied before the table. Explicit non-NULL table arguments take
+precedence. Without a forest theme, body text defaults to 3.2 mm, plain,
+default device font, and black; column headers default to 11 points and
+bold. Body and column-header size units differ for compatibility with
+earlier versions.
 
 ## Examples
 

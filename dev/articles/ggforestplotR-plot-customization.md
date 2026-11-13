@@ -6,47 +6,9 @@ library(ggforestplotR)
 library(ggplot2)
 ```
 
-This article focuses on utility and enhanced customization of forest
-plots and accompanied tables.
-
-## Formatting table values with functions
-
-`formatters` accepts a named list of vectorized functions. Each function
-receives a source vector and returns one value per input. You can format
-built in statistics and any preserved source column. A `ci` formatter
-applies to both confidence bounds unless `conf.low` or `conf.high`
-overrides it.
-
-``` r
-
-format_data <- data.frame(
-  term = c("Age", "BMI"),
-  estimate = c(0.31, -0.24),
-  conf.low = c(0.12, -0.40),
-  conf.high = c(0.56, -0.08),
-  p.value = c(0.0004, 0.023),
-  prevalence = c(0.1543, 0.2871)
-)
-
-ggforestplot(format_data, p.value = "p.value") +
-  add_forest_table(
-    columns = c("term", "prevalence", "estimate", "p"),
-    formatters = list(
-      estimate = function(x) sprintf("%.1f", x),
-      ci = function(x) sprintf("%.3f", x),
-      p = function(x) ifelse(x < 0.001, "<0.001", sprintf("%.3f", x)),
-      prevalence = function(x) sprintf("%.1f%%", 100 * x)
-    ),
-    estimate_fmt = "{estimate} [{conf.low}, {conf.high}]"
-  )
-```
-
-![](ggforestplotR-plot-customization_files/figure-html/function-formatters-1.png)
-
-Formatter functions act on scalar source values before `estimate_fmt`
-and `ci_fmt` compose text, and before grouped cells are combined.
-Functions from other packages work when they follow the same vector
-input and output contract.
+This article covers plot appearance, table formatting, and figure
+layout. For model extraction, see [Working with Fitted
+Models](https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-fitted-models.md).
 
 ## Group rows and control strip placement
 
@@ -76,93 +38,133 @@ ggforestplot(
 
 ![](ggforestplotR-plot-customization_files/figure-html/facet-right-1.png)
 
-## Subgroup analyses
+## Labels, ordering, and styling
 
-### From a tibble
-
-There are two ways to plot subgroup analyses using
-[`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/ggforestplot.md).
-From a tibble, you can simply set `subgroup = "subgroup_variable_name"`.
-This functionality still works when some variables have subgroups and
-others don’t, demonstrated here.
+Use `term_labels` to rename displayed terms and `sort_terms` to order
+ordinary estimate rows. Subgroup and structured rows preserve source
+order and require `sort_terms = "none"`.
 
 ``` r
-
-mixed_coefs <- tibble::tribble(
-  ~term,    ~subgroup, ~estimate, ~conf.low, ~conf.high,
-  "Age",    NA_character_, 1.03,      1.01,       1.05,
-  "White",  "Race",        1.01,      0.95,       1.07,
-  "Black",  "Race",        0.89,      0.80,       0.99,
-  "BMI",    NA_character_, 0.97,      0.94,       1.00,
-  "Female", "Sex",         0.96,      0.89,       1.04,
-  "Male",   "Sex",         0.98,      0.92,       1.06
-)
 
 ggforestplot(
-  mixed_coefs,
-  term = "term",
-  subgroup = "subgroup",
-  estimate = "estimate",
-  conf.low = "conf.low",
-  conf.high = "conf.high",
-  exponentiate = TRUE,
+  coefs,
+  term_labels = c("Smoking" = "Smoking status"),
+  sort_terms = "descending",
+  striped_rows = TRUE,
+  stripe_fill = "grey94",
+  stripe_alpha = 0.6,
+  ref_colour = "grey40"
+) +
+  labs(x = "Coefficient (95% CI)", y = NULL) +
+  theme(axis.text = element_text(size = 10))
+```
+
+![](ggforestplotR-plot-customization_files/figure-html/labels-and-style-1.png)
+
+For hierarchical subgroups and reference rows, see [Preparing Forest
+Data](https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-data-helpers.md).
+
+## Coordinate plot and table typography
+
+Add
+[`forest_theme()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_theme.md)
+before a table helper to set plot typography and shared table text
+defaults. Use ordinary
+[`theme()`](https://ggplot2.tidyverse.org/reference/theme.html) settings
+after
+[`forest_theme()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_theme.md)
+for further plot adjustments, or pass named theme settings to
+[`forest_theme()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_theme.md).
+
+The table helpers also accept these controls directly, without a forest
+theme:
+
+| Target | Size | Face | Family | Colour |
+|:---|:---|:---|:---|:---|
+| Body rows | `text_size` | `text_fontface` | `text_family` | `text_colour` |
+| Column headers | `header_text_size` | `header_fontface` | `header_family` | `header_colour` |
+| Reference rows | `reference_text_size` | `reference_fontface` | `reference_family` | `reference_colour` |
+| Section/subgroup headers | `row_header_text_size` | `row_header_fontface` | `row_header_family` | `row_header_colour` |
+
+Body, reference, and row-header sizes use **millimeters**. Column-header
+sizes and `forest_theme(base_size = ...)` use **points**. Font faces
+accept `"plain"`, `"bold"`, `"italic"`, and `"bold.italic"`.
+
+Explicit non-NULL table arguments override theme settings. Unspecified
+reference and row-header properties inherit the resolved body style;
+column headers inherit body family and colour but retain their own size
+and face. Styling a reference row affects all its cells, including the
+term label and reference text. Row-header styling applies to explicit
+`"header"` rows and generated subgroup headers. Summary rows use the
+body style.
+
+``` r
+
+styled_data <- data.frame(
+  term = c("Treatment", "Control", "Active", "Age"),
+  estimate = c(NA, NA, 1.35, 1.02),
+  conf.low = c(NA, NA, 1.10, 1.01),
+  conf.high = c(NA, NA, 1.66, 1.03),
+  row_type = c("header", "reference", "estimate", "estimate")
+)
+
+styled_plot <- ggforestplot(
+  styled_data, row_type = "row_type", exponentiate = TRUE,
   striped_rows = TRUE
 ) +
-  add_forest_table()
+  forest_theme(
+    base_family = "serif",
+    text_size = 3.5,
+    row_header_fontface = "bold",
+    reference_fontface = "italic",
+    reference_colour = "grey40"
+  )
+
+styled_plot +
+  add_split_table(
+    left_columns = "term",
+    right_columns = c("estimate", "ci"),
+    header_colour = "navy",
+    header_text_size = 12,
+    reference_text = "Ref."
+  )
 ```
 
-![](ggforestplotR-plot-customization_files/figure-html/mixed-subgroups-1.png)
+![](ggforestplotR-plot-customization_files/figure-html/forest-theme-1.png)
 
-### Continuous-by-categorical
-
-The second way is to plot subgroup analyses from a fitted model. From
-your fitted model, call
-[`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/tidy_forest_model.md)
-and specify your `subgroup` and optionally your `focal` variable.
-`subgroup = "auto"` chooses the subgroup computations based on the
-model, otherwise you can specify the subgroup. `p_method` allows you to
-append overall p-values to the parent-row, or you can choose
-`p_method = "level"` if you want subgroup-specific p-values. Internally,
-the function calls on `marginaleffects` to compute interaction
-estimates.
+The same controls work with a side table, including direct function
+syntax:
 
 ``` r
 
-fit <- lm(wt ~ mpg*as.factor(cyl) + hp, data = mtcars)
-
-fit |>
-  tidy_forest_model(subgroup = "auto", focal = "mpg", p_method = "overall") |>
-    ggforestplot(striped_rows = T) +
-    add_forest_table(columns = c("term", "estimate", "p.value"))
+add_forest_table(
+  styled_plot,
+  columns = c("term", "estimate"),
+  text_family = "sans",
+  text_fontface = "plain",
+  header_fontface = "bold.italic",
+  reference_fontface = "bold",
+  row_header_colour = "navy"
+)
 ```
 
-![](ggforestplotR-plot-customization_files/figure-html/fitted-subgroups-1.png)
+![](ggforestplotR-plot-customization_files/figure-html/direct-text-styles-1.png)
 
-### Categorical-by-categorical
-
-``` r
-
-fit2 <- lm(wt ~ as.factor(gear)*as.factor(cyl) + hp + am, data = mtcars)
-
-fit2 |>
-  tidy_forest_model(subgroup = "gear", focal = "cyl", p_method = "level") |>
-  ggforestplot(striped_rows = T) +
-  theme(legend.position = "top") +
-  add_forest_table(columns = c("term", "estimate", "p.value"))
-#> Warning: Some coefficients are `NA`, possibly because the model matrix is rank
-#> deficient. In such cases, the quantities produced by `marginaleffects` may
-#> depend on the order of factor levels. This warning appears once per session.
-#> Warning: Model matrix is rank deficient. Some variance-covariance parameters are
-#>   missing.
-#> Warning: The `cyl` variable is treated as a categorical (factor) variable, but
-#> the original data is of class numeric. It is safer and faster to convert such
-#> variables to factor before fitting the model and calling a `marginaleffects`
-#> function. This warning appears once per session.
-```
-
-![](ggforestplotR-plot-customization_files/figure-html/subgroup-categorical-1.png)
+Text widths are measured using the chosen size, face, and family. Font
+availability depends on your graphics device; use an installed font or a
+generic family such as `"sans"`, `"serif"`, or `"mono"`. Larger text may
+also need a taller export to avoid crowding rows. Apply
+[`forest_theme()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_theme.md)
+before tables and favors; it is a forest-plot add-on, not a
+[`theme_set()`](https://ggplot2.tidyverse.org/reference/get_theme.html)
+replacement.
 
 ## Distinct variable separation
+
+Use `separate_groups` and `separate_lines` when you want a more distinct
+visual separation between variables. This is especially useful for
+categorical variables with many levels. `separate_groups` automatically
+appends the variable name to the level.
 
 Use `separate_groups` and `separate_lines` when you want a more distinct
 visual separation between variables. This is especially useful for
@@ -186,11 +188,7 @@ ggforestplot(
   separate_groups = "variable_block",
   separate_lines = TRUE,
   striped_rows = TRUE
-) +
-  scale_y_discrete(limits = rev(c("BMI", "Age", "Race: White", 
-                                  "Race: Black", "Race: Other")))
-#> Scale for y is already present.
-#> Adding another scale for y, which will replace the existing scale.
+)
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/separators-1.png)
@@ -200,10 +198,10 @@ ggforestplot(
 [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/add_forest_table.md)
 allows you to attach model information to the coefficient plot. The
 table can be added to either the left or right side and allows for some
-customization. You should **always** add the table **LAST**, after
-styling your plot because the function calls on `patchwork` internally.
-`patchwork` requires specific syntax to customize plots and is generally
-more difficult to get working correctly.
+customization. Apply plot scales, labels, and themes before adding a
+table. Table helpers return a patchwork composition. Add
+[`add_favors()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/add_favors.md)
+after the table when you want a directional footer.
 
 You can choose which columns from your dataframe to include in the table
 using the `columns` argument, and can change the labels using
@@ -211,9 +209,10 @@ using the `columns` argument, and can change the labels using
 `term_labels` to assign them new values. Some of the column labels are
 automatically assigned if no value is provided.
 
-Notice how we are explicitly naming *p.value* column? This is necessary
-in most cases because aliases are not yet incorporated (but they will
-be…I promise I’m getting to it).
+Map source p-values explicitly with `p.value = "p_value"`. Table
+selectors `"p"` and `"p.value"` refer to the canonical statistic; the
+mapped source name is also accepted. Mapping selects the data; table
+selectors control what is displayed.
 
 ``` r
 
@@ -249,7 +248,7 @@ ggforestplot(
 ) +
   add_forest_table(
     position = "left",
-    grid_lines = T,
+    grid_lines = TRUE,
     grid_line_linetype = 2,
     grid_line_colour = "red"
   )
@@ -286,55 +285,50 @@ ggforestplot(
     estimate_digits = 2,
     interval_digits = 3,
     p_digits = 2
-  ) 
+  )
 ```
 
 ![](ggforestplotR-plot-customization_files/figure-html/split-table-1.png)
 
-## Plotting other types of model coefficients
+## Formatting table values with functions
 
-You can use `exponentiate = TRUE` for models on the log-odds scale (or
-similar).
-
-``` r
-
-data(CO2)
-
-l1 <- glm(Treatment ~ conc + uptake + Type, family = binomial(link = "logit"), 
-    data = CO2)
-```
+`formatters` accepts a named list of vectorized functions. Each function
+receives a source vector and returns one value per input. You can format
+built in statistics and any preserved source column. A `ci` formatter
+applies to both confidence bounds unless `conf.low` or `conf.high`
+overrides it.
 
 ``` r
 
+format_data <- data.frame(
+  term = c("Age", "BMI"),
+  estimate = c(0.31, -0.24),
+  conf.low = c(0.12, -0.40),
+  conf.high = c(0.56, -0.08),
+  p.value = c(0.0004, 0.023),
+  prevalence = c(0.1543, 0.2871)
+)
 
-ggforestplot(l1, exponentiate = TRUE, striped_rows = T, term_labels = c("TypeMississippi" = "Mississippi")) +
-  add_forest_table(position = "left", 
-                   columns = c("term", "estimate"))
-```
-
-![](ggforestplotR-plot-customization_files/figure-html/logistic-regression-1.png)
-
-We can do this for survival models as well.
-
-``` r
-
-lung <- survival::lung
-
-lung <- lung |>  
-  dplyr::mutate(
-    status = dplyr::recode(status, `1` = 0, `2` = 1)
+ggforestplot(format_data, p.value = "p.value", staple_width = 0.1) +
+  add_split_table(
+    left_columns = c("term", "prevalence"),
+    right_columns = c("estimate", "p"),
+    formatters = list(
+      estimate = function(x) sprintf("%.1f", x),
+      ci = function(x) sprintf("%.3f", x),
+      p = function(x) ifelse(x < 0.001, "<0.001", sprintf("%.3f", x)),
+      prevalence = function(x) sprintf("%.1f%%", 100 * x)
+    ),
+    estimate_fmt = "{estimate} [{conf.low}, {conf.high}]"
   )
-
-s1 <- survival::coxph(Surv(time, status) ~ sex + age + ph.karno + pat.karno, data = lung)
 ```
 
-``` r
+![](ggforestplotR-plot-customization_files/figure-html/function-formatters-1.png)
 
-ggforestplot(s1, exponentiate = T, striped_rows = T) +
-  add_forest_table()
-```
-
-![](ggforestplotR-plot-customization_files/figure-html/survival-analysis-plot-1.png)
+Formatter functions act on scalar source values before `estimate_fmt`
+and `ci_fmt` compose text, and before grouped cells are combined.
+Functions from other packages work when they follow the same vector
+input and output contract.
 
 ## Compare multiple estimates
 
@@ -361,8 +355,8 @@ ggforestplot(
   scale_color_manual(values = c("#1F968BFF", "#453781FF")) +
   labs(color = "Model") +
   add_forest_table(
-    column_labels = c("term" = "Term", 
-                      "model" = "Model", 
+    column_labels = c("term" = "Term",
+                      "model" = "Model",
                       "estimate"  = "Estimate (95% CI)")
     )
 #> Scale for colour is already present.
@@ -371,30 +365,73 @@ ggforestplot(
 
 ![](ggforestplotR-plot-customization_files/figure-html/comparison-1.png)
 
-You can also use
-[`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/bind_forest_models.md)
-to plot estimates from several fit models at once.
+For comparing fitted models, see [Working with Fitted
+Models](https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-fitted-models.html#compare-fitted-models).
+
+## Marker sizes and confidence intervals
+
+Map `point_size` to a numeric source column.
 
 ``` r
 
-fit1 <- lm(mpg ~ cyl, data = mtcars)
-fit2 <- lm(mpg ~ cyl + disp, data = mtcars)
-fit3 <- lm(mpg ~ cyl + disp + wt, data = mtcars)
-
-bound_models <- bind_forest_models(list(fit1,fit2,fit3), 
-                                   model_labels = c("Unadjusted", 
-                                                    "Adjusted", 
-                                                    "Fully Adjusted"))
-
-ggforestplot(bound_models, striped_rows = T, p.value = "p.value") +
-  scale_x_continuous(limits = c(-6,1)) +
-  theme(legend.position = "top") +
-  scale_color_manual(values = c("#1F968BFF", "#453781FF", "#FDE725FF")) +
-  add_forest_table(columns = c("term", "model","estimate", "p.value"),
-                   p_digits = 4,
-                   )
-#> Scale for colour is already present.
-#> Adding another scale for colour, which will replace the existing scale.
+ggforestplot(coefs, point_size = "sample_size", point_shape = 15) +
+  scale_size_area(max_size = 5) +
+  labs(size = "Sample size")
 ```
 
-![](ggforestplotR-plot-customization_files/figure-html/bind-models-1.png)
+![](ggforestplotR-plot-customization_files/figure-html/marker-sizes-1.png)
+
+Use `ci_limits` to truncate displayed intervals with outward arrows. The
+underlying estimates and table values retain their original values.
+
+``` r
+
+ggforestplot(coefs, ci_limits = c(-0.2, 0.6), ci_arrows = TRUE,
+             striped_rows = TRUE) +
+  add_forest_table(columns = c("term", "estimate"))
+```
+
+![](ggforestplotR-plot-customization_files/figure-html/truncate-intervals-1.png)
+
+## Panel widths and directional labels
+
+Set relative panel widths to reserve room for labels and numeric
+columns. Side tables use `table_width` and `plot_width`; split tables
+use `left_width`, `plot_width`, and `right_width`.
+
+``` r
+
+publication_plot <- ggforestplot(
+  coefs, p.value = "p_value", striped_rows = TRUE
+) +
+  theme(axis.title.y = element_blank()) +
+  add_split_table(
+    left_columns = "term",
+    right_columns = c("estimate", "p"),
+    left_width = 1,
+    plot_width = 4,
+    right_width = 2
+  ) +
+  add_favors(left = "Lower outcome", right = "Higher outcome")
+
+publication_plot
+```
+
+![](ggforestplotR-plot-customization_files/figure-html/widths-and-favors-1.png)
+
+The footer uses the plot’s reference value. Choose labels appropriate to
+the outcome and contrast; lower values do not always mean benefit.
+
+## Save the complete figure
+
+Pass the composed object to
+[`ggsave()`](https://ggplot2.tidyverse.org/reference/ggsave.html).
+
+``` r
+
+ggsave("forest-plot.pdf", publication_plot, width = 10, height = 6)
+ggsave(
+  "forest-plot.png", publication_plot,
+  width = 10, height = 6, dpi = 300, bg = "white"
+)
+```

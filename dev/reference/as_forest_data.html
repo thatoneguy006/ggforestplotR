@@ -9,7 +9,7 @@ structure used throughout ggforestplotR."><meta name="robots" content="noindex">
 
     <a class="navbar-brand me-2" href="../index.html">ggforestplotR</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.5.0.9000</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.6.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,7 +23,8 @@ structure used throughout ggforestplotR."><meta name="robots" content="noindex">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/ggforestplotR-get-started.html">Get Started</a></li>
     <li><a class="dropdown-item" href="../articles/ggforestplotR-plot-customization.html">Plot &amp; Table Customization</a></li>
-    <li><a class="dropdown-item" href="../articles/ggforestplotR-data-helpers.html">Data Helpers</a></li>
+    <li><a class="dropdown-item" href="../articles/ggforestplotR-fitted-models.html">Working with Fitted Models</a></li>
+    <li><a class="dropdown-item" href="../articles/ggforestplotR-data-helpers.html">Preparing Forest Data</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -70,14 +71,14 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span><span class="co"># S3 method for class 'data.frame'</span></span>
 <span><span class="fu">as_forest_data</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  <span class="va">term</span>,</span>
-<span>  <span class="va">estimate</span>,</span>
-<span>  <span class="va">conf.low</span>,</span>
-<span>  <span class="va">conf.high</span>,</span>
+<span>  term <span class="op">=</span> <span class="st">"term"</span>,</span>
+<span>  estimate <span class="op">=</span> <span class="st">"estimate"</span>,</span>
+<span>  conf.low <span class="op">=</span> <span class="st">"conf.low"</span>,</span>
+<span>  conf.high <span class="op">=</span> <span class="st">"conf.high"</span>,</span>
 <span>  label <span class="op">=</span> <span class="va">term</span>,</span>
 <span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  grouping <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  facet <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  separate_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  events <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -94,7 +95,8 @@ structure used throughout <code>ggforestplotR</code>.</p>
 <span>  subgroup <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  p_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"level"</span><span class="op">)</span>,</span>
 <span>  row_type <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  <span class="va">...</span>,</span>
+<span>  grouping <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'lm'</span></span>
@@ -213,7 +215,8 @@ estimates and intervals. Tibbles and <code>data.table</code> objects are support
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Arguments passed to an <code>as_forest_data()</code> method.</p></dd>
+<dd><p>Not used by the model methods; must be empty. Unknown or misspelled
+arguments raise an error.</p></dd>
 
 
 <dt id="arg-term-labels">term_labels<a class="anchor" aria-label="anchor" href="#arg-term-labels"></a></dt>
@@ -229,9 +232,11 @@ is preserved.</p></dd>
 
 
 <dt id="arg-exponentiate">exponentiate<a class="anchor" aria-label="anchor" href="#arg-exponentiate"></a></dt>
-<dd><p>Compatibility argument. <code>TRUE</code> is equivalent to
-<code>estimate_scale = "ratio"</code>; <code>FALSE</code> is equivalent to
-<code>estimate_scale = "identity"</code> when <code>estimate_scale</code> is not supplied.</p></dd>
+<dd><p>Declares the scale of the supplied columns; values are never
+transformed for data frames. <code>TRUE</code> is equivalent to
+<code>estimate_scale = "ratio"</code> (columns already contain ratios); <code>FALSE</code> is
+equivalent to <code>estimate_scale = "identity"</code> when <code>estimate_scale</code> is not
+supplied.</p></dd>
 
 
 <dt id="arg-p-method">p_method<a class="anchor" aria-label="anchor" href="#arg-p-method"></a></dt>
@@ -268,7 +273,7 @@ estimates per row. If this column is a factor, its levels control the
 group legend and vertical dodge order.</p></dd>
 
 
-<dt id="arg-grouping">grouping<a class="anchor" aria-label="anchor" href="#arg-grouping"></a></dt>
+<dt id="arg-facet">facet<a class="anchor" aria-label="anchor" href="#arg-facet"></a></dt>
 <dd><p>Optional column name used to split rows into grouped plot
 sections.</p></dd>
 
@@ -349,7 +354,13 @@ column with ordinary coefficient p-values.</p></dd>
 <code>"reference"</code>, <code>"header"</code>, <code>"summary"</code>, or <code>"spacer"</code>. Estimate and
 summary rows require finite estimate and CI values; other rows require
 missing geometry. Structured rows retain source order, so use
-<code>sort_terms = "none"</code>. If omitted, all rows are estimates.</p></dd>
+<code>sort_terms = "none"</code>. If omitted, all rows are estimates.
+Summary rows are currently drawn with the same point and interval geometry
+as estimate rows; the row type is recorded for tables and downstream styling.</p></dd>
+
+
+<dt id="arg-grouping">grouping<a class="anchor" aria-label="anchor" href="#arg-grouping"></a></dt>
+<dd><p>Deprecated. Use <code>facet</code> instead.</p></dd>
 
 
 <dt id="arg-conf-int">conf.int<a class="anchor" aria-label="anchor" href="#arg-conf-int"></a></dt>

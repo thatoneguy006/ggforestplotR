@@ -21,14 +21,14 @@ as_forest_data(
 # S3 method for class 'data.frame'
 as_forest_data(
   data,
-  term,
-  estimate,
-  conf.low,
-  conf.high,
+  term = "term",
+  estimate = "estimate",
+  conf.low = "conf.low",
+  conf.high = "conf.high",
   label = term,
   term_labels = NULL,
   group = NULL,
-  grouping = NULL,
+  facet = NULL,
   separate_groups = NULL,
   n = NULL,
   events = NULL,
@@ -45,7 +45,8 @@ as_forest_data(
   subgroup = NULL,
   p_method = c("overall", "level"),
   row_type = NULL,
-  ...
+  ...,
+  grouping = NULL
 )
 
 # S3 method for class 'lm'
@@ -163,7 +164,8 @@ as_forest_data(
 
 - ...:
 
-  Arguments passed to an `as_forest_data()` method.
+  Not used by the model methods; must be empty. Unknown or misspelled
+  arguments raise an error.
 
 - term_labels:
 
@@ -177,9 +179,11 @@ as_forest_data(
 
 - exponentiate:
 
-  Compatibility argument. `TRUE` is equivalent to
-  `estimate_scale = "ratio"`; `FALSE` is equivalent to
-  `estimate_scale = "identity"` when `estimate_scale` is not supplied.
+  Declares the scale of the supplied columns; values are never
+  transformed for data frames. `TRUE` is equivalent to
+  `estimate_scale = "ratio"` (columns already contain ratios); `FALSE`
+  is equivalent to `estimate_scale = "identity"` when `estimate_scale`
+  is not supplied.
 
 - p_method:
 
@@ -215,7 +219,7 @@ as_forest_data(
   row. If this column is a factor, its levels control the group legend
   and vertical dodge order.
 
-- grouping:
+- facet:
 
   Optional column name used to split rows into grouped plot sections.
 
@@ -296,7 +300,14 @@ as_forest_data(
   `"reference"`, `"header"`, `"summary"`, or `"spacer"`. Estimate and
   summary rows require finite estimate and CI values; other rows require
   missing geometry. Structured rows retain source order, so use
-  `sort_terms = "none"`. If omitted, all rows are estimates.
+  `sort_terms = "none"`. If omitted, all rows are estimates. Summary
+  rows are currently drawn with the same point and interval geometry as
+  estimate rows; the row type is recorded for tables and downstream
+  styling.
+
+- grouping:
+
+  Deprecated. Use `facet` instead.
 
 - conf.int:
 

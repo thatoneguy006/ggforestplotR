@@ -1,7 +1,5 @@
 # ggforestplotR ![](reference/figures/ggforestplotR_favicon.png)
 
-------------------------------------------------------------------------
-
 ## Overview
 
 `ggforestplotR` provides a `ggplot2`-first workflow for building forest
@@ -33,7 +31,7 @@ remotes::install_github("thatoneguy006/ggforestplotR")
 
 Both workflows are converted to a validated `forest_data` object before
 plotting. This object records the effect scale, confidence level,
-reference value, and source provenance independently of the fitted-model
+reference value, and data origin independently of the fitted-model
 class.
 
 ## Basic example
@@ -97,6 +95,8 @@ ggforestplot(
   <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-get-started.html>
 - Plot & Table customization:
   <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-plot-customization.html>
+- Working with fitted models:
+  <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-fitted-models.html>
 - Data helpers:
   <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-data-helpers.html>
 
@@ -104,11 +104,16 @@ ggforestplot(
 
 - [`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/ggforestplot.md)
   builds the plotting panel from a data frame or supported model object.
+- [`forest_theme()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/forest_theme.md)
+  coordinates plot typography and table text styling.
 - [`add_forest_table()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/add_forest_table.md)
   attaches a summary table to the left or right side of the plot.
 - [`add_split_table()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/add_split_table.md)
   creates a more traditional forestplot layout with table columns on
   both sides of the plot.
+- [`add_favors()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/add_favors.md)
+  creates left/right arrows to indicate relative effects of
+  increase/decrease.
 - [`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/bind_forest_models.md)
   binds output from several models for grouped plotting.
 - [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data.md)
