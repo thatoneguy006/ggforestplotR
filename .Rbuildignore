@@ -34,5 +34,5 @@
 ^CRAN-SUBMISSION$
 ^CITATION\.cff$
 ^revdep$
-^.*\.Rproj$
-^\.Rproj\.user$
+^README\.Rmd$
+^CONTRIBUTING\.md$
