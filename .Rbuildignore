@@ -34,3 +34,5 @@
 ^CRAN-SUBMISSION$
 ^CITATION\.cff$
 ^revdep$
+^README\.Rmd$
+^CONTRIBUTING\.md$
