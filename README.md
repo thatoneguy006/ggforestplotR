@@ -1,28 +1,38 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # ggforestplotR <img src="man/figures/ggforestplotR_favicon.png" align="right" height="160" alt="" />
 
 <!-- badges: start -->
-  [![R-CMD-check](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml)
-  [![Codecov](https://codecov.io/gh/thatoneguy006/ggforestplotR/branch/dev/graph/badge.svg)](https://app.codecov.io/gh/thatoneguy006/ggforestplotR)
-  [![CRAN version](https://www.r-pkg.org/badges/version/ggforestplotR)](https://CRAN.R-project.org/package=ggforestplotR)
-  [![](https://cranlogs.r-pkg.org/badges/ggforestplotR)](https://cran.r-project.org/package=ggforestplotR)
+
+[![R-CMD-check](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml)
+[![Codecov](https://codecov.io/gh/thatoneguy006/ggforestplotR/branch/dev/graph/badge.svg)](https://app.codecov.io/gh/thatoneguy006/ggforestplotR)
+[![CRAN
+version](https://www.r-pkg.org/badges/version/ggforestplotR)](https://CRAN.R-project.org/package=ggforestplotR)
+[![](https://cranlogs.r-pkg.org/badges/ggforestplotR)](https://cran.r-project.org/package=ggforestplotR)
 <!-- badges: end -->
 
 ## Overview
-`ggforestplotR` provides a `ggplot2`-first workflow for building forest plots
-from tidy coefficient tables or fitted model objects.
+
+`ggforestplotR` provides a `ggplot2`-first workflow for building forest
+plots from tidy coefficient tables or fitted model objects.
 
 ## Installation
 
 ### CRAN
-```r
+
+``` r
 install.packages("ggforestplotR")
 ```
 
 ### Development
 
-```r
-#install.packages("remotes")
-remotes::install_github("thatoneguy006/ggforestplotR")
+You can install the development version of tidylandmark from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("thatoneguy006/ggforestplotR")
 ```
 
 ## Supported workflows
@@ -33,12 +43,13 @@ remotes::install_github("thatoneguy006/ggforestplotR")
 - Plot using data from a fitted model object.
 
 Both workflows are converted to a validated `forest_data` object before
-plotting. This object records the effect scale, confidence level, reference
-value, and data origin independently of the fitted-model class.
+plotting. This object records the effect scale, confidence level,
+reference value, and data origin independently of the fitted-model
+class.
 
 ## Basic example
 
-```r
+``` r
 library(ggforestplotR)
 library(ggplot2)
 
@@ -59,10 +70,9 @@ ggforestplot(
 )
 ```
 
-![](man/figures/README-forestplot-example.png)
-
 ## Add a summary table
-```r
+
+``` r
 ggforestplot(
   sectioned_coefs,
   striped_rows = TRUE,
@@ -71,10 +81,9 @@ ggforestplot(
   add_forest_table()
 ```
 
-![](man/figures/README-forestplot-table-example.png)
-
 ## Add a split summary table
-```r
+
+``` r
 ggforestplot(
   sectioned_coefs,
   striped_rows = TRUE,
@@ -83,25 +92,33 @@ ggforestplot(
   add_split_table()
 ```
 
-![](man/figures/README-forestplot-split-table-example.png)
-
 ## Learn more
 
 - Package website: <https://thatoneguy006.github.io/ggforestplotR/>
-- Get started: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-get-started.html>
-- Plot & Table customization: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-plot-customization.html>
-- Working with fitted models: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-fitted-models.html>
-- Data helpers: <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-data-helpers.html>
+- Get started:
+  <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-get-started.html>
+- Plot & Table customization:
+  <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-plot-customization.html>
+- Working with fitted models:
+  <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-fitted-models.html>
+- Data helpers:
+  <https://thatoneguy006.github.io/ggforestplotR/articles/ggforestplotR-data-helpers.html>
 
 ## Main functions
 
-- `ggforestplot()` builds the plotting panel from a data frame or supported model object.
+- `ggforestplot()` builds the plotting panel from a data frame or
+  supported model object.
 - `forest_theme()` coordinates plot typography and table text styling.
-- `add_forest_table()` attaches a summary table to the left or right side of the plot.
-- `add_split_table()` creates a more traditional forestplot layout with table columns on both sides of the plot.
-- `add_favors()` creates left/right arrows to indicate relative effects of increase/decrease.
-- `bind_forest_models()` binds output from several models for grouped plotting.
-- `as_forest_data()` is the S3 conversion interface for custom coefficient data
-  and supported fitted models.
+- `add_forest_table()` attaches a summary table to the left or right
+  side of the plot.
+- `add_split_table()` creates a more traditional forestplot layout with
+  table columns on both sides of the plot.
+- `add_favors()` creates left/right arrows to indicate relative effects
+  of increase/decrease.
+- `bind_forest_models()` binds output from several models for grouped
+  plotting.
+- `as_forest_data()` is the S3 conversion interface for custom
+  coefficient data and supported fitted models.
 - `forest_metadata()` inspects effect-scale and source metadata.
-- `tidy_forest_model()` is used as a post-estimation interface for fitted models.
+- `tidy_forest_model()` is used as a post-estimation interface for
+  fitted models.
