@@ -4,6 +4,7 @@
   [![R-CMD-check](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thatoneguy006/ggforestplotR/actions/workflows/R-CMD-check.yaml)
   [![Codecov](https://codecov.io/gh/thatoneguy006/ggforestplotR/branch/dev/graph/badge.svg)](https://app.codecov.io/gh/thatoneguy006/ggforestplotR)
   [![CRAN version](https://www.r-pkg.org/badges/version/ggforestplotR)](https://CRAN.R-project.org/package=ggforestplotR)
+  [![](https://cranlogs.r-pkg.org/badges/ggforestplotR)](https://cran.r-project.org/package=ggforestplotR)
 <!-- badges: end -->
 
 ## Overview
