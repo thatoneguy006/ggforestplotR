@@ -16,10 +16,13 @@ install.packages("ggforestplotR")
 
 ### Development
 
+You can install the development version of tidylandmark from
+[GitHub](https://github.com/) with:
+
 ``` r
 
-#install.packages("remotes")
-remotes::install_github("thatoneguy006/ggforestplotR")
+# install.packages("pak")
+pak::pak("thatoneguy006/ggforestplotR")
 ```
 
 ## Supported workflows
@@ -58,8 +61,6 @@ ggforestplot(
 )
 ```
 
-![](reference/figures/README-forestplot-example.png)
-
 ## Add a summary table
 
 ``` r
@@ -72,8 +73,6 @@ ggforestplot(
   add_forest_table()
 ```
 
-![](reference/figures/README-forestplot-table-example.png)
-
 ## Add a split summary table
 
 ``` r
@@ -85,8 +84,6 @@ ggforestplot(
 ) +
   add_split_table()
 ```
-
-![](reference/figures/README-forestplot-split-table-example.png)
 
 ## Learn more
 
