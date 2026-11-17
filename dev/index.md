@@ -61,6 +61,8 @@ ggforestplot(
 )
 ```
 
+![](reference/figures/README-basic-example-1.png)
+
 ## Add a summary table
 
 ``` r
@@ -73,6 +75,8 @@ ggforestplot(
   add_forest_table()
 ```
 
+![](reference/figures/README-summary-table-1.png)
+
 ## Add a split summary table
 
 ``` r
@@ -84,6 +88,8 @@ ggforestplot(
 ) +
   add_split_table()
 ```
+
+![](reference/figures/README-split-table-1.png)
 
 ## Learn more
 
