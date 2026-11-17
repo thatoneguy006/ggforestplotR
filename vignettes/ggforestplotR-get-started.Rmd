@@ -95,7 +95,9 @@ tabled_coefs <- data.frame(
 ggforestplot(tabled_coefs, striped_rows = TRUE) +
   add_forest_table(
     position = "left",
-    column_labels = c("term" = "Variable", "sample_size" = "N", "estimate" = "Beta (95% CI)"),
+    column_labels = c("term" = "Variable", 
+                      "sample_size" = "N", 
+                      "estimate" = "Beta (95% CI)"),
     columns = c("term", "sample_size", "estimate"),
     estimate_digits = 2,
     interval_digits = 3

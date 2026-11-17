@@ -357,7 +357,7 @@ publication_plot
 ```
 
 The footer uses the plot's reference value. Choose labels appropriate to the
-outcome and contrast; lower values do not always mean benefit.
+outcome and contrast.
 
 ## Save the complete figure
 

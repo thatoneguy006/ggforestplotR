@@ -132,7 +132,7 @@ reference values, and confidence levels. Labels follow the supplied model
 order. Also check that outcomes, predictor units, and populations make the
 comparison meaningful.
 
-```{r bind-models, fig.width=8, fig.height=4.5, dpi=300}
+```{r bind-models, fig.width=8, fig.height=4.5, dpi=300, message=FALSE}
 fit1 <- lm(mpg ~ cyl, data = mtcars)
 fit2 <- lm(mpg ~ cyl + qsec, data = mtcars)
 fit3 <- lm(mpg ~ cyl + qsec + wt, data = mtcars)
@@ -145,7 +145,7 @@ bound_models <- bind_forest_models(
 ggforestplot(bound_models, striped_rows = TRUE, p.value = "p.value") +
   scale_x_continuous(limits = c(-6, 2)) +
   theme(legend.position = "top") +
-  scale_color_manual(values = c("#1F968BFF", "#453781FF", "#FDE725FF")) +
+  scale_color_manual(values = c("#1F968BFF", "#453781FF", "#10A53dFF")) +
   add_forest_table(
     columns = c("term", "model", "estimate", "p.value"),
     p_digits = 4
@@ -226,7 +226,7 @@ test and places it on the subgroup header; `"level"` retains the tests returned
 for the derived effects and places them on the subgroup rows.
 
 ### Categorical-by-categorical
-```{r subgroup-categorical}
+```{r subgroup-categorical, message=FALSE, warning=FALSE}
 fit2 <- lm(wt ~ as.factor(gear)*as.factor(cyl) + hp + am, data = mtcars)
 
 fit2 |>
@@ -235,7 +235,6 @@ fit2 |>
   theme(legend.position = "top") +
   add_forest_table(columns = c("term", "estimate", "p.value"))
 ```
-
 
 For mixed models, derived effects are population-level (random effects set to
 zero). Supported subgroup links are identity, logit, and log; Cox effects use
