@@ -420,7 +420,7 @@ publication_plot
 ![](ggforestplotR-plot-customization_files/figure-html/widths-and-favors-1.png)
 
 The footer uses the plot’s reference value. Choose labels appropriate to
-the outcome and contrast; lower values do not always mean benefit.
+the outcome and contrast.
 
 ## Save the complete figure
 

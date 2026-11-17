@@ -153,13 +153,11 @@ bound_models <- bind_forest_models(
 ggforestplot(bound_models, striped_rows = TRUE, p.value = "p.value") +
   scale_x_continuous(limits = c(-6, 2)) +
   theme(legend.position = "top") +
-  scale_color_manual(values = c("#1F968BFF", "#453781FF", "#FDE725FF")) +
+  scale_color_manual(values = c("#1F968BFF", "#453781FF", "#10A53dFF")) +
   add_forest_table(
     columns = c("term", "model", "estimate", "p.value"),
     p_digits = 4
   )
-#> Scale for colour is already present.
-#> Adding another scale for colour, which will replace the existing scale.
 ```
 
 ![](ggforestplotR-fitted-models_files/figure-html/bind-models-1.png)
@@ -288,15 +286,6 @@ fit2 |>
   ggforestplot(striped_rows = TRUE) +
   theme(legend.position = "top") +
   add_forest_table(columns = c("term", "estimate", "p.value"))
-#> Warning: Some coefficients are `NA`, possibly because the model matrix is rank
-#> deficient. In such cases, the quantities produced by `marginaleffects` may
-#> depend on the order of factor levels. This warning appears once per session.
-#> Warning: Model matrix is rank deficient. Some variance-covariance parameters are
-#>   missing.
-#> Warning: The `cyl` variable is treated as a categorical (factor) variable, but
-#> the original data is of class numeric. It is safer and faster to convert such
-#> variables to factor before fitting the model and calling a `marginaleffects`
-#> function. This warning appears once per session.
 ```
 
 ![](ggforestplotR-fitted-models_files/figure-html/subgroup-categorical-1.png)
