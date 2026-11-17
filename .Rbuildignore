@@ -36,3 +36,5 @@
 ^revdep$
 ^README\.Rmd$
 ^CONTRIBUTING\.md$
+^.*\.Rproj$
+^\.Rproj\.user$

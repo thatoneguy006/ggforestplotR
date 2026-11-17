@@ -60,7 +60,7 @@ value, and data origin independently of the fitted-model class.
 
 ## Basic example
 
-```r
+```{r basic-example, fig.width=6, fig.height=4}
 library(ggforestplotR)
 library(ggplot2)
 
@@ -82,7 +82,7 @@ ggforestplot(
 ```
 
 ## Add a summary table
-```r
+```{r summary-table, fig.width=8, fig.height=4}
 ggforestplot(
   sectioned_coefs,
   striped_rows = TRUE,
@@ -92,7 +92,7 @@ ggforestplot(
 ```
 
 ## Add a split summary table
-```r
+```{r split-table, fig.width=8, fig.height=4}
 ggforestplot(
   sectioned_coefs,
   striped_rows = TRUE,

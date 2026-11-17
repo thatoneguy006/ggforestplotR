@@ -18,3 +18,4 @@ website/
 .quarto-roaming/
 .pkg-lib/
 vignettes/*.html
+CRAN-SUBMISSION
