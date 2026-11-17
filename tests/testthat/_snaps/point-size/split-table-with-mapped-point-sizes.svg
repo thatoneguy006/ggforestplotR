@@ -58,10 +58,10 @@
 <rect x='386.85' y='22.78' width='327.67' height='547.74' style='stroke-width: 0.00; stroke: none;' />
 </g>
 <g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
-<text x='20.51' y='416.88' style='font-size: 9.10px; font-family: sans;' textLength='41.50px' lengthAdjust='spacingAndGlyphs'>Treatment</text>
-<text x='20.51' y='272.41' style='font-size: 9.10px; font-family: sans;' textLength='29.35px' lengthAdjust='spacingAndGlyphs'>Clinical</text>
-<text x='20.51' y='127.93' style='font-size: 9.10px; font-family: sans;' textLength='29.35px' lengthAdjust='spacingAndGlyphs'>Clinical</text>
-<text x='20.51' y='36.97' style='font-size: 11.00px; font-weight: bold; font-family: sans;' textLength='34.86px' lengthAdjust='spacingAndGlyphs'>section</text>
+<text x='20.61' y='416.88' style='font-size: 9.10px; font-family: sans;' textLength='41.50px' lengthAdjust='spacingAndGlyphs'>Treatment</text>
+<text x='20.61' y='272.41' style='font-size: 9.10px; font-family: sans;' textLength='29.35px' lengthAdjust='spacingAndGlyphs'>Clinical</text>
+<text x='20.61' y='127.93' style='font-size: 9.10px; font-family: sans;' textLength='29.35px' lengthAdjust='spacingAndGlyphs'>Clinical</text>
+<text x='20.61' y='36.97' style='font-size: 11.00px; font-weight: bold; font-family: sans;' textLength='34.86px' lengthAdjust='spacingAndGlyphs'>section</text>
 </g>
 <defs>
   <clipPath id='cpMTE4LjM2fDM4Ni44NXwzOC4xMnw1MDAuNDQ='>
@@ -99,13 +99,13 @@
 <text x='325.83' y='511.42' text-anchor='middle' style='font-size: 8.80px; fill: #4D4D4D; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>0.4</text>
 <text x='374.65' y='511.42' text-anchor='middle' style='font-size: 8.80px; fill: #4D4D4D; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>0.6</text>
 <text x='252.60' y='523.56' text-anchor='middle' style='font-size: 11.00px; font-family: sans;' textLength='89.26px' lengthAdjust='spacingAndGlyphs'>Estimate (95% CI)</text>
-<text x='483.56' y='416.88' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='41.50px' lengthAdjust='spacingAndGlyphs'>Treatment</text>
-<text x='483.56' y='272.41' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='16.19px' lengthAdjust='spacingAndGlyphs'>BMI</text>
-<text x='483.56' y='127.93' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='16.20px' lengthAdjust='spacingAndGlyphs'>Age</text>
+<text x='481.64' y='416.88' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='41.50px' lengthAdjust='spacingAndGlyphs'>Treatment</text>
+<text x='481.64' y='272.41' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='16.19px' lengthAdjust='spacingAndGlyphs'>BMI</text>
+<text x='481.64' y='127.93' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='16.20px' lengthAdjust='spacingAndGlyphs'>Age</text>
 <text x='690.28' y='416.88' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='66.82px' lengthAdjust='spacingAndGlyphs'>0.40 (0.20, 0.60)</text>
 <text x='690.28' y='272.41' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='72.88px' lengthAdjust='spacingAndGlyphs'>-0.20 (-0.40, 0.00)</text>
 <text x='690.28' y='127.93' text-anchor='end' style='font-size: 9.10px; font-family: sans;' textLength='66.82px' lengthAdjust='spacingAndGlyphs'>0.30 (0.10, 0.50)</text>
-<text x='483.56' y='36.97' text-anchor='end' style='font-size: 11.00px; font-weight: bold; font-family: sans;' textLength='25.67px' lengthAdjust='spacingAndGlyphs'>Term</text>
+<text x='481.64' y='36.97' text-anchor='end' style='font-size: 11.00px; font-weight: bold; font-family: sans;' textLength='25.67px' lengthAdjust='spacingAndGlyphs'>Term</text>
 <text x='690.28' y='36.97' text-anchor='end' style='font-size: 11.00px; font-weight: bold; font-family: sans;' textLength='89.26px' lengthAdjust='spacingAndGlyphs'>Estimate (95% CI)</text>
 <rect x='245.69' y='536.80' width='228.62' height='28.24' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
 <text x='251.17' y='554.71' style='font-size: 11.00px; font-family: sans;' textLength='7.95px' lengthAdjust='spacingAndGlyphs'>N</text>

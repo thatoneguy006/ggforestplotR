@@ -135,7 +135,7 @@ test_that("split tables render points sized by a source column", {
   plot <- ggforestplot(point_size_data(), point_size = "N") +
     ggplot2::scale_size_continuous(range = c(2, 6)) +
     ggplot2::theme(legend.position = "bottom")
-  out <- add_split_table(
+  out <- snapshot_split_table(
     plot,
     left_columns = "section",
     right_columns = c("term", "estimate"),

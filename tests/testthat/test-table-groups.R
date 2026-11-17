@@ -118,7 +118,7 @@ test_that("grouped subgroup tables respect custom row selections", {
 test_that("split tables render aligned grouped subgroup rows", {
   skip_if_not_installed("vdiffr")
   plot <- grouped_subgroup_plot(striped_rows = TRUE, dodge_width = 0.8)
-  out <- add_split_table(
+  out <- snapshot_split_table(
     plot,
     left_columns = c("term", "group"),
     right_columns = c("estimate", "p")
@@ -138,7 +138,7 @@ test_that("split tables render aligned grouped subgroup facets", {
   plot <- grouped_subgroup_plot(
     rbind(first, second), facet = "section", dodge_width = 0.8
   )
-  out <- add_split_table(
+  out <- snapshot_split_table(
     plot,
     left_columns = c("term", "group"),
     right_columns = c("estimate", "ci", "p")
