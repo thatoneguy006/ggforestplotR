@@ -267,7 +267,10 @@ ratios <- marginaleffects::avg_comparisons(
   transform = exp
 )
 
-ggforestplot(ratios, subgroup = "term", term_labels = c(hp = "Horsepower", wt = "Weight", cyl = "Cylinders")) +
+ggforestplot(ratios, 
+             subgroup = "term", 
+             term_labels = c(hp = "Horsepower",
+                             wt = "Weight", cyl = "Cylinders")) +
   add_forest_table(columns = c("term", "estimate", "ci", "p"))
 ```
 
@@ -278,7 +281,8 @@ subgroups.
 ```{r marginaleffects-by, eval = requireNamespace("marginaleffects", quietly = TRUE), message=FALSE, warning=FALSE}
 interaction_lm <- lm(mpg ~ wt * factor(am) + hp, data = mtcars)
 
-marginaleffects::avg_comparisons(interaction_lm, variables = c("wt", "hp"), by = "am") |>
+marginaleffects::avg_comparisons(interaction_lm, variables = c("wt", "hp"), 
+                                 by = "am") |>
   ggforestplot(group = "am") +
   theme(legend.position = "top")
 ```
@@ -313,10 +317,12 @@ crude <- gtsummary::tbl_uvregression(
   method.args = list(family = binomial),
   exponentiate = TRUE
 )
-adjusted <- glm(response ~ age + grade + trt, data = trial, family = binomial()) |>
+adjusted <- glm(response ~ age + grade + trt, 
+                data = trial, family = binomial()) |>
   gtsummary::tbl_regression(exponentiate = TRUE)
 
-gtsummary::tbl_merge(list(crude, adjusted), tab_spanner = c("**Crude**", "**Adjusted**")) |>
+gtsummary::tbl_merge(list(crude, adjusted), 
+                     tab_spanner = c("**Crude**", "**Adjusted**")) |>
   ggforestplot(striped_rows = TRUE) +
   theme(legend.position = "top") +
   add_forest_table(columns = c("term", "group", "estimate", "ci"))
