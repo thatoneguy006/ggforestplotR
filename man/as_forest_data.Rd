@@ -274,6 +274,29 @@ for table helpers so they can be displayed with
 Standardizes a coefficient table into the internal forest-plot data
 structure used throughout \code{ggforestplotR}.
 }
+\section{Supported inputs}{
+
+Methods are available for:
+\itemize{
+\item Data frames, tibbles, and \code{data.table} objects (documented here).
+\item Fitted models: \code{lm}, \code{glm}, \code{coxph}, \code{merMod}, \code{lme}, and \code{glmmTMB}
+(documented here and in \code{\link[=tidy_forest_model]{tidy_forest_model()}}).
+\item \code{marginaleffects} results from \code{comparisons()}, \code{avg_comparisons()},
+\code{predictions()}, \code{avg_predictions()}, \code{slopes()}, \code{avg_slopes()}, and
+\code{hypotheses()}; see \link{as_forest_data_marginaleffects}.
+\item \code{emmeans} results from \code{emmeans()}, \code{pairs()}, \code{contrast()},
+\code{summary()}, and \code{confint()}; see \link{as_forest_data_emmeans}.
+\item \code{gtsummary} regression tables from \code{tbl_regression()},
+\code{tbl_uvregression()}, \code{tbl_merge()}, and \code{tbl_stack()}; see
+\link{as_forest_data_gtsummary}.
+\item \code{parameters} tables from \code{model_parameters()}; see
+\link{as_forest_data_parameters}.
+}
+
+The same objects can be passed directly to \code{\link[=ggforestplot]{ggforestplot()}} and
+\code{\link[=bind_forest_models]{bind_forest_models()}}.
+}
+
 \examples{
 raw <- data.frame(
   variable = c("Age", "BMI", "Treatment"),

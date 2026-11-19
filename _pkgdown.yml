@@ -113,6 +113,15 @@ reference:
       - forest_metadata
       - tidy_forest_model
       - bind_forest_models
+  - title: Post-Estimation and Summary Tables
+    desc: >
+      Methods for results that already contain estimates and confidence
+      intervals.
+    contents:
+      - as_forest_data_marginaleffects
+      - as_forest_data_emmeans
+      - as_forest_data_gtsummary
+      - as_forest_data_parameters
 
 footer:
   structure:

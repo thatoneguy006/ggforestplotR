@@ -3,6 +3,26 @@
 #' Standardizes a coefficient table into the internal forest-plot data
 #' structure used throughout `ggforestplotR`.
 #'
+#' @section Supported inputs:
+#' Methods are available for:
+#'
+#' * Data frames, tibbles, and `data.table` objects (documented here).
+#' * Fitted models: `lm`, `glm`, `coxph`, `merMod`, `lme`, and `glmmTMB`
+#'   (documented here and in [tidy_forest_model()]).
+#' * `marginaleffects` results from `comparisons()`, `avg_comparisons()`,
+#'   `predictions()`, `avg_predictions()`, `slopes()`, `avg_slopes()`, and
+#'   `hypotheses()`; see [as_forest_data_marginaleffects].
+#' * `emmeans` results from `emmeans()`, `pairs()`, `contrast()`,
+#'   `summary()`, and `confint()`; see [as_forest_data_emmeans].
+#' * `gtsummary` regression tables from `tbl_regression()`,
+#'   `tbl_uvregression()`, `tbl_merge()`, and `tbl_stack()`; see
+#'   [as_forest_data_gtsummary].
+#' * `parameters` tables from `model_parameters()`; see
+#'   [as_forest_data_parameters].
+#'
+#' The same objects can be passed directly to [ggforestplot()] and
+#' [bind_forest_models()].
+#'
 #' @param data A data frame or data-frame subclass containing coefficient
 #'   estimates and intervals. Tibbles and `data.table` objects are supported.
 #' @param term Column name holding the model term identifier.

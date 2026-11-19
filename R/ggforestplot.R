@@ -3,8 +3,13 @@
 #' Builds a forest plot from standardized coefficient data or directly from a
 #' fitted model.
 #'
-#' @param data Either a tidy coefficient data frame or a model object
-#'   supported by [broom::tidy()].
+#' @param data A tidy coefficient data frame, a fitted model supported by
+#'   [broom::tidy()], or a result object with its own estimates and intervals,
+#'   such as output from `marginaleffects`, `emmeans`, `gtsummary`, or
+#'   `parameters`. See the supported inputs in
+#'   [as_forest_data()]. For result objects, `group`, `facet`, and `subgroup`
+#'   map their identifier columns where the method supports it, and
+#'   `conf.level` is only forwarded when supplied.
 #' @param term Column name holding the model term identifiers.
 #' @param estimate Column name holding the point estimates.
 #' @param conf.low Column name holding the lower confidence bounds.
@@ -236,6 +241,23 @@ ggforestplot <- function(data,
       term_labels = term_labels,
       sort_terms = sort_terms
     )
+  } else if (is_forest_result(data)) {
+    # Post-estimation and summary-table objects carry their own estimates,
+    # intervals, and confidence level, so only explicit choices are forwarded.
+    result_args <- list(
+      exponentiate = exponentiate,
+      term_labels = term_labels,
+      sort_terms = sort_terms
+    )
+    if (!conf_level_missing) {
+      result_args$conf.level <- conf.level
+    }
+    if (!p_method_missing) {
+      result_args$p_method <- p_method
+    }
+    mapped_columns <- list(group = group, facet = facet, subgroup = subgroup)
+    mapped_columns <- mapped_columns[!vapply(mapped_columns, is.null, logical(1))]
+    rlang::exec(as_forest_data, data, !!!result_args, !!!mapped_columns)
   } else if (is.data.frame(data)) {
     as_forest_data(
       data = data,
