@@ -333,6 +333,39 @@ and the table composition helpers. Original data-frame columns are
 retained for table helpers so they can be displayed with
 `add_forest_table(columns = ...)`.
 
+## Supported inputs
+
+Methods are available for:
+
+- Data frames, tibbles, and `data.table` objects (documented here).
+
+- Fitted models: `lm`, `glm`, `coxph`, `merMod`, `lme`, and `glmmTMB`
+  (documented here and in
+  [`tidy_forest_model()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/tidy_forest_model.md)).
+
+- `marginaleffects` results from `comparisons()`, `avg_comparisons()`,
+  `predictions()`, `avg_predictions()`, `slopes()`, `avg_slopes()`, and
+  `hypotheses()`; see
+  [as_forest_data_marginaleffects](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_marginaleffects.md).
+
+- `emmeans` results from `emmeans()`,
+  [`pairs()`](https://rdrr.io/r/graphics/pairs.html), `contrast()`,
+  [`summary()`](https://rdrr.io/r/base/summary.html), and
+  [`confint()`](https://rdrr.io/r/stats/confint.html); see
+  [as_forest_data_emmeans](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_emmeans.md).
+
+- `gtsummary` regression tables from `tbl_regression()`,
+  `tbl_uvregression()`, `tbl_merge()`, and `tbl_stack()`; see
+  [as_forest_data_gtsummary](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_gtsummary.md).
+
+- `parameters` tables from `model_parameters()`; see
+  [as_forest_data_parameters](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_parameters.md).
+
+The same objects can be passed directly to
+[`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/ggforestplot.md)
+and
+[`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/bind_forest_models.md).
+
 ## Examples
 
 ``` r

@@ -387,6 +387,26 @@ the table composition helpers. Original data-frame columns are retained
 for table helpers so they can be displayed with
 <code>add_forest_table(columns = ...)</code>.</p>
     </div>
+    <div class="section level2">
+    <h2 id="supported-inputs">Supported inputs<a class="anchor" aria-label="anchor" href="#supported-inputs"></a></h2>
+
+
+<p>Methods are available for:</p><ul><li><p>Data frames, tibbles, and <code>data.table</code> objects (documented here).</p></li>
+<li><p>Fitted models: <code>lm</code>, <code>glm</code>, <code>coxph</code>, <code>merMod</code>, <code>lme</code>, and <code>glmmTMB</code>
+(documented here and in <code><a href="tidy_forest_model.html">tidy_forest_model()</a></code>).</p></li>
+<li><p><code>marginaleffects</code> results from <code>comparisons()</code>, <code>avg_comparisons()</code>,
+<code>predictions()</code>, <code>avg_predictions()</code>, <code>slopes()</code>, <code>avg_slopes()</code>, and
+<code>hypotheses()</code>; see <a href="as_forest_data_marginaleffects.html">as_forest_data_marginaleffects</a>.</p></li>
+<li><p><code>emmeans</code> results from <code>emmeans()</code>, <code><a href="https://rdrr.io/r/graphics/pairs.html" class="external-link">pairs()</a></code>, <code>contrast()</code>,
+<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, and <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code>; see <a href="as_forest_data_emmeans.html">as_forest_data_emmeans</a>.</p></li>
+<li><p><code>gtsummary</code> regression tables from <code>tbl_regression()</code>,
+<code>tbl_uvregression()</code>, <code>tbl_merge()</code>, and <code>tbl_stack()</code>; see
+<a href="as_forest_data_gtsummary.html">as_forest_data_gtsummary</a>.</p></li>
+<li><p><code>parameters</code> tables from <code>model_parameters()</code>; see
+<a href="as_forest_data_parameters.html">as_forest_data_parameters</a>.</p></li>
+</ul><p>The same objects can be passed directly to <code><a href="ggforestplot.html">ggforestplot()</a></code> and
+<code><a href="bind_forest_models.html">bind_forest_models()</a></code>.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

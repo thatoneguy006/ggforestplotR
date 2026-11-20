@@ -109,8 +109,13 @@ fitted model.</p>
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>Either a tidy coefficient data frame or a model object
-supported by <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>.</p></dd>
+<dd><p>A tidy coefficient data frame, a fitted model supported by
+<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>, or a result object with its own estimates and intervals,
+such as output from <code>marginaleffects</code>, <code>emmeans</code>, <code>gtsummary</code>, or
+<code>parameters</code>. See the supported inputs in
+<code><a href="as_forest_data.html">as_forest_data()</a></code>. For result objects, <code>group</code>, <code>facet</code>, and <code>subgroup</code>
+map their identifier columns where the method supports it, and
+<code>conf.level</code> is only forwarded when supplied.</p></dd>
 
 
 <dt id="arg-term">term<a class="anchor" aria-label="anchor" href="#arg-term"></a></dt>

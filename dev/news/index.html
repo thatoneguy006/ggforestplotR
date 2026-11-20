@@ -47,11 +47,27 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="ggforestplotr-development-version">ggforestplotR (development version)<a class="anchor" aria-label="anchor" href="#ggforestplotr-development-version"></a></h2>
-<ul><li>Begin development toward version 1.0.0.</li>
-<li>Added <code><a href="../reference/forest_theme.html">forest_theme()</a></code> for coordinated plot and table typography. Both table helpers now accept body, column-header, reference-row, and section/subgroup header text styling, with explicit table settings overriding theme defaults.</li>
-<li>Reorganized the vignettes into customization, fitted-model workflows, and forest-data preparation guides. Added a supported-model overview and examples for marker sizes, CI truncation, panel widths, directional labels, and export.</li>
+<h2 class="pkg-version" data-toc-text="0.6.0.9000" id="ggforestplotr-0609000-development-version">ggforestplotR 0.6.0.9000 (development version)<a class="anchor" aria-label="anchor" href="#ggforestplotr-0609000-development-version"></a></h2>
+<div class="section level3">
+<h3 id="major-changes-0-6-0-9000">Major Changes<a class="anchor" aria-label="anchor" href="#major-changes-0-6-0-9000"></a></h3>
+<ul><li>
+<p><code><a href="../reference/as_forest_data.html">as_forest_data()</a></code>, <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>, and <code><a href="../reference/bind_forest_models.html">bind_forest_models()</a></code> now integrate with common post-estimation packages (<a href="https://github.com/thatoneguy006/ggforestplotR/issues/8" class="external-link">#8</a>):</p>
+<ul><li>
+<code>marginaleffects</code> results from <code>comparisons()</code>, <code>avg_comparisons()</code>, <code>predictions()</code>, <code>avg_predictions()</code>, <code>slopes()</code>, <code>avg_slopes()</code>, and <code>hypotheses()</code>. The effect scale is inferred from the comparison, type, and transformation, and <code>group</code>, <code>facet</code>, and <code>subgroup</code> can map <code>term</code>, <code>contrast</code>, or <code>by</code> columns.</li>
+<li>
+<code>emmeans</code> results from <code>emmeans()</code>, <code><a href="https://rdrr.io/r/graphics/pairs.html" class="external-link">pairs()</a></code>, <code>contrast()</code>, <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code>, and <code>emm_list</code> objects. Log odds ratio and log ratio contrasts can be shown as ratios with <code>exponentiate = TRUE</code>.</li>
+<li>
+<code>gtsummary</code> regression tables from <code>tbl_regression()</code>, <code>tbl_uvregression()</code>, <code>tbl_merge()</code>, and <code>tbl_stack()</code>. Categorical variables become subgroup blocks with reference rows, merged tables become grouped estimates, stacked group headers become facets, and global p-values from <code>add_global_p()</code> are shown on subgroup headers.</li>
+<li>
+<code><a href="https://easystats.github.io/parameters/reference/model_parameters.html" class="external-link">parameters::model_parameters()</a></code> tables.</li>
+</ul></li>
+<li><p>Added <code><a href="../reference/forest_theme.html">forest_theme()</a></code> for coordinated plot and table typography. Both table helpers now accept body, column-header, reference-row, and section/subgroup header text styling, with explicit table settings overriding theme defaults.</p></li>
 </ul></div>
+<div class="section level3">
+<h3 id="minor-changes-0-6-0-9000">Minor Changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-6-0-9000"></a></h3>
+<ul><li>Reorganized the vignettes into customization, fitted-model workflows, and forest-data preparation guides. Added a supported-model overview and examples for marker sizes, CI truncation, panel widths, and directional labels.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.0" id="ggforestplotr-060">ggforestplotR 0.6.0<a class="anchor" aria-label="anchor" href="#ggforestplotr-060"></a></h2><p class="text-muted">CRAN release: 2026-11-04</p>
 <div class="section level3">

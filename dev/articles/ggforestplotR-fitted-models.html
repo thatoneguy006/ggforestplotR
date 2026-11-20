@@ -158,8 +158,10 @@ zero-inflation and dispersion coefficients.</td>
 requirements. Subgroup inference additionally uses
 <code>marginaleffects</code> and has the restrictions described below. A
 <code>broom</code> tidier alone does not imply direct support for every
-model class. For other inputs, use a coefficient table as described in
-<a href="ggforestplotR-data-helpers.html">Preparing Forest Data</a>.</p>
+model class. Post-estimation results and regression tables from
+<code>marginaleffects</code>, <code>emmeans</code>,
+<code>gtsummary</code>, and <code>parameters</code> are covered <a href="#plot-post-estimation-results-and-regression-tables">below</a>.
+For other inputs, use a coefficient table as described in <a href="ggforestplotR-data-helpers.html">Preparing Forest Data</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="plot-a-fitted-model">Plot a fitted model<a class="anchor" aria-label="anchor" href="#plot-a-fitted-model"></a>
@@ -378,6 +380,141 @@ effects and places them on the subgroup rows.</p>
 <p>For mixed models, derived effects are population-level (random
 effects set to zero). Supported subgroup links are identity, logit, and
 log; Cox effects use the linear-predictor scale.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="plot-post-estimation-results-and-regression-tables">Plot post-estimation results and regression tables<a class="anchor" aria-label="anchor" href="#plot-post-estimation-results-and-regression-tables"></a>
+</h2>
+<p>Results that already contain estimates and confidence intervals can
+be passed to <code><a href="../reference/as_forest_data.html">as_forest_data()</a></code>, <code><a href="../reference/ggforestplot.html">ggforestplot()</a></code>,
+and <code><a href="../reference/bind_forest_models.html">bind_forest_models()</a></code> without reshaping. Their
+estimates, intervals, p-values, and confidence levels are used exactly
+as computed by the source package.</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Input</th>
+<th align="left">Source functions</th>
+<th align="left">Output</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>marginaleffects</code></td>
+<td align="left">
+<code>comparisons()</code>,
+<code>avg_comparisons()</code>, <code>predictions()</code>,
+<code>avg_predictions()</code>, <code>slopes()</code>,
+<code>avg_slopes()</code>, <code>hypotheses()</code>
+</td>
+<td align="left">Scale from the comparison, type, and transformation;
+<code>group</code>, <code>facet</code>, and <code>subgroup</code> map
+<code>term</code>, <code>contrast</code>, or <code>by</code>
+columns.</td>
+</tr>
+<tr class="even">
+<td align="left"><code>emmeans</code></td>
+<td align="left">
+<code>emmeans()</code>, <code><a href="https://rdrr.io/r/graphics/pairs.html" class="external-link">pairs()</a></code>,
+<code>contrast()</code>, <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>,
+<code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code>
+</td>
+<td align="left">Means without a reference line, or contrasts with a
+reference at 0 or 1.</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>gtsummary</code></td>
+<td align="left">
+<code>tbl_regression()</code>,
+<code>tbl_uvregression()</code>, <code>tbl_merge()</code>,
+<code>tbl_stack()</code>
+</td>
+<td align="left">The table’s rows, labels, reference levels, counts, and
+p-values.</td>
+</tr>
+<tr class="even">
+<td align="left"><code>parameters</code></td>
+<td align="left"><code>model_parameters()</code></td>
+<td align="left">Fixed-effect coefficients with formatted names.</td>
+</tr>
+</tbody>
+</table>
+<div class="section level3">
+<h3 id="marginaleffects">marginaleffects<a class="anchor" aria-label="anchor" href="#marginaleffects"></a>
+</h3>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">logit_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">am</span> <span class="op">~</span> <span class="va">hp</span> <span class="op">+</span> <span class="va">wt</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">cyl</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">mtcars</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ratios</span> <span class="op">&lt;-</span> <span class="fu">marginaleffects</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/marginaleffects/man/comparisons.html" class="external-link">avg_comparisons</a></span><span class="op">(</span></span>
+<span>  <span class="va">logit_fit</span>,</span>
+<span>  comparison <span class="op">=</span> <span class="st">"lnratioavg"</span>,</span>
+<span>  transform <span class="op">=</span> <span class="va">exp</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="va">ratios</span>, </span>
+<span>             subgroup <span class="op">=</span> <span class="st">"term"</span>, </span>
+<span>             term_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>hp <span class="op">=</span> <span class="st">"Horsepower"</span>,</span>
+<span>                             wt <span class="op">=</span> <span class="st">"Weight"</span>, cyl <span class="op">=</span> <span class="st">"Cylinders"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span>columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="ggforestplotR-fitted-models_files/figure-html/marginaleffects-comparisons-1.png" class="r-plt" alt="" width="816"></p>
+<p>Row labels combine the identifier columns that vary, such as
+<code>term</code> and <code>contrast</code>. Map a <code>by</code>
+variable to <code>group</code> or <code>facet</code> to compare effects
+across subgroups.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">interaction_lm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">wt</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">am</span><span class="op">)</span> <span class="op">+</span> <span class="va">hp</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">marginaleffects</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/marginaleffects/man/comparisons.html" class="external-link">avg_comparisons</a></span><span class="op">(</span><span class="va">interaction_lm</span>, variables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wt"</span>, <span class="st">"hp"</span><span class="op">)</span>, </span>
+<span>                                 by <span class="op">=</span> <span class="st">"am"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span>group <span class="op">=</span> <span class="st">"am"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"top"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="ggforestplotR-fitted-models_files/figure-html/marginaleffects-by-1.png" class="r-plt" alt="" width="816"></p>
+</div>
+<div class="section level3">
+<h3 id="emmeans">emmeans<a class="anchor" aria-label="anchor" href="#emmeans"></a>
+</h3>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">warp_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">breaks</span> <span class="op">~</span> <span class="va">wool</span> <span class="op">*</span> <span class="va">tension</span>, data <span class="op">=</span> <span class="va">warpbreaks</span><span class="op">)</span></span>
+<span><span class="va">tension_means</span> <span class="op">&lt;-</span> <span class="fu">emmeans</span><span class="fu">::</span><span class="fu"><a href="https://rvlenth.github.io/emmeans/reference/emmeans.html" class="external-link">emmeans</a></span><span class="op">(</span><span class="va">warp_fit</span>, <span class="op">~</span> <span class="va">tension</span> <span class="op">|</span> <span class="va">wool</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html" class="external-link">pairs</a></span><span class="op">(</span><span class="va">tension_means</span><span class="op">)</span>, facet <span class="op">=</span> <span class="st">"wool"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span>columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="ggforestplotR-fitted-models_files/figure-html/emmeans-pairs-1.png" class="r-plt" alt="" width="816"></p>
+<p>Contrasts from logistic models are log odds ratios on the link scale;
+use <code>exponentiate = TRUE</code> or <code>type = "response"</code>
+to plot odds ratios.</p>
+</div>
+<div class="section level3">
+<h3 id="gtsummary">gtsummary<a class="anchor" aria-label="anchor" href="#gtsummary"></a>
+</h3>
+<p>Categorical variables keep their <code>gtsummary</code> structure:
+the variable label is a subgroup header and reference levels are
+reference rows. Merged tables become grouped estimates labelled by their
+spanning headers.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu">gtsummary</span><span class="fu">::</span><span class="va"><a href="https://www.danieldsjoberg.com/gtsummary/reference/trial.html" class="external-link">trial</a></span></span>
+<span><span class="va">trial_vars</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"response"</span>, <span class="st">"age"</span>, <span class="st">"grade"</span>, <span class="st">"trt"</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">crude</span> <span class="op">&lt;-</span> <span class="fu">gtsummary</span><span class="fu">::</span><span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_uvregression.html" class="external-link">tbl_uvregression</a></span><span class="op">(</span></span>
+<span>  <span class="va">trial_vars</span>,</span>
+<span>  method <span class="op">=</span> <span class="va">glm</span>,</span>
+<span>  y <span class="op">=</span> <span class="va">response</span>,</span>
+<span>  method.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span>,</span>
+<span>  exponentiate <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">adjusted</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">response</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">grade</span> <span class="op">+</span> <span class="va">trt</span>, </span>
+<span>                data <span class="op">=</span> <span class="va">trial</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">gtsummary</span><span class="fu">::</span><span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_regression.html" class="external-link">tbl_regression</a></span><span class="op">(</span>exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">gtsummary</span><span class="fu">::</span><span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_merge.html" class="external-link">tbl_merge</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">crude</span>, <span class="va">adjusted</span><span class="op">)</span>, </span>
+<span>                     tab_spanner <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"**Crude**"</span>, <span class="st">"**Adjusted**"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ggforestplot.html">ggforestplot</a></span><span class="op">(</span>striped_rows <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"top"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/add_forest_table.html">add_forest_table</a></span><span class="op">(</span>columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"group"</span>, <span class="st">"estimate"</span>, <span class="st">"ci"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="ggforestplotR-fitted-models_files/figure-html/gtsummary-merge-1.png" class="r-plt" alt="" width="816"></p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

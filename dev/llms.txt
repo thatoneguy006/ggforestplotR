@@ -157,6 +157,25 @@ Helpers for standardizing coefficient data and tidying model outputs.
 - [`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/bind_forest_models.md)
   : Bind multiple model summaries for a grouped forest plot
 
+## Post-Estimation and Summary Tables
+
+Methods for results that already contain estimates and confidence
+intervals.
+
+- [`as_forest_data(`*`<comparisons>`*`)`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_marginaleffects.md)
+  [`as_forest_data(`*`<predictions>`*`)`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_marginaleffects.md)
+  [`as_forest_data(`*`<slopes>`*`)`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_marginaleffects.md)
+  [`as_forest_data(`*`<hypotheses>`*`)`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_marginaleffects.md)
+  : Convert marginaleffects results to forest data
+- [`as_forest_data(`*`<emmGrid>`*`)`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_emmeans.md)
+  [`as_forest_data(`*`<summary_emm>`*`)`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_emmeans.md)
+  [`as_forest_data(`*`<emm_list>`*`)`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_emmeans.md)
+  : Convert emmeans results to forest data
+- [`as_forest_data(`*`<gtsummary>`*`)`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_gtsummary.md)
+  : Convert gtsummary regression tables to forest data
+- [`as_forest_data(`*`<parameters_model>`*`)`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data_parameters.md)
+  : Convert parameters tables to forest data
+
 # Articles
 
 ### Get Started

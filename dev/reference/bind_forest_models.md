@@ -17,7 +17,8 @@ bind_forest_models(models, model_labels = NULL, exponentiate = NULL, ...)
 
 - models:
 
-  A non-empty list of fitted model objects supported by an
+  A non-empty list of fitted model objects or result objects, such as
+  `marginaleffects` comparisons, supported by an
   [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data.md)
   method.
 

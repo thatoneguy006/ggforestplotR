@@ -28,8 +28,11 @@ Their tidiers must supply estimates and confidence limits.
 Coefficient extraction and derived subgroup effects have different
 requirements. Subgroup inference additionally uses `marginaleffects` and
 has the restrictions described below. A `broom` tidier alone does not
-imply direct support for every model class. For other inputs, use a
-coefficient table as described in [Preparing Forest
+imply direct support for every model class. Post-estimation results and
+regression tables from `marginaleffects`, `emmeans`, `gtsummary`, and
+`parameters` are covered
+[below](#plot-post-estimation-results-and-regression-tables). For other
+inputs, use a coefficient table as described in [Preparing Forest
 Data](https://thatoneguy006.github.io/ggforestplotR/dev/articles/ggforestplotR-data-helpers.md).
 
 ## Plot a fitted model
@@ -293,3 +296,106 @@ fit2 |>
 For mixed models, derived effects are population-level (random effects
 set to zero). Supported subgroup links are identity, logit, and log; Cox
 effects use the linear-predictor scale.
+
+## Plot post-estimation results and regression tables
+
+Results that already contain estimates and confidence intervals can be
+passed to
+[`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data.md),
+[`ggforestplot()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/ggforestplot.md),
+and
+[`bind_forest_models()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/bind_forest_models.md)
+without reshaping. Their estimates, intervals, p-values, and confidence
+levels are used exactly as computed by the source package.
+
+| Input | Source functions | Output |
+|:---|:---|:---|
+| `marginaleffects` | `comparisons()`, `avg_comparisons()`, `predictions()`, `avg_predictions()`, `slopes()`, `avg_slopes()`, `hypotheses()` | Scale from the comparison, type, and transformation; `group`, `facet`, and `subgroup` map `term`, `contrast`, or `by` columns. |
+| `emmeans` | `emmeans()`, [`pairs()`](https://rdrr.io/r/graphics/pairs.html), `contrast()`, [`summary()`](https://rdrr.io/r/base/summary.html), [`confint()`](https://rdrr.io/r/stats/confint.html) | Means without a reference line, or contrasts with a reference at 0 or 1. |
+| `gtsummary` | `tbl_regression()`, `tbl_uvregression()`, `tbl_merge()`, `tbl_stack()` | The table’s rows, labels, reference levels, counts, and p-values. |
+| `parameters` | `model_parameters()` | Fixed-effect coefficients with formatted names. |
+
+### marginaleffects
+
+``` r
+
+logit_fit <- glm(am ~ hp + wt + factor(cyl), data = mtcars, family = binomial())
+
+ratios <- marginaleffects::avg_comparisons(
+  logit_fit,
+  comparison = "lnratioavg",
+  transform = exp
+)
+
+ggforestplot(ratios, 
+             subgroup = "term", 
+             term_labels = c(hp = "Horsepower",
+                             wt = "Weight", cyl = "Cylinders")) +
+  add_forest_table(columns = c("term", "estimate", "ci", "p"))
+```
+
+![](ggforestplotR-fitted-models_files/figure-html/marginaleffects-comparisons-1.png)
+
+Row labels combine the identifier columns that vary, such as `term` and
+`contrast`. Map a `by` variable to `group` or `facet` to compare effects
+across subgroups.
+
+``` r
+
+interaction_lm <- lm(mpg ~ wt * factor(am) + hp, data = mtcars)
+
+marginaleffects::avg_comparisons(interaction_lm, variables = c("wt", "hp"), 
+                                 by = "am") |>
+  ggforestplot(group = "am") +
+  theme(legend.position = "top")
+```
+
+![](ggforestplotR-fitted-models_files/figure-html/marginaleffects-by-1.png)
+
+### emmeans
+
+``` r
+
+warp_fit <- lm(breaks ~ wool * tension, data = warpbreaks)
+tension_means <- emmeans::emmeans(warp_fit, ~ tension | wool)
+
+ggforestplot(pairs(tension_means), facet = "wool") +
+  add_forest_table(columns = c("term", "estimate", "ci", "p"))
+```
+
+![](ggforestplotR-fitted-models_files/figure-html/emmeans-pairs-1.png)
+
+Contrasts from logistic models are log odds ratios on the link scale;
+use `exponentiate = TRUE` or `type = "response"` to plot odds ratios.
+
+### gtsummary
+
+Categorical variables keep their `gtsummary` structure: the variable
+label is a subgroup header and reference levels are reference rows.
+Merged tables become grouped estimates labelled by their spanning
+headers.
+
+``` r
+
+trial <- gtsummary::trial
+trial_vars <- trial[c("response", "age", "grade", "trt")]
+
+crude <- gtsummary::tbl_uvregression(
+  trial_vars,
+  method = glm,
+  y = response,
+  method.args = list(family = binomial),
+  exponentiate = TRUE
+)
+adjusted <- glm(response ~ age + grade + trt, 
+                data = trial, family = binomial()) |>
+  gtsummary::tbl_regression(exponentiate = TRUE)
+
+gtsummary::tbl_merge(list(crude, adjusted), 
+                     tab_spanner = c("**Crude**", "**Adjusted**")) |>
+  ggforestplot(striped_rows = TRUE) +
+  theme(legend.position = "top") +
+  add_forest_table(columns = c("term", "group", "estimate", "ci"))
+```
+
+![](ggforestplotR-fitted-models_files/figure-html/gtsummary-merge-1.png)

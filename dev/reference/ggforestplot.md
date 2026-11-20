@@ -58,8 +58,15 @@ ggforestplot(
 
 - data:
 
-  Either a tidy coefficient data frame or a model object supported by
-  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html).
+  A tidy coefficient data frame, a fitted model supported by
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html), or
+  a result object with its own estimates and intervals, such as output
+  from `marginaleffects`, `emmeans`, `gtsummary`, or `parameters`. See
+  the supported inputs in
+  [`as_forest_data()`](https://thatoneguy006.github.io/ggforestplotR/dev/reference/as_forest_data.md).
+  For result objects, `group`, `facet`, and `subgroup` map their
+  identifier columns where the method supports it, and `conf.level` is
+  only forwarded when supplied.
 
 - term:
 
