@@ -52,8 +52,13 @@ ggforestplot(
 )
 }
 \arguments{
-\item{data}{Either a tidy coefficient data frame or a model object
-supported by \code{\link[broom:tidy]{broom::tidy()}}.}
+\item{data}{A tidy coefficient data frame, a fitted model supported by
+\code{\link[broom:tidy]{broom::tidy()}}, or a result object with its own estimates and intervals,
+such as output from \code{marginaleffects}, \code{emmeans}, \code{gtsummary}, or
+\code{parameters}. See the supported inputs in
+\code{\link[=as_forest_data]{as_forest_data()}}. For result objects, \code{group}, \code{facet}, and \code{subgroup}
+map their identifier columns where the method supports it, and
+\code{conf.level} is only forwarded when supplied.}
 
 \item{term}{Column name holding the model term identifiers.}
 

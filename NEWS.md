@@ -1,12 +1,34 @@
-# ggforestplotR (development version)
+# ggforestplotR 0.6.0.9000 (development version)
 
-- Begin development toward version 1.0.0.
+## Major Changes
+
+- `as_forest_data()`, `ggforestplot()`, and `bind_forest_models()` now integrate
+  with common post-estimation packages (#8):
+  
+  - `marginaleffects` results from `comparisons()`, `avg_comparisons()`,
+    `predictions()`, `avg_predictions()`, `slopes()`, `avg_slopes()`, and
+    `hypotheses()`. The effect scale is inferred from the comparison, type,
+    and transformation, and `group`, `facet`, and `subgroup` can map `term`,
+    `contrast`, or `by` columns.
+  - `emmeans` results from `emmeans()`, `pairs()`, `contrast()`, `summary()`,
+    `confint()`, and `emm_list` objects. Log odds ratio and log ratio
+    contrasts can be shown as ratios with `exponentiate = TRUE`.
+  - `gtsummary` regression tables from `tbl_regression()`,
+    `tbl_uvregression()`, `tbl_merge()`, and `tbl_stack()`. Categorical
+    variables become subgroup blocks with reference rows, merged tables
+    become grouped estimates, stacked group headers become facets, and
+    global p-values from `add_global_p()` are shown on subgroup headers.
+  - `parameters::model_parameters()` tables.
+  
 - Added `forest_theme()` for coordinated plot and table typography. Both table
   helpers now accept body, column-header, reference-row, and section/subgroup
   header text styling, with explicit table settings overriding theme defaults.
+
+## Minor Changes
+
 - Reorganized the vignettes into customization, fitted-model workflows, and
   forest-data preparation guides. Added a supported-model overview and examples
-  for marker sizes, CI truncation, panel widths, directional labels, and export.
+  for marker sizes, CI truncation, panel widths, and directional labels.
 
 # ggforestplotR 0.6.0
 

@@ -85,7 +85,8 @@ resolve_model_exponentiate <- function(exponentiate = NULL, n_models) {
 #' passed directly to [ggforestplot()], where model labels are used as the
 #' grouping variable for dodged, color-coded estimates.
 #'
-#' @param models A non-empty list of fitted model objects supported by an
+#' @param models A non-empty list of fitted model objects or result objects,
+#'   such as `marginaleffects` comparisons, supported by an
 #'   [as_forest_data()] method.
 #' @param model_labels Optional labels used to identify each model in the
 #'   forest plot. Defaults to list names when present, otherwise `"Model 1"`,

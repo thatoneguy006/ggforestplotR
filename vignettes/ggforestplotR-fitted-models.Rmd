@@ -45,7 +45,9 @@ tidiers must supply estimates and confidence limits.
 Coefficient extraction and derived subgroup effects have different requirements.
 Subgroup inference additionally uses `marginaleffects` and has the restrictions
 described below. A `broom` tidier alone does not imply direct support for every
-model class. For other inputs, use a coefficient table as described in
+model class. Post-estimation results and regression tables from
+`marginaleffects`, `emmeans`, `gtsummary`, and `parameters` are covered [below](#plot-post-estimation-results-and-regression-tables). For other
+inputs, use a coefficient table as described in
 [Preparing Forest Data](ggforestplotR-data-helpers.html).
 
 ## Plot a fitted model
@@ -239,3 +241,89 @@ fit2 |>
 For mixed models, derived effects are population-level (random effects set to
 zero). Supported subgroup links are identity, logit, and log; Cox effects use
 the linear-predictor scale.
+
+## Plot post-estimation results and regression tables
+
+Results that already contain estimates and confidence intervals can be passed
+to `as_forest_data()`, `ggforestplot()`, and `bind_forest_models()` without
+reshaping. Their estimates, intervals, p-values, and confidence levels are used
+exactly as computed by the source package.
+
+| Input | Source functions | Output |
+|:--|:--|:--|
+| `marginaleffects` | `comparisons()`, `avg_comparisons()`, `predictions()`, `avg_predictions()`, `slopes()`, `avg_slopes()`, `hypotheses()` | Scale from the comparison, type, and transformation; `group`, `facet`, and `subgroup` map `term`, `contrast`, or `by` columns. |
+| `emmeans` | `emmeans()`, `pairs()`, `contrast()`, `summary()`, `confint()` | Means without a reference line, or contrasts with a reference at 0 or 1. |
+| `gtsummary` | `tbl_regression()`, `tbl_uvregression()`, `tbl_merge()`, `tbl_stack()` | The table's rows, labels, reference levels, counts, and p-values. |
+| `parameters` | `model_parameters()` | Fixed-effect coefficients with formatted names. |
+
+### marginaleffects
+
+```{r marginaleffects-comparisons, eval = requireNamespace("marginaleffects", quietly = TRUE), message=FALSE, warning=FALSE}
+logit_fit <- glm(am ~ hp + wt + factor(cyl), data = mtcars, family = binomial())
+
+ratios <- marginaleffects::avg_comparisons(
+  logit_fit,
+  comparison = "lnratioavg",
+  transform = exp
+)
+
+ggforestplot(ratios, 
+             subgroup = "term", 
+             term_labels = c(hp = "Horsepower",
+                             wt = "Weight", cyl = "Cylinders")) +
+  add_forest_table(columns = c("term", "estimate", "ci", "p"))
+```
+
+Row labels combine the identifier columns that vary, such as `term` and
+`contrast`. Map a `by` variable to `group` or `facet` to compare effects across
+subgroups.
+
+```{r marginaleffects-by, eval = requireNamespace("marginaleffects", quietly = TRUE), message=FALSE, warning=FALSE}
+interaction_lm <- lm(mpg ~ wt * factor(am) + hp, data = mtcars)
+
+marginaleffects::avg_comparisons(interaction_lm, variables = c("wt", "hp"), 
+                                 by = "am") |>
+  ggforestplot(group = "am") +
+  theme(legend.position = "top")
+```
+
+### emmeans
+
+```{r emmeans-pairs, eval = requireNamespace("emmeans", quietly = TRUE), message=FALSE}
+warp_fit <- lm(breaks ~ wool * tension, data = warpbreaks)
+tension_means <- emmeans::emmeans(warp_fit, ~ tension | wool)
+
+ggforestplot(pairs(tension_means), facet = "wool") +
+  add_forest_table(columns = c("term", "estimate", "ci", "p"))
+```
+
+Contrasts from logistic models are log odds ratios on the link scale; use
+`exponentiate = TRUE` or `type = "response"` to plot odds ratios.
+
+### gtsummary
+
+Categorical variables keep their `gtsummary` structure: the variable label is
+a subgroup header and reference levels are reference rows. Merged tables become
+grouped estimates labelled by their spanning headers.
+
+```{r gtsummary-merge, eval = requireNamespace("gtsummary", quietly = TRUE) && requireNamespace("broom.helpers", quietly = TRUE), message=FALSE, warning=FALSE}
+trial <- gtsummary::trial
+trial_vars <- trial[c("response", "age", "grade", "trt")]
+
+crude <- gtsummary::tbl_uvregression(
+  trial_vars,
+  method = glm,
+  y = response,
+  method.args = list(family = binomial),
+  exponentiate = TRUE
+)
+adjusted <- glm(response ~ age + grade + trt, 
+                data = trial, family = binomial()) |>
+  gtsummary::tbl_regression(exponentiate = TRUE)
+
+gtsummary::tbl_merge(list(crude, adjusted), 
+                     tab_spanner = c("**Crude**", "**Adjusted**")) |>
+  ggforestplot(striped_rows = TRUE) +
+  theme(legend.position = "top") +
+  add_forest_table(columns = c("term", "group", "estimate", "ci"))
+```

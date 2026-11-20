@@ -7,7 +7,8 @@
 bind_forest_models(models, model_labels = NULL, exponentiate = NULL, ...)
 }
 \arguments{
-\item{models}{A non-empty list of fitted model objects supported by an
+\item{models}{A non-empty list of fitted model objects or result objects,
+such as \code{marginaleffects} comparisons, supported by an
 \code{\link[=as_forest_data]{as_forest_data()}} method.}
 
 \item{model_labels}{Optional labels used to identify each model in the
