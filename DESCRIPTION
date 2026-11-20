@@ -9,9 +9,7 @@ Authors@R:
            comment = c(ORCID = "0009-0004-8710-1097"))
 Description: Transform model coefficients into flexible forest
     plots using 'ggplot2'. Provides helpers to standardize
-    coefficient data from a range of modelling workflows, including
-    post-estimation results from 'marginaleffects' and 'emmeans',
-    and regression tables from 'gtsummary' and 'parameters', and render
+    coefficient data from a range of modelling workflows and render
     publication-ready forest plots with a consistent interface.
 License: MIT + file LICENSE
 Encoding: UTF-8
