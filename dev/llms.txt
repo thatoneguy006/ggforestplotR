@@ -16,7 +16,7 @@ install.packages("ggforestplotR")
 
 ### Development
 
-You can install the development version of tidylandmark from
+You can install the development version of ggforestplotR from
 [GitHub](https://github.com/) with:
 
 ``` r
